@@ -177,6 +177,11 @@ app_license = "mit"
 override_whitelisted_methods = {
 	"frappe.desk.query_report.get_script": "av_tools.av_tools_hooks.query_report.get_script"
 }
+
+# Override doctype class to intercept report execution
+override_doctype_class = {
+	"Report": "av_tools.av_tools_hooks.report_override.ReportOverride"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,

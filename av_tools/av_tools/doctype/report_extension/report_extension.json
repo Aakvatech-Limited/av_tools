@@ -12,7 +12,9 @@
   "section_break_tzqp",
   "script",
   "column_break_linf",
-  "html_format"
+  "html_format",
+  "section_break_53xz",
+  "script_python"
  ],
  "fields": [
   {
@@ -38,7 +40,7 @@
   {
    "fieldname": "script",
    "fieldtype": "Code",
-   "label": "Script"
+   "label": "Script(JavaScript)"
   },
   {
    "fieldname": "column_break_linf",
@@ -48,12 +50,21 @@
    "fieldname": "html_format",
    "fieldtype": "Code",
    "label": "HTML Format"
+  },
+  {
+   "fieldname": "section_break_53xz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "script_python",
+   "fieldtype": "Code",
+   "label": "Script(Python)"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-08-20 07:15:22.341320",
+ "modified": "2025-09-29 15:03:55.630194",
  "modified_by": "Administrator",
  "module": "Av Tools",
  "name": "Report Extension",
