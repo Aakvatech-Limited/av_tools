@@ -1,5 +1,4 @@
 import frappe
-from frappe.utils.safe_exec import safe_exec
 from frappe.core.doctype.report.report import Report
 
 
@@ -15,48 +14,61 @@ class ReportOverride(Report):
             
             if av_report_extension_doc.active and av_report_extension_doc.script_python:
                 # Execute the custom Python script instead of the original report
-                frappe.log_error(f"Executing Python override for report: {self.name}", "Report Extension")
                 return self.execute_custom_python_script(av_report_extension_doc.script_python, filters)
         
         # Fall back to original script report execution
         return super().execute_script_report(filters)
     
     def execute_custom_python_script(self, script_python, filters):
-        """Execute custom Python script for report override"""
+        """Execute custom Python script like a standard report module"""
         try:
-            # Prepare the execution context similar to how Frappe handles script reports
-            loc = {
-                "filters": frappe._dict(filters) if filters else frappe._dict(),
-                "data": None,
-                "result": None,
-                "columns": None,
-                "message": None,
-                "chart": None,
-                "report_summary": None,
-                "skip_total_row": None
+            import sys
+
+            # Create a single namespace that acts like a real module
+            # This is the key fix - all functions must be in the same namespace
+            module_namespace = {
+                '__builtins__': __builtins__,
+                '__name__': f'report_extension_{frappe.scrub(self.name)}',
+                '__file__': f'<report_extension_{frappe.scrub(self.name)}>',
+                '__package__': None,
             }
-            
-            # Execute the custom script using safe_exec
-            safe_exec(script_python, None, loc, script_filename=f"Report Extension {self.name}")
-            
-            # Return results in the expected format (same as Report.execute_script)
-            if loc["data"]:
-                # If data is returned, it should be in the format [columns, result, message, chart, report_summary, skip_total_row]
-                return loc["data"]
+
+            # Add all of sys.modules so imports work exactly like in standard reports
+            module_namespace.update(sys.modules)
+
+            # Execute the script with the same dict for globals AND locals
+            # This ensures all function definitions are in the same namespace
+            # and can call each other (just like a real Python module)
+            exec(script_python, module_namespace, module_namespace)
+
+            # Now call the execute function like a standard report
+            if 'execute' in module_namespace:
+                # Call the execute function with filters (like execute_module does)
+                result = module_namespace['execute'](frappe._dict(filters) if filters else frappe._dict())
+                return result
             else:
-                # Return individual components - follow the same pattern as execute_script
-                columns = loc.get("columns", [])
-                result = loc.get("result", [])
-                message = loc.get("message")
-                chart = loc.get("chart")
-                report_summary = loc.get("report_summary")
-                skip_total_row = loc.get("skip_total_row")
-                
-                # Return in the same format as Report.execute_script
-                return [columns, result, message, chart, report_summary, skip_total_row]
-                
+                # Fallback: check if data was set (script report style)
+                if module_namespace.get("data"):
+                    return module_namespace["data"]
+                else:
+                    # Return individual components
+                    columns = module_namespace.get("columns", [])
+                    result = module_namespace.get("result", [])
+                    message = module_namespace.get("message")
+                    chart = module_namespace.get("chart")
+                    report_summary = module_namespace.get("report_summary")
+                    skip_total_row = module_namespace.get("skip_total_row")
+
+                    return [columns, result, message, chart, report_summary, skip_total_row]
+
         except Exception as e:
-            # Log the error and re-raise it
-            frappe.log_error(f"Report Extension Python Error: {str(e)}", "Report Extension")
-            frappe.throw(f"Error executing Report Extension Python script: {str(e)}")
+            # Log the error with more details for debugging
+            error_msg = str(e)
+            if "is not defined" in error_msg:
+                # Provide helpful guidance for missing function errors
+                missing_func = error_msg.split("'")[1] if "'" in error_msg else "unknown"
+                helpful_msg = f"Missing function '{missing_func}'. Make sure to copy the ENTIRE General Ledger file content (all functions), not just the execute() function."
+                frappe.throw(f"Report Extension Error: {helpful_msg}")
+            else:
+                frappe.throw(f"Error executing Report Extension Python script: {error_msg}")
             return None
