@@ -4,6 +4,7 @@
 
 [post_model_sync]
 # Patches added in this section will be executed after doctypes are migrated
+av_tools.patches.v1_0.move_parking_bill_doctypes
 av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides
 av_tools.patches.v1_0.migrate_ai_integration_site_data
 av_tools.patches.v1_0.migrate_generic_technical_admin_reports

@@ -191,6 +191,11 @@ doc_events = {
 # ---------------
 
 scheduler_events = {
+	"cron": {
+		"0 */6 * * *": [
+			"av_tools.av_tools.doctype.parking_bill.parking_bill.check_bills_all_vehicles",
+		]
+	}
 	"daily": [
 		"av_tools.av_tools.doctype.visibility.visibility.trigger_daily_alerts",
 	]
