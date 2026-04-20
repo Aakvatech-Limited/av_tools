@@ -2,6 +2,24 @@
 // For license information, please see license.txt
 
 const DEFAULT_UOM = "Kg";
+const CREATE_TARGET_DOCTYPES = [
+  "Sales Invoice",
+  "Delivery Note",
+  "Sales Order",
+  "Purchase Order",
+  "Purchase Invoice",
+  "Purchase Receipt",
+];
+const CREATE_TARGETS_BY_SOURCE = {
+  "Sales Order": ["Sales Invoice"],
+  "Delivery Note": ["Sales Invoice"],
+  "Purchase Order": ["Purchase Invoice"],
+  "Purchase Receipt": ["Purchase Invoice"],
+  "Sales Invoice": [],
+  "Purchase Invoice": [],
+};
+const SALES_DOCTYPES = ["Sales Invoice", "Delivery Note", "Sales Order"];
+const PURCHASE_DOCTYPES = ["Purchase Order", "Purchase Invoice", "Purchase Receipt"];
 
 const distribute_net_weight = (frm, netWeight) => {
   const items = frm.doc.items || [];
@@ -49,10 +67,55 @@ const save_after_weight_capture = (frm) => {
 const set_document_reference_query = (frm) => {
   frm.set_query("document_reference", () => ({
     filters: {
-      docstatus: 0,
+      docstatus: ["!=", 2],
       weighbridge_ticket: ["in", ["", null]],
     },
   }));
+};
+
+const get_create_route_options = (frm, targetDoctype) => {
+  const options = {
+    weighbridge_ticket: frm.doc.name,
+    company: frm.doc.company || undefined,
+    posting_date: frm.doc.posting_date || undefined,
+    transaction_date: frm.doc.posting_date || undefined,
+    due_date: frm.doc.posting_date || undefined,
+    set_posting_time: 1,
+    posting_time: frm.doc.posting_time || undefined,
+  };
+
+  if (SALES_DOCTYPES.includes(targetDoctype)) {
+    options.customer = frm.doc.customer || undefined;
+  }
+
+  if (PURCHASE_DOCTYPES.includes(targetDoctype)) {
+    options.supplier = frm.doc.supplier || undefined;
+  }
+
+  return options;
+};
+
+const add_create_buttons = (frm) => {
+  if (frm.doc.docstatus !== 1) {
+    return;
+  }
+
+  if (frm.doc.target_document_reference) {
+    return;
+  }
+
+  const targets =
+    CREATE_TARGETS_BY_SOURCE[frm.doc.document_type] || CREATE_TARGET_DOCTYPES;
+
+  targets.forEach((targetDoctype) => {
+    frm.add_custom_button(
+      __(targetDoctype),
+      () => {
+        frappe.new_doc(targetDoctype, get_create_route_options(frm, targetDoctype));
+      },
+      __("Create")
+    );
+  });
 };
 
 const apply_reference_items = (frm, items) => {
@@ -117,6 +180,24 @@ const load_reference_items = (frm) => {
       apply_reference_items(frm, r.message.items || []);
     },
   });
+};
+
+const auto_load_reference_items = (frm) => {
+  if (!frm.is_new()) {
+    return;
+  }
+  if (frm._auto_reference_loaded) {
+    return;
+  }
+  if (!frm.doc.document_type || !frm.doc.document_reference) {
+    return;
+  }
+  if ((frm.doc.items || []).length) {
+    return;
+  }
+
+  frm._auto_reference_loaded = true;
+  load_reference_items(frm);
 };
 
 const ensure_gateway_payload = (frm, callback) => {
@@ -300,18 +381,23 @@ frappe.ui.form.on("Weighbridge Ticket", {
   refresh(frm) {
     set_document_reference_query(frm);
     toggle_read_buttons(frm);
+    add_create_buttons(frm);
+    auto_load_reference_items(frm);
   },
   document_type(frm) {
+    frm._auto_reference_loaded = false;
     frm.set_value("document_reference", null);
     apply_reference_party(frm, {});
     apply_reference_items(frm, []);
   },
   document_reference(frm) {
     if (!frm.doc.document_reference) {
+      frm._auto_reference_loaded = false;
       apply_reference_party(frm, {});
       apply_reference_items(frm, []);
       return;
     }
+    frm._auto_reference_loaded = true;
     load_reference_items(frm);
   },
   items_add(frm) {

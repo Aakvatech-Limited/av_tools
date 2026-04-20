@@ -11,6 +11,13 @@ ALLOWED_REFERENCE_DOCTYPES = {
     "Purchase Receipt",
 }
 
+ALLOWED_TARGETS_BY_SOURCE = {
+    "Sales Order": {"Sales Invoice"},
+    "Delivery Note": {"Sales Invoice"},
+    "Purchase Order": {"Purchase Invoice"},
+    "Purchase Receipt": {"Purchase Invoice"},
+}
+
 
 def _get_settings():
     settings = frappe.get_single("Weighbridge Settings")
@@ -50,8 +57,8 @@ def get_reference_items(document_type=None, document_reference=None):
     doc = frappe.get_doc(document_type, document_reference)
     doc.check_permission("read")
 
-    if doc.meta.is_submittable and doc.docstatus != 0:
-        frappe.throw(f"{document_type} must be in Draft.")
+    if doc.meta.is_submittable and doc.docstatus == 2:
+        frappe.throw(f"{document_type} {document_reference} is Cancelled.")
 
     items = []
     for row in (doc.get("items") or []):
@@ -83,19 +90,57 @@ def get_ticket_items(ticket, doctype=None, document_name=None):
     if doc.docstatus != 1:
         frappe.throw("Weighbridge Ticket must be submitted.")
 
-    if doctype and doc.document_type and doc.document_type != doctype:
-        frappe.throw("Weighbridge Ticket document type does not match.")
-    if document_name and doc.document_reference and doc.document_reference != document_name:
+    is_source_request = (
+        doctype
+        and document_name
+        and doc.document_type == doctype
+        and doc.document_reference == document_name
+    )
+
+    if doctype and doc.document_type == doctype and not is_source_request:
+        frappe.throw(
+            f"Cannot use Weighbridge Ticket {doc.name} from {doc.document_type} as target {doctype}."
+        )
+
+    if (
+        doctype
+        and doc.target_document_type
+        and doc.target_document_type != doctype
+        and not is_source_request
+    ):
+        frappe.throw("Weighbridge Ticket target document type does not match.")
+    if (
+        document_name
+        and doc.target_document_reference
+        and doc.target_document_reference != document_name
+        and not is_source_request
+    ):
         frappe.throw("Weighbridge Ticket belongs to another document.")
 
-    if document_name and doctype and frappe.db.exists(doctype, document_name):
+    if (
+        document_name
+        and doctype
+        and frappe.db.exists(doctype, document_name)
+        and not is_source_request
+    ):
+        if doc.document_type:
+            allowed_targets = ALLOWED_TARGETS_BY_SOURCE.get(doc.document_type, set())
+            if doctype not in allowed_targets:
+                frappe.throw(
+                    f"Weighbridge source {doc.document_type} can only create: {', '.join(sorted(allowed_targets)) or 'None'}."
+                )
+
         frappe.db.set_value(
             "Weighbridge Ticket",
             doc.name,
-            {"document_reference": document_name},
+            {
+                "target_document_type": doctype,
+                "target_document_reference": document_name,
+            },
             update_modified=True,
         )
-        doc.document_reference = document_name
+        doc.target_document_type = doctype
+        doc.target_document_reference = document_name
 
     items = [
         {
@@ -111,4 +156,14 @@ def get_ticket_items(ticket, doctype=None, document_name=None):
         "items": items,
         "document_type": doc.document_type,
         "document_reference": doc.document_reference,
+        "target_document_type": doc.target_document_type,
+        "target_document_reference": doc.target_document_reference,
+        "company": doc.company,
+        "customer": doc.customer,
+        "supplier": doc.supplier,
+        "posting_date": doc.posting_date,
+        "posting_time": doc.posting_time,
+        "tare_weight": doc.tare_weight,
+        "gross_weight": doc.gross_weight,
+        "net_weight": doc.net_weight,
     }
