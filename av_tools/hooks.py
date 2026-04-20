@@ -25,6 +25,8 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
+# app_include_css = "/assets/av_tools/css/av_tools.css"
+app_include_js = "av_tools.bundle.js"
 app_include_css = "/assets/av_tools/css/theme.css"
 app_include_js = "/assets/av_tools/js/ai_assist.js"
 
@@ -189,6 +191,11 @@ doc_events = {
 # ---------------
 
 scheduler_events = {
+	"cron": {
+		"0 */6 * * *": [
+			"av_tools.av_tools.doctype.parking_bill.parking_bill.check_bills_all_vehicles",
+		]
+	}
 	"daily": [
 		"av_tools.av_tools.doctype.visibility.visibility.trigger_daily_alerts",
 	]
