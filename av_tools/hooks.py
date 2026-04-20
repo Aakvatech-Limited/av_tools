@@ -45,12 +45,16 @@ app_license = "mit"
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_js = {
-	"Sales Invoice": "weigh_bridge/doctype/sales_invoice_weighbridge_ticket.js",
+	"Sales Invoice": [
+		"weigh_bridge/doctype/sales_invoice_weighbridge_ticket.js",
+		"authotp/api/sales_invoice.js",
+	],
 	"Delivery Note": "weigh_bridge/doctype/delivery_note_weighbridge_ticket.js",
 	"Sales Order": "weigh_bridge/doctype/sales_order_weighbridge_ticket.js",
 	"Purchase Order": "weigh_bridge/doctype/purchase_order_weighbridge_ticket.js",
 	"Purchase Invoice": "weigh_bridge/doctype/purchase_invoice_weighbridge_ticket.js",
 	"Purchase Receipt": "weigh_bridge/doctype/purchase_receipt_weighbridge_ticket.js",
+	"Customer": "authotp/api/customer.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -91,8 +95,14 @@ doctype_js = {
 # ------------
 
 # before_install = "av_tools.install.before_install"
-# after_install = "av_tools.install.after_install"
-after_migrate = "av_tools.weigh_bridge.custom_fields.setup_custom_fields"
+after_install = [
+	"av_tools.weigh_bridge.custom_fields.setup_custom_fields",
+	"av_tools.patches.custom_fields.auth_otp_custom_fields.execute",
+]
+after_migrate = [
+	"av_tools.weigh_bridge.custom_fields.setup_custom_fields",
+	"av_tools.patches.custom_fields.auth_otp_custom_fields.execute",
+]
 
 # Uninstallation
 # ------------
@@ -154,7 +164,10 @@ after_migrate = "av_tools.weigh_bridge.custom_fields.setup_custom_fields"
 # 	}
 # }
 doc_events = {
-	"Sales Invoice": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
+	"Sales Invoice": {
+		"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket",
+		"before_submit": "av_tools.authotp.api.sales_invoice.before_submit",
+	},
 	"Delivery Note": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
 	"Sales Order": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
 	"Purchase Order": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
