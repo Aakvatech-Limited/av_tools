@@ -13,3 +13,4 @@ av_tools.patches.v1_0.migrate_generic_technical_admin_reports
 av_tools.patches.v1_0.migrate_report_extension_site_data
 av_tools.patches.v1_0.move_inter_company_transfer_feature
 av_tools.patches.v1_0.move_salary_register_reports
+av_tools.patches.v1_0.move_hr_access_and_loan_reports
