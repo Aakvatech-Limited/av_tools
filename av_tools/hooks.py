@@ -50,7 +50,10 @@ doctype_js = {
 	"Sales Invoice": "weigh_bridge/doctype/sales_invoice_weighbridge_ticket.js",
 	"Delivery Note": "weigh_bridge/doctype/delivery_note_weighbridge_ticket.js",
 	"Sales Order": "weigh_bridge/doctype/sales_order_weighbridge_ticket.js",
-	"Purchase Order": "weigh_bridge/doctype/purchase_order_weighbridge_ticket.js",
+	"Purchase Order": [
+		"weigh_bridge/doctype/purchase_order_weighbridge_ticket.js",
+		"av_tools/purchase_order.js",
+	],
 	"Purchase Invoice": "weigh_bridge/doctype/purchase_invoice_weighbridge_ticket.js",
 	"Purchase Receipt": "weigh_bridge/doctype/purchase_receipt_weighbridge_ticket.js",
 }
@@ -159,7 +162,12 @@ doc_events = {
 	"Sales Invoice": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
 	"Delivery Note": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
 	"Sales Order": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
-	"Purchase Order": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
+	"Purchase Order": {
+		"validate": [
+			"av_tools.weigh_bridge.validation.validate_weighbridge_ticket",
+			"av_tools.av_tools_hooks.purchase_order.target_warehouse_based_price_list",
+		]
+	},
 	"Purchase Invoice": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
 	"Purchase Receipt": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
 	"*": {

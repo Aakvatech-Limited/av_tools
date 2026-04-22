@@ -14,7 +14,9 @@
   "platform_admin_settings_section",
   "allow_delete_in_sql_command",
   "manufacturing_settings_section",
-  "is_manufacture"
+  "is_manufacture",
+  "buying_settings_section",
+  "target_warehouse_based_price_list"
  ],
  "fields": [
   {
@@ -86,6 +88,17 @@
    "fieldname": "is_manufacture",
    "fieldtype": "Check",
    "label": "Make Manufacture Entry instead of Material Receipt"
+  },
+  {
+   "fieldname": "buying_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Buying Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "target_warehouse_based_price_list",
+   "fieldtype": "Check",
+   "label": "Enable Target Warehouse Based Buying Price List"
   }
  ],
  "index_web_pages_for_search": 1,
