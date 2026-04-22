@@ -14,7 +14,9 @@
   "platform_admin_settings_section",
   "allow_delete_in_sql_command",
   "manufacturing_settings_section",
-  "is_manufacture"
+  "is_manufacture",
+  "section_break_inter_company",
+  "allow_inter_company_stock_transfer"
  ],
  "fields": [
   {
@@ -86,6 +88,17 @@
    "fieldname": "is_manufacture",
    "fieldtype": "Check",
    "label": "Make Manufacture Entry instead of Material Receipt"
+  },
+  {
+   "fieldname": "section_break_inter_company",
+   "fieldtype": "Section Break",
+   "label": "Inter Company Transfer"
+  },
+  {
+   "default": "0",
+   "fieldname": "allow_inter_company_stock_transfer",
+   "fieldtype": "Check",
+   "label": "Allow Inter company stock transfer"
   }
  ],
  "index_web_pages_for_search": 1,
