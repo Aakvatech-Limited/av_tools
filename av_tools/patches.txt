@@ -12,3 +12,5 @@ av_tools.patches.v1_0.migrate_ai_integration_site_data
 av_tools.patches.v1_0.migrate_generic_technical_admin_reports
 av_tools.patches.v1_0.migrate_report_extension_site_data
 av_tools.patches.v1_0.move_inter_company_transfer_feature
+av_tools.patches.v1_0.move_custom_docperm_feature
+av_tools.patches.custom_fields.custom_docperm_custom_fields
