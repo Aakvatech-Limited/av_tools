@@ -12,5 +12,6 @@ av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides
 av_tools.patches.v1_0.migrate_ai_integration_site_data
 av_tools.patches.v1_0.migrate_generic_technical_admin_reports
 av_tools.patches.v1_0.migrate_report_extension_site_data
+av_tools.patches.v1_0.move_price_change_and_dynamic_price_list_feature
 av_tools.patches.v1_0.move_delivery_exchange_doctypes
 av_tools.patches.v1_0.move_inter_company_transfer_feature
