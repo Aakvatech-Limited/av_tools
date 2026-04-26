@@ -18,7 +18,9 @@
   "buying_settings_section",
   "target_warehouse_based_price_list",
   "section_break_inter_company",
-  "allow_inter_company_stock_transfer"
+  "allow_inter_company_stock_transfer",
+  "permissions_settings_section",
+  "enable_dependent_auto_permission"
  ],
  "fields": [
   {
@@ -112,6 +114,18 @@
    "fieldname": "allow_inter_company_stock_transfer",
    "fieldtype": "Check",
    "label": "Allow Inter company stock transfer"
+  },
+  {
+   "fieldname": "permissions_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Permissions"
+  },
+  {
+   "default": "1",
+   "description": "When a Custom DocPerm is added for a role, automatically grant SELECT access on doctypes referenced via Link/Table fields.",
+   "fieldname": "enable_dependent_auto_permission",
+   "fieldtype": "Check",
+   "label": "Enable Dependent Auto Permission"
   }
  ],
  "index_web_pages_for_search": 1,

@@ -185,6 +185,9 @@ doc_events = {
 	},
 	"Purchase Invoice": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
 	"Purchase Receipt": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
+	"Custom DocPerm": {
+		"validate": "av_tools.av_tools_hooks.custom_docperm.grant_dependant_access",
+	},
 	"*": {
 		"validate": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"onload": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
