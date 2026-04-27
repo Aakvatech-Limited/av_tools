@@ -26,3 +26,4 @@ av_tools.patches.v1_0.move_csf_tz_print_formats
 av_tools.patches.v1_0.move_salary_register_reports
 av_tools.patches.v1_0.move_financial_and_trade_reports
 av_tools.patches.v1_0.move_hr_access_and_loan_reports
+av_tools.patches.v1_0.move_finance_and_education_doctypes
