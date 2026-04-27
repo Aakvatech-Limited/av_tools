@@ -57,6 +57,7 @@ doctype_js = {
 		"weigh_bridge/doctype/purchase_order_weighbridge_ticket.js",
 		"av_tools/purchase_order.js",
 	],
+	"Stock Entry": "av_tools/stock_entry.js",
 	"Purchase Invoice": "weigh_bridge/doctype/purchase_invoice_weighbridge_ticket.js",
 	"Purchase Receipt": "weigh_bridge/doctype/purchase_receipt_weighbridge_ticket.js",
 	"Customer": "authotp/api/customer.js",
@@ -103,13 +104,16 @@ doctype_js = {
 after_install = [
 	"av_tools.weigh_bridge.custom_fields.setup_custom_fields",
 	"av_tools.patches.custom_fields.auth_otp_custom_fields.execute",
+	"av_tools.utils.create_custom_fields.execute",
+	"av_tools.utils.create_property_setter.execute",
 ]
 after_migrate = [
 	"av_tools.weigh_bridge.custom_fields.setup_custom_fields",
-	"av_tools.patches.custom_fields.auth_otp_custom_fields.execute",
+	"av_tools.utils.create_custom_fields.execute",
+	"av_tools.utils.create_property_setter.execute",
+	"av_tools.patches.v1_0.migrate_ai_integration_site_data.execute",
+	"av_tools.patches.v1_0.migrate_report_extension_site_data.execute",
 ]
-# after_install = "av_tools.install.after_install"
-after_migrate = "av_tools.after_migrate.run_after_migrate"
 
 # Uninstallation
 # ------------
