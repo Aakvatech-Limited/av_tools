@@ -89,14 +89,15 @@ jobs:
       - name: Install
         working-directory: /home/runner/frappe-bench
         run: |
-          bench get-app --skip-assets erpnext --branch version-15
+          bench get-app --skip-assets payments --branch version-15
+          bench get-app --skip-assets erpnext --branch version-15 --resolve-deps
           bench get-app --skip-assets hrms --branch version-15
-          bench get-app --skip-assets av_tools $GITHUB_WORKSPACE
+          bench get-app --skip-assets av_tools $GITHUB_WORKSPACE --resolve-deps
           bench setup requirements --dev
           bench new-site --db-root-password root --admin-password admin test_site
+          bench --site test_site install-app payments
           bench --site test_site install-app erpnext
           bench --site test_site install-app hrms
-          bench --site test_site execute erpnext.setup.utils.before_tests
           bench --site test_site install-app av_tools
         env:
           CI: 'Yes'
@@ -106,6 +107,6 @@ jobs:
         run: |
           bench --site test_site set-config allow_tests true
           bench --site test_site execute erpnext.setup.utils.before_tests
-          bench --site test_site run-tests --app av_tools
+          bench --site test_site run-parallel-tests --app av_tools --total-builds 1 --build-number 1
         env:
           TYPE: server
