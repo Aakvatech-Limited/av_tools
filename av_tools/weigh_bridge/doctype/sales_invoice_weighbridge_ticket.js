@@ -78,6 +78,8 @@ const apply_ticket_items = (frm, ticket) => {
     if (row.uom) {
       child.uom = row.uom;
     }
+    if (row.sales_order) child.sales_order = row.sales_order;
+    if (row.so_detail) child.so_detail = row.so_detail;
   });
   frm.refresh_field("items");
 };

@@ -142,15 +142,36 @@ def get_ticket_items(ticket, doctype=None, document_name=None):
         doc.target_document_type = doctype
         doc.target_document_reference = document_name
 
-    items = [
-        {
-            "item_code": row.item_code,
+    so_name = None
+    so_details_by_item_code = {}
+    if doc.document_type == "Sales Order" and doc.document_reference:
+        so_name = doc.document_reference
+        so = frappe.get_doc("Sales Order", so_name)
+        so.check_permission("read")
+        for row in (so.get("items") or []):
+            item_code = (row.get("item_code") or "").strip()
+            so_detail = row.get("name")
+            if not item_code or not so_detail:
+                continue
+            so_details_by_item_code.setdefault(item_code, []).append(so_detail)
+
+    items = []
+    for row in (doc.items or []):
+        item_code = row.item_code
+        if not item_code:
+            continue
+        item = {
+            "item_code": item_code,
             "item_name": row.item_name,
             "qty": row.qty,
             "uom": row.uom,
         }
-        for row in (doc.items or [])
-    ]
+        if so_name:
+            item["sales_order"] = so_name
+            details = so_details_by_item_code.get(item_code) or []
+            if details:
+                item["so_detail"] = details.pop(0)
+        items.append(item)
 
     return {
         "items": items,

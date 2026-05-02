@@ -15,7 +15,6 @@
   "document_reference",
   "target_document_type",
   "target_document_reference",
-  "status",
   "column_break_tmkr",
   "posting_date",
   "posting_time",
@@ -45,15 +44,6 @@
    "options": "WBT-.YYYY.-.#####"
   },
   {
-   "default": "Draft",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Status",
-   "options": "Draft\nWeighing\nCompleted\nCancelled",
-   "read_only": 1
-  },
-  {
    "default": "Today",
    "fieldname": "posting_date",
    "fieldtype": "Date",
@@ -76,7 +66,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Document Type",
-   "options": "Sales Invoice\nDelivery Note\nSales Order\nPurchase Order\nPurchase Invoice\nPurchase Receipt"
+   "options": "\nSales Invoice\nDelivery Note\nSales Order\nPurchase Order\nPurchase Invoice\nPurchase Receipt"
   },
   {
    "fieldname": "document_reference",
@@ -225,7 +215,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-03-30 10:18:53.261120",
+ "modified": "2026-05-02 22:16:08.626528",
  "modified_by": "Administrator",
  "module": "Weigh Bridge",
  "name": "Weighbridge Ticket",
