@@ -22,6 +22,7 @@
   "tare_weight",
   "tare_manual",
   "read_tare",
+  "use_vehicle_tare",
   "column_break_weights",
   "gross_weight",
   "gross_manual",
@@ -190,6 +191,12 @@
    "fieldname": "read_tare",
    "fieldtype": "Button",
    "label": "Read Tare"
+  },
+  {
+   "depends_on": "eval: doc.docstatus != 1",
+   "fieldname": "use_vehicle_tare",
+   "fieldtype": "Button",
+   "label": "Use Vehicle Tare"
   },
   {
    "depends_on": "eval: doc.docstatus != 1",

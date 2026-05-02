@@ -374,7 +374,33 @@ const read_weight_client = (frm, target_field, time_field) => {
 const toggle_read_buttons = (frm) => {
   const hasItems = (frm.doc.items || []).length > 0;
   frm.set_df_property("read_tare", "read_only", !hasItems);
+  frm.set_df_property("use_vehicle_tare", "read_only", !hasItems);
   frm.set_df_property("read_gross", "read_only", !hasItems);
+};
+
+const apply_vehicle_tare = (frm) => {
+  if (!frm.doc.vehicle) {
+    frappe.msgprint(__("Please select a Vehicle first."));
+    return;
+  }
+
+  frappe.db
+    .get_value("Vehicle", frm.doc.vehicle, "default_tare_weight")
+    .then((r) => {
+      const weight = flt(r && r.message ? r.message.default_tare_weight : null);
+      if (!weight) {
+        frappe.msgprint(__("Selected Vehicle has no Default Tare Weight."));
+        return;
+      }
+
+      return Promise.resolve(frm.set_value("tare_manual", 1))
+        .then(() => frm.set_value("tare_weight", weight))
+        .then(() => frm.set_value("tare_time", frappe.datetime.now_datetime()))
+        .then(() => {
+          set_net_weight(frm);
+          return save_after_weight_capture(frm);
+        });
+    });
 };
 
 frappe.ui.form.on("Weighbridge Ticket", {
@@ -411,6 +437,9 @@ frappe.ui.form.on("Weighbridge Ticket", {
   },
   read_tare(frm) {
     read_weight_client(frm, "tare_weight", "tare_time");
+  },
+  use_vehicle_tare(frm) {
+    apply_vehicle_tare(frm);
   },
   read_gross(frm) {
     read_weight_client(frm, "gross_weight", "gross_time");
