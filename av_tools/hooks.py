@@ -63,6 +63,7 @@ doctype_js = {
 	"Purchase Invoice": "weigh_bridge/doctype/purchase_invoice_weighbridge_ticket.js",
 	"Purchase Receipt": "weigh_bridge/doctype/purchase_receipt_weighbridge_ticket.js",
 	"Customer": "authotp/api/customer.js",
+	"Account": "av_tools/account.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -193,6 +194,10 @@ doc_events = {
 	"Purchase Receipt": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
 	"Custom DocPerm": {
 		"validate": "av_tools.av_tools_hooks.custom_docperm.grant_dependant_access",
+	},
+	"Account": {
+		"on_update": "av_tools.av_tools_hooks.account.create_indirect_expense_item",
+		"after_insert": "av_tools.av_tools_hooks.account.create_indirect_expense_item",
 	},
 	"*": {
 		"validate": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
