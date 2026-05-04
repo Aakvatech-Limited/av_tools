@@ -1,5 +1,10 @@
-$(document).on("app_ready", function () {
-	if (!erpnext || !erpnext.financial_statements) return;
+function install_financial_statements_override() {
+	if (typeof erpnext === "undefined" || !erpnext.financial_statements) {
+		return false;
+	}
+	if (erpnext.financial_statements.__av_tools_override_installed) {
+		return true;
+	}
 
 	const original_open_general_ledger = erpnext.financial_statements.open_general_ledger;
 
@@ -39,4 +44,20 @@ $(document).on("app_ready", function () {
 			});
 		}
 	};
+
+	erpnext.financial_statements.__av_tools_override_installed = true;
+	return true;
+}
+
+$(document).on("app_ready startup", install_financial_statements_override);
+
+$(function () {
+	if (install_financial_statements_override()) return;
+	let attempts = 0;
+	const interval = setInterval(function () {
+		attempts++;
+		if (install_financial_statements_override() || attempts > 50) {
+			clearInterval(interval);
+		}
+	}, 200);
 });
