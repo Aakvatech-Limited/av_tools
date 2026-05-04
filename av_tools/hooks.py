@@ -58,6 +58,7 @@ doctype_js = {
 		"av_tools/purchase_order.js",
 	],
 	"Stock Entry": "av_tools/stock_entry.js",
+	"Landed Cost Voucher": "av_tools/landed_cost_voucher.js",
 	"Purchase Invoice": "weigh_bridge/doctype/purchase_invoice_weighbridge_ticket.js",
 	"Purchase Receipt": "weigh_bridge/doctype/purchase_receipt_weighbridge_ticket.js",
 	"Customer": "authotp/api/customer.js",
@@ -100,7 +101,7 @@ doctype_js = {
 # Installation
 # ------------
 
-# before_install = "av_tools.install.before_install"
+before_install = "av_tools.install.before_install"
 after_install = [
 	"av_tools.weigh_bridge.custom_fields.setup_custom_fields",
 	"av_tools.patches.custom_fields.auth_otp_custom_fields.execute",
@@ -187,8 +188,21 @@ doc_events = {
 			"av_tools.av_tools_hooks.purchase_order.target_warehouse_based_price_list",
 		]
 	},
-	"Purchase Invoice": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
+	"Purchase Invoice": {
+		"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket",
+		"on_submit": "av_tools.av_tools_hooks.foreign_import.create_import_tracker",
+		"on_cancel": "av_tools.av_tools_hooks.foreign_import.cancel_import_tracker",
+	},
 	"Purchase Receipt": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
+	"Payment Entry": {
+		"on_submit": "av_tools.av_tools_hooks.foreign_import.link_payment_to_import_tracker",
+		"on_cancel": "av_tools.av_tools_hooks.foreign_import.unlink_payment_from_import_tracker",
+	},
+	"Landed Cost Voucher": {
+		"validate": "av_tools.av_tools_hooks.landed_cost_voucher.total_amount",
+		"on_submit": "av_tools.av_tools_hooks.foreign_import.link_lcv_to_import_tracker",
+		"on_cancel": "av_tools.av_tools_hooks.foreign_import.unlink_lcv_from_import_tracker",
+	},
 	"Custom DocPerm": {
 		"validate": "av_tools.av_tools_hooks.custom_docperm.grant_dependant_access",
 	},
@@ -228,6 +242,7 @@ scheduler_events = {
 	},
 	"daily": [
 		"av_tools.av_tools.doctype.visibility.visibility.trigger_daily_alerts",
+		"av_tools.av_tools_hooks.foreign_import.update_pending_transactions",
 	]
 }
 
