@@ -20,7 +20,9 @@
   "section_break_inter_company",
   "allow_inter_company_stock_transfer",
   "permissions_settings_section",
-  "enable_dependent_auto_permission"
+  "enable_dependent_auto_permission",
+  "indirect_expense_item_section",
+  "enable_indirect_expense_item_creation"
  ],
  "fields": [
   {
@@ -126,6 +128,18 @@
    "fieldname": "enable_dependent_auto_permission",
    "fieldtype": "Check",
    "label": "Enable Dependent Auto Permission"
+  },
+  {
+   "fieldname": "indirect_expense_item_section",
+   "fieldtype": "Section Break",
+   "label": "Indirect Expense Item"
+  },
+  {
+   "default": "0",
+   "description": "When enabled, saving an Account whose parent contains \"Indirect Expenses\" will auto-create (or reuse) an Item with the same name and link it via Account.item.",
+   "fieldname": "enable_indirect_expense_item_creation",
+   "fieldtype": "Check",
+   "label": "Enable Indirect Expense Item Auto-Creation"
   }
  ],
  "index_web_pages_for_search": 1,
