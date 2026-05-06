@@ -1,0 +1,87 @@
+{
+ "actions": [],
+ "creation": "2026-05-06 13:12:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "finding",
+  "severity",
+  "column_break_01",
+  "recommendation",
+  "status",
+  "section_break_resolution",
+  "resolution_date",
+  "column_break_02",
+  "resolution_notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "finding",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Finding",
+   "reqd": 1
+  },
+  {
+   "fieldname": "severity",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Severity",
+   "options": "\nCritical\nMajor\nMinor\nObservation",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_01",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "recommendation",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Recommendation"
+  },
+  {
+   "default": "Open",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Open\nIn Progress\nResolved"
+  },
+  {
+   "depends_on": "eval:doc.status=='Resolved'",
+   "fieldname": "section_break_resolution",
+   "fieldtype": "Section Break",
+   "label": "Resolution"
+  },
+  {
+   "fieldname": "resolution_date",
+   "fieldtype": "Date",
+   "label": "Resolution Date",
+   "mandatory_depends_on": "eval:doc.status=='Resolved'"
+  },
+  {
+   "fieldname": "column_break_02",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "resolution_notes",
+   "fieldtype": "Small Text",
+   "label": "Resolution Notes"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-06 13:50:17.947745",
+ "modified_by": "Administrator",
+ "module": "Compliance",
+ "name": "Inspection Finding",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
