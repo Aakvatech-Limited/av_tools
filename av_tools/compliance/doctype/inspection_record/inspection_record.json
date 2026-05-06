@@ -1,0 +1,316 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-05-06 13:12:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "details_tab",
+  "inspection_details_section",
+  "inspection_type",
+  "inspection_title",
+  "column_break_details",
+  "inspection_date",
+  "inspection_time",
+  "inspector_section",
+  "inspector_name",
+  "inspector_organization",
+  "column_break_inspector",
+  "inspector_contact",
+  "inspector_id_number",
+  "premises_section",
+  "company",
+  "branch",
+  "column_break_premises",
+  "license_register",
+  "naming_series",
+  "results_tab",
+  "results_section",
+  "inspection_result",
+  "column_break_results",
+  "next_inspection_due",
+  "findings_section",
+  "findings",
+  "observations_section",
+  "overall_observations",
+  "actions_section",
+  "corrective_actions",
+  "column_break_actions",
+  "corrective_action_deadline",
+  "certificate_tab",
+  "certificate_section",
+  "certificate_received",
+  "certificate_number",
+  "column_break_certificate",
+  "certificate_attachment",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Details"
+  },
+  {
+   "fieldname": "inspection_details_section",
+   "fieldtype": "Section Break",
+   "label": "Inspection Details"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "INSP-.YYYY.-.#####",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "inspection_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Inspection Type",
+   "options": "Inspection Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "inspection_title",
+   "fieldtype": "Data",
+   "label": "Inspection Title"
+  },
+  {
+   "fieldname": "column_break_details",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "inspection_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Inspection Date",
+   "reqd": 1
+  },
+  {
+   "default": "now",
+   "fieldname": "inspection_time",
+   "fieldtype": "Time",
+   "label": "Inspection Time"
+  },
+  {
+   "fieldname": "inspector_section",
+   "fieldtype": "Section Break",
+   "label": "Inspector Information"
+  },
+  {
+   "fieldname": "inspector_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Inspector Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "inspector_organization",
+   "fieldtype": "Data",
+   "label": "Inspector Organization"
+  },
+  {
+   "fieldname": "column_break_inspector",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "inspector_contact",
+   "fieldtype": "Data",
+   "label": "Inspector Contact",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "inspector_id_number",
+   "fieldtype": "Data",
+   "label": "Inspector ID / Badge Number"
+  },
+  {
+   "fieldname": "premises_section",
+   "fieldtype": "Section Break",
+   "label": "Premises & Company"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Branch / Premises",
+   "options": "Branch"
+  },
+  {
+   "fieldname": "column_break_premises",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "license_register",
+   "fieldtype": "Link",
+   "label": "Related License Register",
+   "options": "License Register",
+   "search_index": 1
+  },
+  {
+   "fieldname": "results_tab",
+   "fieldtype": "Tab Break",
+   "label": "Results & Findings"
+  },
+  {
+   "fieldname": "results_section",
+   "fieldtype": "Section Break",
+   "label": "Inspection Result"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "inspection_result",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Inspection Result",
+   "options": "Pending\nPass\nFail\nConditional",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_results",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "next_inspection_due",
+   "fieldtype": "Date",
+   "label": "Next Inspection Due"
+  },
+  {
+   "fieldname": "findings_section",
+   "fieldtype": "Section Break",
+   "label": "Findings"
+  },
+  {
+   "fieldname": "findings",
+   "fieldtype": "Table",
+   "label": "Findings",
+   "options": "Inspection Finding"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "observations_section",
+   "fieldtype": "Section Break",
+   "label": "Overall Observations"
+  },
+  {
+   "fieldname": "overall_observations",
+   "fieldtype": "Text Editor",
+   "label": "Overall Observations"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "actions_section",
+   "fieldtype": "Section Break",
+   "label": "Corrective Actions"
+  },
+  {
+   "fieldname": "corrective_actions",
+   "fieldtype": "Text Editor",
+   "label": "Corrective Actions Required"
+  },
+  {
+   "fieldname": "column_break_actions",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "corrective_action_deadline",
+   "fieldtype": "Date",
+   "label": "Corrective Action Deadline"
+  },
+  {
+   "fieldname": "certificate_tab",
+   "fieldtype": "Tab Break",
+   "label": "Certificate"
+  },
+  {
+   "fieldname": "certificate_section",
+   "fieldtype": "Section Break",
+   "label": "Certificate Details"
+  },
+  {
+   "default": "0",
+   "fieldname": "certificate_received",
+   "fieldtype": "Check",
+   "label": "Certificate Received"
+  },
+  {
+   "depends_on": "eval:doc.certificate_received",
+   "fieldname": "certificate_number",
+   "fieldtype": "Data",
+   "label": "Certificate Number"
+  },
+  {
+   "fieldname": "column_break_certificate",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.certificate_received",
+   "fieldname": "certificate_attachment",
+   "fieldtype": "Attach",
+   "label": "Certificate Attachment"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Inspection Record",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-05-06 13:47:51.783413",
+ "modified_by": "Administrator",
+ "module": "Compliance",
+ "name": "Inspection Record",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "All",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "inspection_title",
+ "track_changes": 1
+}
