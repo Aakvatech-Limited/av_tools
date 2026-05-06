@@ -3,3 +3,4 @@ Weigh Bridge
 AuthOTP
 Feedback
 AI Integration
+Compliance
