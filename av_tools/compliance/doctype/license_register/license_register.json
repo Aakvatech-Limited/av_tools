@@ -1,0 +1,262 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-05-06 13:12:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "details_tab",
+  "license_details_section",
+  "license_type",
+  "license_name",
+  "license_number",
+  "column_break_details",
+  "company",
+  "branch",
+  "fee_paid",
+  "column_break_ncpn",
+  "status",
+  "posting_date",
+  "posting_time",
+  "authority_dates_section",
+  "issuing_authority",
+  "issue_date",
+  "expiry_date",
+  "column_break_dates",
+  "reminder_days_before",
+  "notify_role",
+  "notes_section",
+  "license_attachment",
+  "naming_series",
+  "amended_from",
+  "column_break_mnbd",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Details"
+  },
+  {
+   "fieldname": "license_details_section",
+   "fieldtype": "Section Break",
+   "label": "License Details"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "LIC-.YYYY.-.#####",
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "license_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "License Type",
+   "options": "License Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "license_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "License Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_details",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "license_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "License / Certificate Number",
+   "reqd": 1
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Active\nExpired\nPending Renewal\nSuspended\nCancelled"
+  },
+  {
+   "fieldname": "authority_dates_section",
+   "fieldtype": "Section Break",
+   "label": "Authority & Dates"
+  },
+  {
+   "fieldname": "issuing_authority",
+   "fieldtype": "Data",
+   "label": "Issuing Authority",
+   "reqd": 1
+  },
+  {
+   "fieldname": "issue_date",
+   "fieldtype": "Date",
+   "label": "Issue Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_dates",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "expiry_date",
+   "fieldtype": "Date",
+   "label": "Expiry Date",
+   "reqd": 1
+  },
+  {
+   "default": "30",
+   "description": "Number of days before expiry to trigger a reminder notification",
+   "fieldname": "reminder_days_before",
+   "fieldtype": "Int",
+   "label": "Reminder Days Before Expiry",
+   "mandatory_depends_on": "eval: doc.reminder_days_before"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Branch / Premises",
+   "options": "Branch"
+  },
+  {
+   "fieldname": "fee_paid",
+   "fieldtype": "Currency",
+   "label": "Fee Paid"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text Editor",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "license_attachment",
+   "fieldtype": "Attach",
+   "label": "License / Certificate Attachment"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "License Register",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_ncpn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date",
+   "read_only": 1
+  },
+  {
+   "default": "now",
+   "fieldname": "posting_time",
+   "fieldtype": "Time",
+   "label": "Posting Time",
+   "read_only": 1
+  },
+  {
+   "description": "A role for users who will recieve reminder notification",
+   "fieldname": "notify_role",
+   "fieldtype": "Link",
+   "label": "Notify Role",
+   "options": "Role"
+  },
+  {
+   "fieldname": "column_break_mnbd",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "links": [
+  {
+   "link_doctype": "Inspection Record",
+   "link_fieldname": "license_register"
+  }
+ ],
+ "modified": "2026-05-06 14:19:05.322331",
+ "modified_by": "Administrator",
+ "module": "Compliance",
+ "name": "License Register",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "All",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [
+  {
+   "color": "Green",
+   "title": "Active"
+  },
+  {
+   "color": "Red",
+   "title": "Expired"
+  },
+  {
+   "color": "Orange",
+   "title": "Pending Renewal"
+  },
+  {
+   "color": "Yellow",
+   "title": "Suspended"
+  },
+  {
+   "color": "Pink",
+   "title": "Cancelled"
+  }
+ ],
+ "title_field": "license_name",
+ "track_changes": 1
+}
