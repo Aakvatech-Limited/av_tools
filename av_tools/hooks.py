@@ -235,6 +235,7 @@ scheduler_events = {
 	},
 	"daily": [
 		"av_tools.av_tools.doctype.visibility.visibility.trigger_daily_alerts",
+		"av_tools.compliance.doctype.license_register.license_register.update_license_statuses",
 	]
 }
 
