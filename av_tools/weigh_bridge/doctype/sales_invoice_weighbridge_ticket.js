@@ -84,7 +84,7 @@ const apply_ticket_items = (frm, ticket) => {
     const ticketRow = matches.shift();
 
     if (ticketRow.qty != null) docRow.qty = ticketRow.qty;
-    if (ticketRow.uom && docRow.uom !== undefined) docRow.uom = ticketRow.uom;
+    // Keep mapped UOM to satisfy previous-doc validation (SO/DN rows).
 
     if (ticketRow.sales_order && docRow.sales_order !== undefined) {
       docRow.sales_order = ticketRow.sales_order;
@@ -102,7 +102,7 @@ const apply_ticket_items = (frm, ticket) => {
       child.item_code = row.item_code;
       if (row.item_name) child.item_name = row.item_name;
       if (row.qty != null) child.qty = row.qty;
-      if (row.uom) child.uom = row.uom;
+      // Don't force UOM on target docs; keep system defaults / mapped values.
       if (row.sales_order) child.sales_order = row.sales_order;
       if (row.so_detail) child.so_detail = row.so_detail;
       keep.push(child);

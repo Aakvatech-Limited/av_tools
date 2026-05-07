@@ -1,7 +1,6 @@
 // Copyright (c) 2026, Aakvatech and contributors
 // For license information, please see license.txt
 
-const DEFAULT_UOM = "Kg";
 const CREATE_TARGET_DOCTYPES = [
   "Sales Invoice",
   "Delivery Note",
@@ -21,6 +20,32 @@ const CREATE_TARGETS_BY_SOURCE = {
 const SALES_DOCTYPES = ["Sales Invoice", "Delivery Note", "Sales Order"];
 const PURCHASE_DOCTYPES = ["Purchase Order", "Purchase Invoice", "Purchase Receipt"];
 
+const KG_UOM = "Kg";
+const kgToUomFactorCache = {};
+
+const get_kg_to_uom_factor = (uom) => {
+  const target = (uom || "").trim();
+  if (!target || target.toLowerCase() === KG_UOM.toLowerCase()) {
+    return Promise.resolve(1);
+  }
+
+  if (kgToUomFactorCache[target] != null) {
+    return Promise.resolve(kgToUomFactorCache[target]);
+  }
+
+  return new Promise((resolve) => {
+    frappe.call({
+      method: "av_tools.weigh_bridge.api.get_uom_conversion_factor",
+      args: { from_uom: KG_UOM, to_uom: target },
+      callback: (r) => {
+        const factor = r && r.message ? flt(r.message.conversion_factor) : 1;
+        kgToUomFactorCache[target] = factor || 1;
+        resolve(kgToUomFactorCache[target]);
+      },
+    });
+  });
+};
+
 const distribute_net_weight = (frm, netWeight) => {
   const items = frm.doc.items || [];
   if (!items.length) {
@@ -32,11 +57,16 @@ const distribute_net_weight = (frm, netWeight) => {
   const perItem = items.length ? flt(netWeight) / items.length : 0;
 
   items.forEach((row) => {
-    const qty = useProportional
+    const kgQty = useProportional
       ? (flt(row.qty || 0) / totalQty) * flt(netWeight)
       : perItem;
-    frappe.model.set_value(row.doctype, row.name, "qty", qty);
-    frappe.model.set_value(row.doctype, row.name, "uom", DEFAULT_UOM);
+
+    frappe.model.set_value(row.doctype, row.name, "qty_in_kg", kgQty);
+
+    get_kg_to_uom_factor(row.uom).then((factor) => {
+      const converted = flt(kgQty) * flt(factor || 1);
+      frappe.model.set_value(row.doctype, row.name, "qty", converted);
+    });
   });
 };
 
@@ -464,5 +494,17 @@ frappe.ui.form.on("Weighbridge Ticket", {
   },
   gross_weight(frm) {
     set_net_weight(frm);
+  },
+});
+
+frappe.ui.form.on("Weighbridge Ticket Item", {
+  uom(frm, cdt, cdn) {
+    const row = locals[cdt][cdn];
+    if (!row) return;
+    const kgQty = flt(row.qty_in_kg || 0);
+    if (!kgQty) return;
+    get_kg_to_uom_factor(row.uom).then((factor) => {
+      frappe.model.set_value(cdt, cdn, "qty", kgQty * flt(factor || 1));
+    });
   },
 });

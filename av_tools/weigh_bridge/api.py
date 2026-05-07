@@ -28,6 +28,24 @@ def _get_settings():
     return settings
 
 
+@frappe.whitelist()
+def get_uom_conversion_factor(from_uom, to_uom):
+    """Return multiplier to convert qty in from_uom -> to_uom.
+
+    Uses ERPNext UOM Conversion Factor rules (direct, inverse, intermediate).
+    """
+    from_uom = (from_uom or "").strip()
+    to_uom = (to_uom or "").strip()
+    if not from_uom or not to_uom:
+        frappe.throw("From UOM and To UOM are required.")
+    if from_uom == to_uom:
+        return {"conversion_factor": 1.0}
+
+    from erpnext.stock.doctype.item.item import get_uom_conv_factor
+
+    return {"conversion_factor": flt(get_uom_conv_factor(from_uom, to_uom))}
+
+
 def _apply_ticket_items_to_target(target_doc, ticket_doc):
     """Mutate target_doc.items to match ticket items (item_code + qty + uom),
     while preserving other mapped fields on existing rows.
@@ -52,10 +70,16 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
             continue
 
         ticket_row = matches.pop(0)
-        if ticket_row.get("qty") is not None:
+        if ticket_row.get("qty_in_kg") is not None:
+            # Convert from kg to the row's existing uom (keep uom to satisfy previous-doc validation).
+            if row.get("uom") and row.uom.lower() != "kg":
+                from erpnext.stock.doctype.item.item import get_uom_conv_factor
+
+                row.qty = flt(ticket_row.get("qty_in_kg")) * flt(get_uom_conv_factor("Kg", row.uom))
+            else:
+                row.qty = flt(ticket_row.get("qty_in_kg"))
+        elif ticket_row.get("qty") is not None:
             row.qty = flt(ticket_row.get("qty"))
-        if ticket_row.get("uom"):
-            row.uom = ticket_row.get("uom")
 
         # Optional sales order link fields (present on some sales doctypes).
         if ticket_row.get("sales_order") and hasattr(row, "sales_order"):
@@ -72,10 +96,18 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
             child.item_code = ticket_row.get("item_code")
             if ticket_row.get("item_name"):
                 child.item_name = ticket_row.get("item_name")
-            if ticket_row.get("qty") is not None:
+            if ticket_row.get("qty_in_kg") is not None:
+                if child.get("uom") and child.uom.lower() != "kg":
+                    from erpnext.stock.doctype.item.item import get_uom_conv_factor
+
+                    child.qty = flt(ticket_row.get("qty_in_kg")) * flt(
+                        get_uom_conv_factor("Kg", child.uom)
+                    )
+                else:
+                    child.qty = flt(ticket_row.get("qty_in_kg"))
+            elif ticket_row.get("qty") is not None:
                 child.qty = flt(ticket_row.get("qty"))
-            if ticket_row.get("uom"):
-                child.uom = ticket_row.get("uom")
+            # Don't force UOM on mapped targets; for non-mapped adds, keep system defaults.
             if ticket_row.get("sales_order") and hasattr(child, "sales_order"):
                 child.sales_order = ticket_row.get("sales_order")
             if ticket_row.get("so_detail") and hasattr(child, "so_detail"):
