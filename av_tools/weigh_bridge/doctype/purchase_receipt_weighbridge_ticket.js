@@ -65,20 +65,40 @@ const apply_ticket_items = (frm, ticket) => {
     return;
   }
 
-  frm.clear_table("items");
+  const byItemCode = {};
   items.forEach((row) => {
-    const child = frm.add_child("items");
-    child.item_code = row.item_code;
-    if (row.item_name) {
-      child.item_name = row.item_name;
-    }
-    if (row.qty != null) {
-      child.qty = row.qty;
-    }
-    if (row.uom) {
-      child.uom = row.uom;
-    }
+    const itemCode = (row.item_code || "").trim();
+    if (!itemCode) return;
+    byItemCode[itemCode] = byItemCode[itemCode] || [];
+    byItemCode[itemCode].push(row);
   });
+
+  const keep = [];
+  (frm.doc.items || []).forEach((docRow) => {
+    const itemCode = (docRow.item_code || "").trim();
+    const matches = itemCode ? byItemCode[itemCode] : null;
+    if (!matches || !matches.length) {
+      return;
+    }
+
+    const ticketRow = matches.shift();
+    if (ticketRow.qty != null) docRow.qty = ticketRow.qty;
+    if (ticketRow.uom && docRow.uom !== undefined) docRow.uom = ticketRow.uom;
+    keep.push(docRow);
+  });
+
+  Object.values(byItemCode).forEach((pending) => {
+    (pending || []).forEach((row) => {
+      const child = frm.add_child("items");
+      child.item_code = row.item_code;
+      if (row.item_name) child.item_name = row.item_name;
+      if (row.qty != null) child.qty = row.qty;
+      if (row.uom) child.uom = row.uom;
+      keep.push(child);
+    });
+  });
+
+  frm.doc.items = keep;
   frm.refresh_field("items");
 };
 
