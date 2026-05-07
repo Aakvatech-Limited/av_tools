@@ -111,6 +111,21 @@ const add_create_buttons = (frm) => {
     frm.add_custom_button(
       __(targetDoctype),
       () => {
+        const can_map =
+          ["Sales Invoice", "Purchase Invoice"].includes(targetDoctype) &&
+          frm.doc.document_type &&
+          frm.doc.document_reference;
+
+        if (can_map) {
+          frappe.model.open_mapped_doc({
+            method: "av_tools.weigh_bridge.api.make_target_from_ticket",
+            source_name: frm.doc.name,
+            args: { target_doctype: targetDoctype },
+            freeze_message: __("Creating {0}...", [targetDoctype]),
+          });
+          return;
+        }
+
         frappe.new_doc(targetDoctype, get_create_route_options(frm, targetDoctype));
       },
       __("Create")

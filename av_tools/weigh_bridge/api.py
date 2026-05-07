@@ -28,6 +28,129 @@ def _get_settings():
     return settings
 
 
+def _apply_ticket_items_to_target(target_doc, ticket_doc):
+    """Mutate target_doc.items to match ticket items (item_code + qty + uom),
+    while preserving other mapped fields on existing rows.
+    """
+
+    ticket_items = ticket_doc.get("items") or []
+    if not ticket_items:
+        frappe.throw("Selected Weighbridge Ticket has no items.")
+
+    ticket_by_item_code = {}
+    for row in ticket_items:
+        item_code = (row.get("item_code") or "").strip()
+        if not item_code:
+            continue
+        ticket_by_item_code.setdefault(item_code, []).append(row)
+
+    kept_rows = []
+    for row in (target_doc.get("items") or []):
+        item_code = (row.get("item_code") or "").strip()
+        matches = ticket_by_item_code.get(item_code) if item_code else None
+        if not matches:
+            continue
+
+        ticket_row = matches.pop(0)
+        if ticket_row.get("qty") is not None:
+            row.qty = flt(ticket_row.get("qty"))
+        if ticket_row.get("uom"):
+            row.uom = ticket_row.get("uom")
+
+        # Optional sales order link fields (present on some sales doctypes).
+        if ticket_row.get("sales_order") and hasattr(row, "sales_order"):
+            row.sales_order = ticket_row.get("sales_order")
+        if ticket_row.get("so_detail") and hasattr(row, "so_detail"):
+            row.so_detail = ticket_row.get("so_detail")
+
+        kept_rows.append(row)
+
+    # Add remaining ticket items that didn't exist on mapped target.
+    for pending_rows in ticket_by_item_code.values():
+        for ticket_row in pending_rows or []:
+            child = target_doc.append("items", {})
+            child.item_code = ticket_row.get("item_code")
+            if ticket_row.get("item_name"):
+                child.item_name = ticket_row.get("item_name")
+            if ticket_row.get("qty") is not None:
+                child.qty = flt(ticket_row.get("qty"))
+            if ticket_row.get("uom"):
+                child.uom = ticket_row.get("uom")
+            if ticket_row.get("sales_order") and hasattr(child, "sales_order"):
+                child.sales_order = ticket_row.get("sales_order")
+            if ticket_row.get("so_detail") and hasattr(child, "so_detail"):
+                child.so_detail = ticket_row.get("so_detail")
+            kept_rows.append(child)
+
+    target_doc.set("items", kept_rows)
+
+
+@frappe.whitelist()
+def make_target_from_ticket(source_name):
+    """Create a mapped target document from a submitted Weighbridge Ticket.
+
+    Uses standard ERPNext mapper methods to pull all defaults, then overrides only
+    ticket-controlled fields (items qty/uom + links), preserving everything else.
+    """
+
+    args = getattr(frappe.flags, "args", None) or {}
+    target_doctype = (args.get("target_doctype") or "").strip()
+    if not target_doctype:
+        frappe.throw("Target Doctype is required.")
+
+    ticket = frappe.get_doc("Weighbridge Ticket", source_name)
+    if ticket.docstatus != 1:
+        frappe.throw("Weighbridge Ticket must be submitted.")
+
+    if not ticket.document_type or not ticket.document_reference:
+        frappe.throw("Document Type and Document Reference are required on Weighbridge Ticket.")
+
+    source_type = ticket.document_type
+    source_name = ticket.document_reference
+
+    if source_type == "Sales Order" and target_doctype == "Sales Invoice":
+        from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice
+
+        target = make_sales_invoice(source_name)
+    elif source_type == "Delivery Note" and target_doctype == "Sales Invoice":
+        from erpnext.stock.doctype.delivery_note.delivery_note import make_sales_invoice
+
+        target = make_sales_invoice(source_name)
+    elif source_type == "Purchase Order" and target_doctype == "Purchase Invoice":
+        from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice
+
+        target = make_purchase_invoice(source_name)
+    elif source_type == "Purchase Receipt" and target_doctype == "Purchase Invoice":
+        from erpnext.stock.doctype.purchase_receipt.purchase_receipt import make_purchase_invoice
+
+        target = make_purchase_invoice(source_name)
+    else:
+        frappe.throw(f"Unsupported mapping: {source_type} -> {target_doctype}")
+
+    # Link ticket so existing validation + UI continue to work.
+    if target.meta.has_field("weighbridge_ticket"):
+        target.weighbridge_ticket = ticket.name
+
+    # Prefer ticket posting date/time when target supports them.
+    if ticket.get("posting_date") and target.meta.has_field("posting_date"):
+        target.posting_date = ticket.posting_date
+    if ticket.get("posting_time") and target.meta.has_field("posting_time"):
+        target.posting_time = ticket.posting_time
+    if target.meta.has_field("set_posting_time"):
+        target.set_posting_time = 1
+
+    _apply_ticket_items_to_target(target, ticket)
+
+    # Re-apply document defaults after qty changes.
+    target.flags.ignore_permissions = True
+    target.run_method("set_missing_values")
+    if target.doctype == "Sales Invoice":
+        target.run_method("set_po_nos")
+    target.run_method("calculate_taxes_and_totals")
+
+    return target
+
+
 @frappe.whitelist()
 def read_weight(mode=None):
     settings = _get_settings()
