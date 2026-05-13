@@ -67,7 +67,7 @@ jobs:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
 
-      - name: Read version from propms.__version__
+      - name: Read version from av_tools.__version__
         if: steps.target.outputs.should_promote == 'true'
         id: version
         shell: bash
@@ -76,13 +76,13 @@ jobs:
           import re
           from pathlib import Path
 
-          init_file = Path("propms/__init__.py")
+          init_file = Path("av_tools/__init__.py")
           content = init_file.read_text()
 
           match = re.search(r'^__version__\s*=\s*["\']([^"\']+)["\']', content, re.M)
 
           if not match:
-              raise SystemExit("Could not find __version__ in propms/__init__.py")
+              raise SystemExit("Could not find __version__ in av_tools/__init__.py")
 
           print(match.group(1))
           PY
