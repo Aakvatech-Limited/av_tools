@@ -10,6 +10,7 @@
   "customer",
   "supplier",
   "vehicle",
+  "destination",
   "column_break_reference",
   "document_type",
   "document_reference",
@@ -119,6 +120,11 @@
    "fieldtype": "Link",
    "label": "Vehicle",
    "options": "Vehicle"
+  },
+  {
+   "fieldname": "destination",
+   "fieldtype": "Data",
+   "label": "Destination"
   },
   {
    "fieldname": "section_break_weights",
