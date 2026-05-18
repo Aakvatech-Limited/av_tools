@@ -6,7 +6,7 @@ frappe.ui.keys.add_shortcut({
 		const current_doc = $(".data-row.editable-row").parent().attr("data-name");
 		const item_row = locals["Delivery Note Item"][current_doc];
 		frappe.call({
-			method: "csf_tz.custom_api.get_item_info",
+			method: "av_tools.api.item_lookups.get_item_info",
 			args: { item_code: item_row.item_code },
 			callback: function (r) {
 				if (r.message.length > 0) {

@@ -1,10 +1,10 @@
 // Item lookup shortcuts (moved from csf_tz to av_tools)
-// API methods still live in csf_tz.custom_api — both apps must be installed.
+// Backing APIs live in av_tools.api.item_lookups — no csf_tz dependency.
 function ctrlQ (TableName) {
     const current_doc = $('.data-row.editable-row').parent().attr("data-name");
     const item_row = locals[TableName][current_doc];
     frappe.call({
-        method: 'csf_tz.custom_api.get_item_info',
+        method: 'av_tools.api.item_lookups.get_item_info',
         args: { item_code: item_row.item_code },
         callback: function (r) {
             if (r.message.length > 0) {
@@ -100,7 +100,7 @@ function ctrlI(TableName) {
 
     // Call the custom API to fetch data
     frappe.call({
-        method: "csf_tz.custom_api.get_item_prices_custom",
+        method: "av_tools.api.item_lookups.get_item_prices_custom",
         args: { filters: filters },
         callback: function (response) {
             if (response.message && response.message.length > 0) {
@@ -169,7 +169,7 @@ function ctrlU (TableName) {
     const current_doc = $('.data-row.editable-row').parent().attr("data-name");
     const item_row = locals[TableName][current_doc];
     frappe.call({
-        method: 'csf_tz.custom_api.get_item_prices',
+        method: 'av_tools.api.item_lookups.get_item_prices',
         args: {
             item_code: item_row.item_code,
             currency: cur_frm.doc.currency,
