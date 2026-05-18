@@ -13,7 +13,7 @@ function ctrlI(TableName) {
 
     // Call the custom API to fetch data
     frappe.call({
-        method: "csf_tz.custom_api.get_item_prices_custom_po",
+        method: "av_tools.api.item_lookups.get_item_prices_custom_po",
         args: { filters: filters },
         callback: function (response) {
             if (response.message && response.message.length > 0) {
@@ -95,7 +95,7 @@ function ctrlU (TableName) {
     const current_doc = $('.data-row.editable-row').parent().attr("data-name");
     const item_row = locals[TableName][current_doc];
     frappe.call({
-        method: 'csf_tz.custom_api.get_item_prices_po',
+        method: 'av_tools.api.item_lookups.get_item_prices_po',
         args: {
             item_code: item_row.item_code,
             currency: cur_frm.doc.currency,
