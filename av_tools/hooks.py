@@ -54,8 +54,14 @@ doctype_js = {
 		"authotp/api/sales_invoice.js",
 		"av_tools/sales_invoice.js",
 	],
-	"Delivery Note": "weigh_bridge/doctype/delivery_note_weighbridge_ticket.js",
-	"Sales Order": "weigh_bridge/doctype/sales_order_weighbridge_ticket.js",
+	"Delivery Note": [
+		"weigh_bridge/doctype/delivery_note_weighbridge_ticket.js",
+		"av_tools/delivery_note.js",
+	],
+	"Sales Order": [
+		"weigh_bridge/doctype/sales_order_weighbridge_ticket.js",
+		"av_tools/sales_order.js",
+	],
 	"Purchase Order": [
 		"weigh_bridge/doctype/purchase_order_weighbridge_ticket.js",
 		"av_tools/purchase_order.js",
@@ -63,6 +69,7 @@ doctype_js = {
 	"Stock Entry": "av_tools/stock_entry.js",
 	"Purchase Invoice": "weigh_bridge/doctype/purchase_invoice_weighbridge_ticket.js",
 	"Purchase Receipt": "weigh_bridge/doctype/purchase_receipt_weighbridge_ticket.js",
+	"Material Request": "av_tools/material_request.js",
 	"Customer": "authotp/api/customer.js",
 	"Account": "av_tools/account.js",
 }

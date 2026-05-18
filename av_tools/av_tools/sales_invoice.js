@@ -1,5 +1,40 @@
 // Trade In feature for Sales Invoice (moved from csf_tz)
 
+frappe.require([
+	"/assets/av_tools/js/shortcuts.js",
+]);
+
+frappe.ui.keys.add_shortcut({
+	shortcut: "ctrl+q",
+	action: () => {
+		ctrlQ("Sales Invoice Item");
+	},
+	page: this.page,
+	description: __("Select Item Warehouse"),
+	ignore_inputs: true,
+});
+
+frappe.ui.keys.add_shortcut({
+	shortcut: "ctrl+i",
+	action: () => {
+		ctrlI("Sales Invoice Item");
+	},
+	page: this.page,
+	description: __("Select Customer Item Price"),
+	ignore_inputs: true,
+});
+
+frappe.ui.keys.add_shortcut({
+	shortcut: "ctrl+u",
+	action: () => {
+		ctrlU("Sales Invoice Item");
+	},
+	page: this.page,
+	description: __("Select Item Price"),
+	ignore_inputs: true,
+});
+
+
 frappe.ui.form.on("Sales Invoice", {
 	refresh: function (frm) {
 		frm.trigger("set_trade_in_field_visibility");
