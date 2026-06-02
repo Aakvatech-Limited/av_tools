@@ -491,9 +491,19 @@ frappe.ui.form.on("Weighbridge Ticket", {
   },
   tare_weight(frm) {
     set_net_weight(frm);
+    if (frm.doc.tare_weight != null && frm.doc.tare_weight !== "") {
+      frm.set_value("tare_time", frappe.datetime.now_datetime());
+    } else {
+      frm.set_value("tare_time", null);
+    }
   },
   gross_weight(frm) {
     set_net_weight(frm);
+    if (frm.doc.gross_weight != null && frm.doc.gross_weight !== "") {
+      frm.set_value("gross_time", frappe.datetime.now_datetime());
+    } else {
+      frm.set_value("gross_time", null);
+    }
   },
 });
 
