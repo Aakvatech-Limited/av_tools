@@ -105,6 +105,7 @@ doctype_js = {
 # ------------
 
 # before_install = "av_tools.install.before_install"
+before_install = "av_tools.install.before_install"
 after_install = [
 	"av_tools.weigh_bridge.custom_fields.setup_custom_fields",
 	"av_tools.patches.custom_fields.auth_otp_custom_fields.execute",
