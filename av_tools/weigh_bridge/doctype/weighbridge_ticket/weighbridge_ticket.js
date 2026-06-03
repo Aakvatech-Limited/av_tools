@@ -14,8 +14,8 @@ const CREATE_TARGETS_BY_SOURCE = {
   "Delivery Note": ["Sales Invoice"],
   "Purchase Order": ["Purchase Invoice"],
   "Purchase Receipt": ["Purchase Invoice"],
-  "Sales Invoice": [],
-  "Purchase Invoice": [],
+  "Sales Invoice": ["Sales Invoice"],
+  "Purchase Invoice": ["Purchase Invoice"],
 };
 const SALES_DOCTYPES = ["Sales Invoice", "Delivery Note", "Sales Order"];
 const PURCHASE_DOCTYPES = ["Purchase Order", "Purchase Invoice", "Purchase Receipt"];
@@ -141,12 +141,9 @@ const add_create_buttons = (frm) => {
     frm.add_custom_button(
       __(targetDoctype),
       () => {
-        const can_map =
-          ["Sales Invoice", "Purchase Invoice"].includes(targetDoctype) &&
-          frm.doc.document_type &&
-          frm.doc.document_reference;
+        const is_invoice = ["Sales Invoice", "Purchase Invoice"].includes(targetDoctype);
 
-        if (can_map) {
+        if (is_invoice) {
           frappe.model.open_mapped_doc({
             method: "av_tools.weigh_bridge.api.make_target_from_ticket",
             source_name: frm.doc.name,

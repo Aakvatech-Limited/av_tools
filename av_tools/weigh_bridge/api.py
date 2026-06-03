@@ -134,30 +134,34 @@ def make_target_from_ticket(source_name):
     if ticket.docstatus != 1:
         frappe.throw("Weighbridge Ticket must be submitted.")
 
-    if not ticket.document_type or not ticket.document_reference:
-        frappe.throw("Document Type and Document Reference are required on Weighbridge Ticket.")
-
     source_type = ticket.document_type
     source_name = ticket.document_reference
 
-    if source_type == "Sales Order" and target_doctype == "Sales Invoice":
-        from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice
-
-        target = make_sales_invoice(source_name)
-    elif source_type == "Delivery Note" and target_doctype == "Sales Invoice":
-        from erpnext.stock.doctype.delivery_note.delivery_note import make_sales_invoice
-
-        target = make_sales_invoice(source_name)
-    elif source_type == "Purchase Order" and target_doctype == "Purchase Invoice":
-        from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice
-
-        target = make_purchase_invoice(source_name)
-    elif source_type == "Purchase Receipt" and target_doctype == "Purchase Invoice":
-        from erpnext.stock.doctype.purchase_receipt.purchase_receipt import make_purchase_invoice
-
-        target = make_purchase_invoice(source_name)
+    target = None
+    if source_type and source_name:
+        if source_type == "Sales Order" and target_doctype == "Sales Invoice":
+            from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice
+            target = make_sales_invoice(source_name)
+        elif source_type == "Delivery Note" and target_doctype == "Sales Invoice":
+            from erpnext.stock.doctype.delivery_note.delivery_note import make_sales_invoice
+            target = make_sales_invoice(source_name)
+        elif source_type == "Purchase Order" and target_doctype == "Purchase Invoice":
+            from erpnext.buying.doctype.purchase_order.purchase_order import make_purchase_invoice
+            target = make_purchase_invoice(source_name)
+        elif source_type == "Purchase Receipt" and target_doctype == "Purchase Invoice":
+            from erpnext.stock.doctype.purchase_receipt.purchase_receipt import make_purchase_invoice
+            target = make_purchase_invoice(source_name)
+        else:
+            frappe.throw(f"Unsupported mapping: {source_type} -> {target_doctype}")
     else:
-        frappe.throw(f"Unsupported mapping: {source_type} -> {target_doctype}")
+        # Create directly from Weighbridge Ticket without a source document
+        target = frappe.new_doc(target_doctype)
+        if ticket.company and target.meta.has_field("company"):
+            target.company = ticket.company
+        if ticket.customer and target.meta.has_field("customer"):
+            target.customer = ticket.customer
+        if ticket.supplier and target.meta.has_field("supplier"):
+            target.supplier = ticket.supplier
 
     # Link ticket so existing validation + UI continue to work.
     if target.meta.has_field("weighbridge_ticket"):
