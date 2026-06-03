@@ -112,6 +112,26 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
                 child.sales_order = ticket_row.get("sales_order")
             if ticket_row.get("so_detail") and hasattr(child, "so_detail"):
                 child.so_detail = ticket_row.get("so_detail")
+
+            from erpnext.stock.get_item_details import get_item_details
+            
+            args = frappe._dict({
+                "item_code": child.item_code,
+                "company": target_doc.company,
+                "customer": target_doc.get("customer"),
+                "supplier": target_doc.get("supplier"),
+                "doctype": target_doc.doctype,
+                "name": target_doc.name,
+                "qty": child.qty,
+                "price_list": target_doc.get("selling_price_list") or target_doc.get("buying_price_list"),
+                "currency": target_doc.get("currency")
+            })
+            
+            details = get_item_details(args, target_doc)
+            for k, v in details.items():
+                if child.meta.has_field(k) and not child.get(k):
+                    child.set(k, v)
+
             kept_rows.append(child)
 
     target_doc.set("items", kept_rows)
@@ -180,6 +200,15 @@ def make_target_from_ticket(source_name):
     # Re-apply document defaults after qty changes.
     target.flags.ignore_permissions = True
     target.run_method("set_missing_values")
+    
+    if target.doctype == "Sales Invoice" and target.get("customer") and not target.get("debit_to"):
+        from erpnext.accounts.party import get_party_account
+        target.debit_to = get_party_account("Customer", target.customer, target.company)
+    
+    if target.doctype == "Purchase Invoice" and target.get("supplier") and not target.get("credit_to"):
+        from erpnext.accounts.party import get_party_account
+        target.credit_to = get_party_account("Supplier", target.supplier, target.company)
+
     if target.doctype == "Sales Invoice":
         target.run_method("set_po_nos")
     target.run_method("calculate_taxes_and_totals")
