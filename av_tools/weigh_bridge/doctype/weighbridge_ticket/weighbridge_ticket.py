@@ -83,6 +83,39 @@ class WeighbridgeTicket(Document):
                 f"Items not found in {self.document_type} {self.document_reference}: {', '.join(extra_items)}"
             )
 
+        other_tickets = frappe.get_all(
+            "Weighbridge Ticket",
+            filters={
+                "document_type": self.document_type,
+                "document_reference": self.document_reference,
+                "name": ["!=", self.name],
+                "docstatus": 1
+            },
+            pluck="name"
+        )
+
+        consumed_qty = {}
+        if other_tickets:
+            other_items = frappe.get_all(
+                "Weighbridge Ticket Item",
+                filters={"parent": ["in", other_tickets]},
+                fields=["item_code", "qty"]
+            )
+            for row in other_items:
+                consumed_qty[row.item_code] = consumed_qty.get(row.item_code, 0) + flt(row.qty)
+
+        for item_code, qty in ticket_qty.items():
+            ref_qty = reference_qty.get(item_code, 0)
+            cons_qty = consumed_qty.get(item_code, 0)
+            available = ref_qty - cons_qty
+
+            if flt(qty) > available:
+                frappe.msgprint(
+                    f"Quantity {flt(qty)} exceeds remaining available quantity {available} on {self.document_type}.",
+                    indicator="orange",
+                    alert=True
+                )
+
     def update_reference_document_quantities(self):
         if not self.document_type or not self.document_reference:
             return
