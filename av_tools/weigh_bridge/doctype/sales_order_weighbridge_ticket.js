@@ -45,7 +45,7 @@ const get_ticket_route_options = (frm) => {
 };
 
 const add_create_ticket_button = (frm) => {
-  if (frm.doc.docstatus !== 1 || frm.doc.weighbridge_ticket) {
+  if (frm.doc.docstatus !== 1) {
     return;
   }
 
