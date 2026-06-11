@@ -96,18 +96,14 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
             child.item_code = ticket_row.get("item_code")
             if ticket_row.get("item_name"):
                 child.item_name = ticket_row.get("item_name")
-            if ticket_row.get("qty_in_kg") is not None:
-                if child.get("uom") and child.uom.lower() != "kg":
-                    from erpnext.stock.doctype.item.item import get_uom_conv_factor
-
-                    child.qty = flt(ticket_row.get("qty_in_kg")) * flt(
-                        get_uom_conv_factor("Kg", child.uom)
-                    )
-                else:
-                    child.qty = flt(ticket_row.get("qty_in_kg"))
-            elif ticket_row.get("qty") is not None:
+            # For non-mapped adds (direct from ticket), exactly copy the ticket's qty and uom
+            if ticket_row.get("uom"):
+                child.uom = ticket_row.get("uom")
+                
+            if ticket_row.get("qty") is not None:
                 child.qty = flt(ticket_row.get("qty"))
-            # Don't force UOM on mapped targets; for non-mapped adds, keep system defaults.
+            elif ticket_row.get("qty_in_kg") is not None:
+                child.qty = flt(ticket_row.get("qty_in_kg"))
             if ticket_row.get("sales_order") and hasattr(child, "sales_order"):
                 child.sales_order = ticket_row.get("sales_order")
             if ticket_row.get("so_detail") and hasattr(child, "so_detail"):
@@ -123,6 +119,7 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
                 "doctype": target_doc.doctype,
                 "name": target_doc.name,
                 "qty": child.qty,
+                "uom": child.uom,
                 "price_list": target_doc.get("selling_price_list") or target_doc.get("buying_price_list"),
                 "currency": target_doc.get("currency")
             })

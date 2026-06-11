@@ -40,6 +40,15 @@ class WeighbridgeTicket(Document):
 
     def on_submit(self):
         self.update_reference_document_quantities()
+        self.update_vehicle_default_tare()
+
+    def update_vehicle_default_tare(self):
+        if not self.vehicle or not self.tare_weight:
+            return
+
+        current_default_tare = frappe.db.get_value("Vehicle", self.vehicle, "default_tare_weight")
+        if not current_default_tare:
+            frappe.db.set_value("Vehicle", self.vehicle, "default_tare_weight", self.tare_weight, update_modified=True)
 
     def on_cancel(self):
         self.clear_reference_document_link()

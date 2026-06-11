@@ -422,7 +422,7 @@ const toggle_read_buttons = (frm) => {
 
 const apply_vehicle_tare = (frm) => {
   if (!frm.doc.vehicle) {
-    frappe.msgprint(__("Please select a Vehicle first."));
+    frappe.show_alert({message: __("Please select a Vehicle first."), indicator: "orange"});
     return;
   }
 
@@ -431,7 +431,7 @@ const apply_vehicle_tare = (frm) => {
     .then((r) => {
       const weight = flt(r && r.message ? r.message.default_tare_weight : null);
       if (!weight) {
-        frappe.msgprint(__("Selected Vehicle has no Default Tare Weight."));
+        frappe.show_alert({message: __("Selected Vehicle has no Default Tare Weight."), indicator: "orange"});
         return;
       }
 
