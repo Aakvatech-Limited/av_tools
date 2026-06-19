@@ -24,7 +24,9 @@
   "indirect_expense_item_section",
   "enable_indirect_expense_item_creation",
   "trade_in_section",
-  "enable_trade_in"
+  "enable_trade_in",
+  "item_remaining_qty_section",
+  "enable_validate_item_remaining_qty"
  ],
  "fields": [
   {
@@ -154,6 +156,18 @@
    "fieldname": "enable_trade_in",
    "fieldtype": "Check",
    "label": "Enable Trade In"
+  },
+  {
+   "fieldname": "item_remaining_qty_section",
+   "fieldtype": "Section Break",
+   "label": "Item Remaining Qty Validation"
+  },
+  {
+   "default": "0",
+   "description": "When enabled, a Sales Invoice item that would oversell available stock (item balance minus pending Sales Orders and pending direct Sales Invoices) is blocked. Items marked \"Allow Over Sell\" are skipped, as is the whole check when Stock Settings allows negative stock.",
+   "fieldname": "enable_validate_item_remaining_qty",
+   "fieldtype": "Check",
+   "label": "Enable Item Remaining Qty Validation"
   }
  ],
  "index_web_pages_for_search": 1,
