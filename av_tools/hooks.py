@@ -53,6 +53,7 @@ doctype_js = {
 		"weigh_bridge/doctype/sales_invoice_weighbridge_ticket.js",
 		"authotp/api/sales_invoice.js",
 		"av_tools/sales_invoice.js",
+		"av_tools/item_remaining_qty.js",
 	],
 	"Delivery Note": [
 		"weigh_bridge/doctype/delivery_note_weighbridge_ticket.js",
@@ -192,6 +193,7 @@ doc_events = {
 			"av_tools.weigh_bridge.validation.validate_weighbridge_ticket",
 			"av_tools.av_tools_hooks.trade_in.validate_trade_in_serial_no_and_batch",
 			"av_tools.av_tools_hooks.trade_in.validate_trade_in_sales_percentage",
+			"av_tools.av_tools_hooks.item_remaining_qty.validate_items_remaining_qty",
 		],
 		"before_submit": "av_tools.authotp.api.sales_invoice.before_submit",
 		"on_submit": "av_tools.av_tools_hooks.trade_in.create_trade_in_stock_entry",
