@@ -123,6 +123,7 @@ after_migrate = [
 	"av_tools.weigh_bridge.custom_fields.setup_custom_fields",
 	"av_tools.utils.create_custom_fields.execute",
 	"av_tools.utils.create_property_setter.execute",
+	"av_tools.setup.temporary_role_access.setup_temporary_role_access",
 	"av_tools.patches.v1_0.migrate_ai_integration_site_data.execute",
 	"av_tools.patches.v1_0.migrate_report_extension_site_data.execute",
 ]
@@ -241,7 +242,10 @@ scheduler_events = {
 	"cron": {
 		"0 */6 * * *": [
 			"av_tools.av_tools.doctype.parking_bill.parking_bill.check_bills_all_vehicles",
-		]
+		],
+		"*/15 * * * *": [
+			"av_tools.av_tools.doctype.temporary_role_access_request.temporary_role_access_request.process_temporary_role_access",
+		],
 	},
 	"daily": [
 		"av_tools.av_tools.doctype.visibility.visibility.trigger_daily_alerts",
