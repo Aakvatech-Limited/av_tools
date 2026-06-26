@@ -81,6 +81,9 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
         elif ticket_row.get("qty") is not None:
             row.qty = flt(ticket_row.get("qty"))
 
+        if ticket_row.get("description"):
+            row.description = ticket_row.get("description")
+
         # Optional sales order link fields (present on some sales doctypes).
         if ticket_row.get("sales_order") and hasattr(row, "sales_order"):
             row.sales_order = ticket_row.get("sales_order")
@@ -96,6 +99,8 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
             child.item_code = ticket_row.get("item_code")
             if ticket_row.get("item_name"):
                 child.item_name = ticket_row.get("item_name")
+            if ticket_row.get("description"):
+                child.description = ticket_row.get("description")
             # For non-mapped adds (direct from ticket), exactly copy the ticket's qty and uom
             if ticket_row.get("uom"):
                 child.uom = ticket_row.get("uom")
@@ -253,6 +258,7 @@ def get_reference_items(document_type=None, document_reference=None):
             {
                 "item_code": row.item_code,
                 "item_name": row.get("item_name"),
+                "description": row.get("description"),
                 "qty": flt(row.get("qty")),
                 "uom": row.get("uom"),
             }
@@ -348,6 +354,7 @@ def get_ticket_items(ticket, doctype=None, document_name=None):
         item = {
             "item_code": item_code,
             "item_name": row.item_name,
+            "description": row.description,
             "qty": row.qty,
             "uom": row.uom,
         }
