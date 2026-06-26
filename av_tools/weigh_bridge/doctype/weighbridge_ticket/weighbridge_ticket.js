@@ -171,6 +171,9 @@ const apply_reference_items = (frm, items) => {
     if (row.item_name) {
       child.item_name = row.item_name;
     }
+    if (row.description) {
+      child.description = row.description;
+    }
     if (row.qty != null) {
       child.qty = flt(row.qty);
     }

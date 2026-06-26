@@ -9,6 +9,7 @@
  "field_order": [
   "item_code",
   "item_name",
+  "description",
   "column_break_xlxw",
   "qty_in_kg",
   "qty",
@@ -30,6 +31,12 @@
    "in_list_view": 1,
    "label": "Item Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "in_list_view": 1,
+   "label": "Description"
   },
   {
    "fieldname": "qty",
