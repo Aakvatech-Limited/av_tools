@@ -457,6 +457,14 @@ frappe.ui.form.on("Weighbridge Ticket", {
   },
   document_type(frm) {
     if (frm.doc.docstatus === 1) return;
+    
+    // If created via "Create" button, it will have document_reference set already. Do not wipe it.
+    if (frm.is_new() && frm.doc.document_reference && !frm._doc_type_initialized) {
+      frm._doc_type_initialized = true;
+      return;
+    }
+    frm._doc_type_initialized = true;
+
     frm._auto_reference_loaded = false;
     frm.set_value("document_reference", null);
     apply_reference_party(frm, {});
@@ -523,6 +531,7 @@ frappe.ui.form.on("Weighbridge Ticket", {
 
 frappe.ui.form.on("Weighbridge Ticket Item", {
   uom(frm, cdt, cdn) {
+    if (frm.doc.docstatus === 1) return;
     const row = locals[cdt][cdn];
     if (!row) return;
     const kgQty = flt(row.qty_in_kg || 0);
