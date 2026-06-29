@@ -57,7 +57,8 @@
    "fetch_from": "item_code.stock_uom",
    "in_list_view": 1,
    "label": "UOM",
-   "options": "UOM"
+   "options": "UOM",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_xlxw",
