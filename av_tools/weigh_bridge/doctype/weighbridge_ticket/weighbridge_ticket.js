@@ -161,6 +161,13 @@ const add_create_buttons = (frm) => {
 
 const apply_reference_items = (frm, items) => {
   frm.clear_table("items");
+  
+  // Hard reset the grid data to guarantee no Frappe auto-inserted ghost rows survive
+  frm.doc.items = [];
+  if (frm.fields_dict.items && frm.fields_dict.items.grid) {
+    frm.fields_dict.items.grid.data = [];
+  }
+
   (items || []).forEach((row) => {
     if (!row.item_code) {
       return;
@@ -180,14 +187,6 @@ const apply_reference_items = (frm, items) => {
       child.uom = row.uom;
     }
   });
-  
-  // Scrub any stray blank rows that Frappe might have auto-inserted safely (in-place)
-  const items_arr = frm.doc.items || [];
-  for (let i = items_arr.length - 1; i >= 0; i--) {
-    if (!items_arr[i].item_code) {
-      items_arr.splice(i, 1);
-    }
-  }
   
   frm.refresh_field("items");
   toggle_read_buttons(frm);
