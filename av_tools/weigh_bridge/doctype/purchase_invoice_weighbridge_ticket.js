@@ -46,7 +46,8 @@ const add_create_ticket_button = (frm) => {
         freeze_message: __("Creating Weighbridge Ticket..."),
         callback: (r) => {
           if (r.message) {
-            frappe.set_route("Form", "Weighbridge Ticket", r.message);
+            const url = frappe.urllib.get_full_url(`/app/weighbridge-ticket/${r.message}`);
+            window.open(url, '_blank');
           }
         }
       });
