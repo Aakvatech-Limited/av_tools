@@ -49,33 +49,36 @@ const get_kg_to_uom_factor = (uom) => {
 const distribute_net_weight = (frm, netWeight) => {
   const items = frm.doc.items || [];
   if (!items.length) {
-    return;
+    return Promise.resolve();
   }
 
   const totalQty = items.reduce((sum, row) => sum + flt(row.qty || 0), 0);
   const useProportional = totalQty > 0;
   const perItem = items.length ? flt(netWeight) / items.length : 0;
 
-  items.forEach((row) => {
+  const promises = items.map((row) => {
     const kgQty = useProportional
       ? (flt(row.qty || 0) / totalQty) * flt(netWeight)
       : perItem;
 
     frappe.model.set_value(row.doctype, row.name, "qty_in_kg", kgQty);
 
-    get_kg_to_uom_factor(row.uom).then((factor) => {
+    return get_kg_to_uom_factor(row.uom).then((factor) => {
       const converted = flt(kgQty) * flt(factor || 1);
-      frappe.model.set_value(row.doctype, row.name, "qty", converted);
+      return frappe.model.set_value(row.doctype, row.name, "qty", converted);
     });
   });
+
+  return Promise.all(promises);
 };
 
 const set_net_weight = (frm) => {
   if (frm.doc.tare_weight != null && frm.doc.gross_weight != null) {
     const net = flt(frm.doc.gross_weight) - flt(frm.doc.tare_weight);
     frm.set_value("net_weight", net);
-    distribute_net_weight(frm, net);
+    return distribute_net_weight(frm, net);
   }
+  return Promise.resolve();
 };
 
 const save_after_weight_capture = (frm) => {
@@ -390,10 +393,8 @@ const read_weight_client = (frm, target_field, time_field) => {
 
         Promise.resolve(frm.set_value(target_field, data.weight))
           .then(() => frm.set_value(time_field, frappe.datetime.now_datetime()))
-          .then(() => {
-            set_net_weight(frm);
-            return save_after_weight_capture(frm);
-          })
+          .then(() => set_net_weight(frm))
+          .then(() => save_after_weight_capture(frm))
           .then(() => {
             const label =
               target_field === "tare_weight"
@@ -441,10 +442,8 @@ const apply_vehicle_tare = (frm) => {
       return Promise.resolve(frm.set_value("tare_manual", 1))
         .then(() => frm.set_value("tare_weight", weight))
         .then(() => frm.set_value("tare_time", frappe.datetime.now_datetime()))
-        .then(() => {
-          set_net_weight(frm);
-          return save_after_weight_capture(frm);
-        });
+        .then(() => set_net_weight(frm))
+        .then(() => save_after_weight_capture(frm));
     });
 };
 
