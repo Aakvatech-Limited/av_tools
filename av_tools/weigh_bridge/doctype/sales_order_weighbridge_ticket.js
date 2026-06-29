@@ -33,6 +33,7 @@ const get_ticket_route_options = (frm) => {
     document_type: frm.doctype,
     document_reference: frm.doc.name || undefined,
     company: frm.doc.company || undefined,
+    items: frm.doc.items || undefined,
   };
 
   if (PARTY_FIELD === "customer") {
