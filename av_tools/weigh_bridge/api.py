@@ -254,12 +254,16 @@ def get_reference_items(document_type=None, document_reference=None):
     for row in (doc.get("items") or []):
         if not row.item_code:
             continue
+
+        is_stock_item = frappe.db.get_value("Item", row.item_code, "is_stock_item")
+        if not is_stock_item:
+            continue
+
         items.append(
             {
                 "item_code": row.item_code,
                 "item_name": row.get("item_name"),
                 "description": row.get("description"),
-                "qty": flt(row.get("qty")),
                 "uom": row.get("uom"),
             }
         )

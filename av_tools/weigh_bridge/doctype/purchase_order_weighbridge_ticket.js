@@ -29,7 +29,18 @@ const set_fields_if_present = (frm, values) => {
 };
 
 const get_ticket_route_options = (frm) => {
-  const stock_items = (frm.doc.items || []).filter(row => row.is_stock_item === 1);
+  const stock_items = [];
+
+  (frm.doc.items || []).forEach(row => {
+    if (row.is_stock_item === 1) {
+      stock_items.push({
+        item_code: row.item_code,
+        item_name: row.item_name,
+        description: row.description,
+        uom: row.uom
+      });
+    }
+  });
 
   const options = {
     document_type: frm.doctype,
