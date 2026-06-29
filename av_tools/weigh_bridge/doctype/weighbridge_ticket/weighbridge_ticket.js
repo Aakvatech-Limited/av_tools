@@ -52,13 +52,15 @@ const distribute_net_weight = (frm, netWeight) => {
     return;
   }
 
-  const totalQty = items.reduce((sum, row) => sum + flt(row.qty || 0), 0);
+  // Calculate total based on original requested qty if available, to ensure stable recalculations
+  const totalQty = items.reduce((sum, row) => sum + flt(row.custom_requested_qty || row.qty || 0), 0);
   const useProportional = totalQty > 0;
   const perItem = items.length ? flt(netWeight) / items.length : 0;
 
   items.forEach((row) => {
+    const baseQty = flt(row.custom_requested_qty || row.qty || 0);
     const kgQty = useProportional
-      ? (flt(row.qty || 0) / totalQty) * flt(netWeight)
+      ? (baseQty / totalQty) * flt(netWeight)
       : perItem;
 
     frappe.model.set_value(row.doctype, row.name, "qty_in_kg", kgQty);
@@ -71,10 +73,18 @@ const distribute_net_weight = (frm, netWeight) => {
 };
 
 const set_net_weight = (frm) => {
-  if (frm.doc.tare_weight != null && frm.doc.gross_weight != null) {
+  if (frm.doc.tare_weight != null && frm.doc.tare_weight !== "" && frm.doc.gross_weight != null && frm.doc.gross_weight !== "") {
     const net = flt(frm.doc.gross_weight) - flt(frm.doc.tare_weight);
-    frm.set_value("net_weight", net);
-    distribute_net_weight(frm, net);
+    if (net > 0) {
+      frm.set_value("net_weight", net);
+      distribute_net_weight(frm, net);
+    } else {
+      frm.set_value("net_weight", 0);
+      distribute_net_weight(frm, 0);
+    }
+  } else {
+    frm.set_value("net_weight", 0);
+    distribute_net_weight(frm, 0);
   }
 };
 
@@ -98,7 +108,6 @@ const set_document_reference_query = (frm) => {
   frm.set_query("document_reference", () => ({
     filters: {
       docstatus: ["!=", 2],
-      weighbridge_ticket: ["in", ["", null]],
     },
   }));
 };
@@ -162,6 +171,13 @@ const add_create_buttons = (frm) => {
 
 const apply_reference_items = (frm, items) => {
   frm.clear_table("items");
+  
+  // Hard reset the grid data to guarantee no Frappe auto-inserted ghost rows survive
+  frm.doc.items = [];
+  if (frm.fields_dict.items && frm.fields_dict.items.grid) {
+    frm.fields_dict.items.grid.data = [];
+  }
+
   (items || []).forEach((row) => {
     if (!row.item_code) {
       return;
@@ -181,6 +197,7 @@ const apply_reference_items = (frm, items) => {
       child.uom = row.uom;
     }
   });
+  
   frm.refresh_field("items");
   toggle_read_buttons(frm);
 };
@@ -457,16 +474,8 @@ frappe.ui.form.on("Weighbridge Ticket", {
   },
   document_type(frm) {
     if (frm.doc.docstatus === 1) return;
-    
-    // If created via "Create" button, it will have document_reference set already. Do not wipe it.
-    if (frm.is_new() && frm.doc.document_reference && !frm._doc_type_initialized) {
-      frm._doc_type_initialized = true;
-      return;
-    }
-    frm._doc_type_initialized = true;
 
     frm._auto_reference_loaded = false;
-    frm.set_value("document_reference", null);
     apply_reference_party(frm, {});
     apply_reference_items(frm, []);
   },
@@ -499,11 +508,15 @@ frappe.ui.form.on("Weighbridge Ticket", {
   tare_manual(frm) {
     if (frm.doc.tare_manual) {
       setTimeout(() => frm.get_field("tare_weight").$input.focus(), 100);
+    } else {
+      frm.set_value("tare_weight", 0);
     }
   },
   gross_manual(frm) {
     if (frm.doc.gross_manual) {
       setTimeout(() => frm.get_field("gross_weight").$input.focus(), 100);
+    } else {
+      frm.set_value("gross_weight", 0);
     }
   },
   read_gross(frm) {
