@@ -181,8 +181,13 @@ const apply_reference_items = (frm, items) => {
     }
   });
   
-  // Scrub any stray blank rows that Frappe might have auto-inserted
-  frm.doc.items = (frm.doc.items || []).filter(row => row.item_code);
+  // Scrub any stray blank rows that Frappe might have auto-inserted safely (in-place)
+  const items_arr = frm.doc.items || [];
+  for (let i = items_arr.length - 1; i >= 0; i--) {
+    if (!items_arr[i].item_code) {
+      items_arr.splice(i, 1);
+    }
+  }
   
   frm.refresh_field("items");
   toggle_read_buttons(frm);
