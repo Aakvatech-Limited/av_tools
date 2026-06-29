@@ -9,7 +9,7 @@ class SQLProcess(Document):
     def validate(self):
         self.process = []
 
-    @frappe.whitelist()
+    @frappe.whitelist(methods=["POST"])
     def get_process(self):
         process = frappe.db.sql(
             """

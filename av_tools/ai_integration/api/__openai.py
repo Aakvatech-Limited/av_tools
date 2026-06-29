@@ -9,7 +9,7 @@ This is an example of how to use OpenAI's API to analyze a DocType with a prompt
 """
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def analyze_doctype_with_openai(
     doctype_name,
     prompt,

@@ -38,14 +38,14 @@ class PriceChangeRequest(Document):
         self.approved_by = get_fullname(frappe.session.user)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def validate_item(item, method):
     disabled = frappe.get_cached_value("Item", item, "disabled")
     if disabled == 1:
         msg_throw(_("Item: {0} is disabled".format(frappe.bold(item))), method)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def validate_price_list(price_list, method):
     if not frappe.get_cached_value("Price List", price_list, "enabled"):
         msg_throw(

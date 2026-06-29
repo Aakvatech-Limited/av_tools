@@ -39,7 +39,7 @@ def _get_stock_ledger_entries(item_code: str) -> list[dict]:
 	)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_item_info(item_code: Any):
 	"""Return per-(warehouse, batch) on-hand balance for an item, with batch expiry data."""
 	sle = _get_stock_ledger_entries(item_code)
@@ -81,7 +81,7 @@ def _collect_prices(rows: list[dict], rate_field: str, mapper, max_records: int)
 	return prices
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_item_prices(item_code: Any, currency: Any, customer: Any = None, company: Any = None):
 	"""Sales Invoice historical prices for an item (legacy shape: `price`, `date`)."""
 	conditions = ""
@@ -123,7 +123,7 @@ def get_item_prices(item_code: Any, currency: Any, customer: Any = None, company
 	)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20):
 	"""Sales Invoice historical prices for an item (Ctrl+I shape: `rate`, `posting_date`)."""
 	if isinstance(filters, str):
@@ -186,7 +186,7 @@ def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20)
 	)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 20):
 	"""Purchase Invoice historical prices for an item (Ctrl+I on PO shape)."""
 	if isinstance(filters, str):
@@ -249,7 +249,7 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 	)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_item_prices_po(item_code: Any, currency: Any, customer: Any = None, company: Any = None):
 	"""Purchase Invoice historical prices (legacy PO shape: `price`, `date`)."""
 	conditions = ""

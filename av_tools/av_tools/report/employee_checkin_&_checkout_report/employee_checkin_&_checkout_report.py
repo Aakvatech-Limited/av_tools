@@ -332,6 +332,6 @@ def get_today_summary():
         "out_count": out_count
     }
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_employee_checkin_summary():
     return get_today_summary()

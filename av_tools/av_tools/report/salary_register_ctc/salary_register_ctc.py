@@ -276,7 +276,7 @@ def get_departments(department, company):
     return departments_list
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def approve(data):
     from frappe.utils.background_jobs import enqueue
     import json

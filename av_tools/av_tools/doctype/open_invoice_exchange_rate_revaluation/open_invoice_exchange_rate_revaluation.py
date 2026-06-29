@@ -111,12 +111,12 @@ def makeReverseJE(date,name):
 	return makeJournalEntry(date,je_dict)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def getLastCreatedDocument(name,currency):
 	return frappe.get_all("Open Invoice Exchange Rate Revaluation",filters = [["Open Invoice Exchange Rate Revaluation","name","!=",name],["Open Invoice Exchange Rate Revaluation","docstatus","=","1"],["Open Invoice Exchange Rate Revaluation","currency","=",str(currency)]],fields = ["name","journal_entry"],order_by = "revaluation_date desc",limit_start = 0,limit_page_length = 1)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def getInvoiceExchangeRate(date, currency):
 	return get_exchange_rate(
 		currency, frappe.defaults.get_global_default("currency"), str(date)

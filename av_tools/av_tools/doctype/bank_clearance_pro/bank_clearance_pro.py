@@ -14,7 +14,7 @@ form_grid_templates = {
 
 
 class BankClearancePro(Document):
-    @frappe.whitelist()
+    @frappe.whitelist(methods=["POST"])
     def get_payment_entries(self):
         frappe.msgprint(_("Getting entries..."), alert=True)
         if not (self.from_date and self.to_date):

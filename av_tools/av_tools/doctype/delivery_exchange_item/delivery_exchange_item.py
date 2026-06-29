@@ -93,7 +93,7 @@ class DeliveryExchangeItem(Document):
             doc.insert(ignore_permissions=True)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_item_details(doctype, doctype_id, item_code=None):
     condition = ""
     if item_code:

@@ -17,4 +17,3 @@ class SQLCommand(Document):
 		elif self.sql_text:
 			frappe.db.sql(self.sql_text)
 
-		frappe.db.commit()
