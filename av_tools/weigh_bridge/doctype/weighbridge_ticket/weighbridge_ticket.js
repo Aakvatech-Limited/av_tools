@@ -197,7 +197,7 @@ const apply_reference_party = (frm, referenceData) => {
   ].includes(frm.doc.document_type);
 
   const values = {
-    company: data.company || null,
+    company: data.company || frm.doc.company || null,
     customer: isSalesDoc ? data.customer || null : null,
     supplier: isPurchaseDoc ? data.supplier || null : null,
   };
@@ -485,6 +485,16 @@ frappe.ui.form.on("Weighbridge Ticket", {
   },
   use_vehicle_tare(frm) {
     apply_vehicle_tare(frm);
+  },
+  tare_manual(frm) {
+    if (frm.doc.tare_manual) {
+      setTimeout(() => frm.get_field("tare_weight").$input.focus(), 100);
+    }
+  },
+  gross_manual(frm) {
+    if (frm.doc.gross_manual) {
+      setTimeout(() => frm.get_field("gross_weight").$input.focus(), 100);
+    }
   },
   read_gross(frm) {
     read_weight_client(frm, "gross_weight", "gross_time");
