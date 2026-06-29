@@ -180,6 +180,10 @@ const apply_reference_items = (frm, items) => {
       child.uom = row.uom;
     }
   });
+  
+  // Scrub any stray blank rows that Frappe might have auto-inserted
+  frm.doc.items = (frm.doc.items || []).filter(row => row.item_code);
+  
   frm.refresh_field("items");
   toggle_read_buttons(frm);
 };
