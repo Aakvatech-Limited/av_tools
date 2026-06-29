@@ -456,12 +456,14 @@ frappe.ui.form.on("Weighbridge Ticket", {
     auto_load_reference_items(frm);
   },
   document_type(frm) {
+    if (frm.doc.docstatus === 1) return;
     frm._auto_reference_loaded = false;
     frm.set_value("document_reference", null);
     apply_reference_party(frm, {});
     apply_reference_items(frm, []);
   },
   document_reference(frm) {
+    if (frm.doc.docstatus === 1) return;
     if (!frm.doc.document_reference) {
       frm._auto_reference_loaded = false;
       apply_reference_party(frm, {});
@@ -500,6 +502,7 @@ frappe.ui.form.on("Weighbridge Ticket", {
     read_weight_client(frm, "gross_weight", "gross_time");
   },
   tare_weight(frm) {
+    if (frm.doc.docstatus === 1) return;
     set_net_weight(frm);
     if (frm.doc.tare_weight != null && frm.doc.tare_weight !== "") {
       frm.set_value("tare_time", frappe.datetime.now_datetime());
@@ -508,6 +511,7 @@ frappe.ui.form.on("Weighbridge Ticket", {
     }
   },
   gross_weight(frm) {
+    if (frm.doc.docstatus === 1) return;
     set_net_weight(frm);
     if (frm.doc.gross_weight != null && frm.doc.gross_weight !== "") {
       frm.set_value("gross_time", frappe.datetime.now_datetime());
