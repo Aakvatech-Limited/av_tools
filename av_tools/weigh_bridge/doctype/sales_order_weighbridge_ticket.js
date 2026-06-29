@@ -29,11 +29,13 @@ const set_fields_if_present = (frm, values) => {
 };
 
 const get_ticket_route_options = (frm) => {
+  const stock_items = (frm.doc.items || []).filter(row => row.is_stock_item === 1);
+
   const options = {
     document_type: frm.doctype,
     document_reference: frm.doc.name || undefined,
     company: frm.doc.company || undefined,
-    items: frm.doc.items || undefined,
+    items: stock_items.length > 0 ? stock_items : undefined,
   };
 
   if (PARTY_FIELD === "customer") {
