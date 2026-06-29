@@ -384,3 +384,38 @@ def get_ticket_items(ticket, doctype=None, document_name=None):
         "gross_weight": doc.gross_weight,
         "net_weight": doc.net_weight,
     }
+
+@frappe.whitelist()
+def create_weighbridge_ticket(source_name, source_doctype):
+    if not source_name or not source_doctype:
+        frappe.throw("Source Name and Doctype are required.")
+        
+    doc = frappe.get_doc(source_doctype, source_name)
+    
+    ticket = frappe.new_doc("Weighbridge Ticket")
+    ticket.document_type = source_doctype
+    ticket.document_reference = source_name
+    ticket.company = doc.get("company")
+    
+    if source_doctype in ["Sales Order", "Sales Invoice", "Delivery Note"]:
+        ticket.customer = doc.get("customer")
+    else:
+        ticket.supplier = doc.get("supplier")
+        
+    for row in (doc.get("items") or []):
+        if not row.item_code:
+            continue
+            
+        is_stock_item = frappe.db.get_value("Item", row.item_code, "is_stock_item")
+        if not is_stock_item:
+            continue
+            
+        child = ticket.append("items", {})
+        child.item_code = row.item_code
+        child.item_name = row.get("item_name")
+        child.description = row.get("description")
+        child.uom = row.get("uom")
+        
+    ticket.insert(ignore_permissions=True)
+    return ticket.name
+
