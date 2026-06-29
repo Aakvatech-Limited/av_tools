@@ -52,13 +52,15 @@ const distribute_net_weight = (frm, netWeight) => {
     return;
   }
 
-  const totalQty = items.reduce((sum, row) => sum + flt(row.qty || 0), 0);
+  // Calculate total based on original requested qty if available, to ensure stable recalculations
+  const totalQty = items.reduce((sum, row) => sum + flt(row.custom_requested_qty || row.qty || 0), 0);
   const useProportional = totalQty > 0;
   const perItem = items.length ? flt(netWeight) / items.length : 0;
 
   items.forEach((row) => {
+    const baseQty = flt(row.custom_requested_qty || row.qty || 0);
     const kgQty = useProportional
-      ? (flt(row.qty || 0) / totalQty) * flt(netWeight)
+      ? (baseQty / totalQty) * flt(netWeight)
       : perItem;
 
     frappe.model.set_value(row.doctype, row.name, "qty_in_kg", kgQty);
@@ -70,11 +72,31 @@ const distribute_net_weight = (frm, netWeight) => {
   });
 };
 
+const reset_item_weights = (frm) => {
+  const items = frm.doc.items || [];
+  items.forEach((row) => {
+    if (flt(row.qty_in_kg) !== 0) {
+      frappe.model.set_value(row.doctype, row.name, "qty_in_kg", 0);
+    }
+    const original_qty = row.custom_requested_qty != null ? flt(row.custom_requested_qty) : 0;
+    if (original_qty > 0 && flt(row.qty) !== original_qty) {
+      frappe.model.set_value(row.doctype, row.name, "qty", original_qty);
+    }
+  });
+};
+
 const set_net_weight = (frm) => {
-  if (frm.doc.tare_weight != null && frm.doc.gross_weight != null) {
+  if (frm.doc.tare_weight != null && frm.doc.tare_weight !== "" && frm.doc.gross_weight != null && frm.doc.gross_weight !== "") {
     const net = flt(frm.doc.gross_weight) - flt(frm.doc.tare_weight);
     frm.set_value("net_weight", net);
-    distribute_net_weight(frm, net);
+    if (net > 0) {
+      distribute_net_weight(frm, net);
+    } else {
+      reset_item_weights(frm);
+    }
+  } else {
+    frm.set_value("net_weight", 0);
+    reset_item_weights(frm);
   }
 };
 
