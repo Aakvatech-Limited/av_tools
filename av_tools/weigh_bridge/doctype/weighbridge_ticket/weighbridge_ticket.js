@@ -523,6 +523,7 @@ frappe.ui.form.on("Weighbridge Ticket", {
 
 frappe.ui.form.on("Weighbridge Ticket Item", {
   uom(frm, cdt, cdn) {
+    if (frm.doc.docstatus === 1) return;
     const row = locals[cdt][cdn];
     if (!row) return;
     const kgQty = flt(row.qty_in_kg || 0);
