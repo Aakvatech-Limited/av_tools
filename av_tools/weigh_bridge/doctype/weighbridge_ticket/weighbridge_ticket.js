@@ -197,7 +197,7 @@ const apply_reference_party = (frm, referenceData) => {
   ].includes(frm.doc.document_type);
 
   const values = {
-    company: data.company || null,
+    company: data.company || frm.doc.company || null,
     customer: isSalesDoc ? data.customer || null : null,
     supplier: isPurchaseDoc ? data.supplier || null : null,
   };
