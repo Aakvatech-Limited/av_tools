@@ -10,7 +10,7 @@ class ItemBarcodeUpdateTool(Document):
     pass
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def update_barcodes(doc):
     import json
 

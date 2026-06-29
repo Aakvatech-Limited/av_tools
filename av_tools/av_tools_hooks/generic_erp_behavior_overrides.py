@@ -33,7 +33,7 @@ def _throw_reopen_not_allowed(label, name=None):
 	frappe.throw(_("<b>You are not allowed to reopen {0}</b>").format(label))
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def update_purchase_order_status(status, name):
 	if status != "Submitted":
 		return original_update_purchase_order_status(status, name)
@@ -44,7 +44,7 @@ def update_purchase_order_status(status, name):
 	return original_update_purchase_order_status(status, name)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def close_or_unclose_purchase_orders(names, status):
 	if status != "Submitted":
 		return original_close_or_unclose_purchase_orders(names, status)
@@ -55,7 +55,7 @@ def close_or_unclose_purchase_orders(names, status):
 	return original_close_or_unclose_purchase_orders(names, status)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def update_material_request_status(name, status):
 	if status != "Submitted":
 		return original_update_material_request_status(name, status)

@@ -120,7 +120,6 @@ def get_context(context):
 				frappe.db.set_value(doc.doctype, doc.name, self.set_property_after_alert,
 					self.property_value, update_modified = False)
 				doc.db_set(self.set_property_after_alert, self.property_value)
-				frappe.db.commit()
 
 
 

@@ -139,7 +139,7 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
     target_doc.set("items", kept_rows)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def make_target_from_ticket(source_name):
     """Create a mapped target document from a submitted Weighbridge Ticket.
 

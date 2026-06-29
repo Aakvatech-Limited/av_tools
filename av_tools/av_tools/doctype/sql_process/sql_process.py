@@ -21,7 +21,7 @@ class SQLProcess(Document):
         )
         return process
 
-    @frappe.whitelist()
+    @frappe.whitelist(methods=["POST"])
     def kill_process(self, pid):
         frappe.msgprint(
             "Killing process {}".format(pid), alert=True, indicator="orange"

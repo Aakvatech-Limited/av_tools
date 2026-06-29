@@ -147,7 +147,7 @@ class PaymentReconciliationPro(Document):
 			ent.currency = e.get('currency')
 			ent.outstanding_amount = e.get('outstanding_amount')
 
-	@frappe.whitelist()
+	@frappe.whitelist(methods=["POST"])
 	def reconcile(self, args):
 		for e in self.get('payments'):
 			e.invoice_type = None

@@ -100,7 +100,7 @@ class OTPRegister(Document):
         return self.get_password("otp_secret")
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def register_otp(otp_doc):
     otp_doc = frappe._dict(frappe.parse_json(otp_doc))
     otp_doc = frappe.get_doc(otp_doc)
@@ -133,7 +133,7 @@ def register_otp_app(otp_doc):
     return qr_link
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def validate_otp(otp_doc, otp_code, submit=False):
     otp_doc = frappe._dict(frappe.parse_json(otp_doc))
     otp_doc = frappe.get_doc(otp_doc)

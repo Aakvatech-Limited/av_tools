@@ -80,7 +80,7 @@ def getSecondRow(invoice_gain_or_loss,invoice_type,invoice_number):
 	return item_json
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def makeJournalEntry(date,je_item):
 	j_entry=frappe.get_doc(dict(
 		doctype="Journal Entry",
@@ -94,7 +94,7 @@ def makeJournalEntry(date,je_item):
 	j_entry.submit()
 	return j_entry.name
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def makeReverseJE(date,name):
 	je_doc = frappe.get_doc("Journal Entry",name)
 	je_dict = []
@@ -123,7 +123,7 @@ def getInvoiceExchangeRate(date, currency):
 	)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def getInvoice(currency, name):
 	doc = frappe.get_doc("Open Invoice Exchange Rate Revaluation", name)
 	sinv_details = frappe.get_all(
