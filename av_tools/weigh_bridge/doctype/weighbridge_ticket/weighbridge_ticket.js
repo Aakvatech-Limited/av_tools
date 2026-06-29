@@ -88,10 +88,11 @@ const reset_item_weights = (frm) => {
 const set_net_weight = (frm) => {
   if (frm.doc.tare_weight != null && frm.doc.tare_weight !== "" && frm.doc.gross_weight != null && frm.doc.gross_weight !== "") {
     const net = flt(frm.doc.gross_weight) - flt(frm.doc.tare_weight);
-    frm.set_value("net_weight", net);
     if (net > 0) {
+      frm.set_value("net_weight", net);
       distribute_net_weight(frm, net);
     } else {
+      frm.set_value("net_weight", 0);
       reset_item_weights(frm);
     }
   } else {
