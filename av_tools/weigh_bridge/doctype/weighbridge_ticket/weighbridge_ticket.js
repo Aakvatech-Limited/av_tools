@@ -98,7 +98,6 @@ const set_document_reference_query = (frm) => {
   frm.set_query("document_reference", () => ({
     filters: {
       docstatus: ["!=", 2],
-      weighbridge_ticket: ["in", ["", null]],
     },
   }));
 };
@@ -449,11 +448,6 @@ const apply_vehicle_tare = (frm) => {
 };
 
 frappe.ui.form.on("Weighbridge Ticket", {
-  onload(frm) {
-    if (frm.is_new() && frappe.route_options && frappe.route_options.document_reference) {
-      frm._skip_initial_wipe = true;
-    }
-  },
   refresh(frm) {
     set_document_reference_query(frm);
     toggle_read_buttons(frm);
@@ -463,13 +457,7 @@ frappe.ui.form.on("Weighbridge Ticket", {
   document_type(frm) {
     if (frm.doc.docstatus === 1) return;
 
-    if (frm._skip_initial_wipe) {
-      frm._skip_initial_wipe = false;
-      return;
-    }
-
     frm._auto_reference_loaded = false;
-    frm.set_value("document_reference", null);
     apply_reference_party(frm, {});
     apply_reference_items(frm, []);
   },
