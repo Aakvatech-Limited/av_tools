@@ -508,11 +508,15 @@ frappe.ui.form.on("Weighbridge Ticket", {
   tare_manual(frm) {
     if (frm.doc.tare_manual) {
       setTimeout(() => frm.get_field("tare_weight").$input.focus(), 100);
+    } else {
+      frm.set_value("tare_weight", 0);
     }
   },
   gross_manual(frm) {
     if (frm.doc.gross_manual) {
       setTimeout(() => frm.get_field("gross_weight").$input.focus(), 100);
+    } else {
+      frm.set_value("gross_weight", 0);
     }
   },
   read_gross(frm) {
