@@ -3,7 +3,7 @@ import requests
 from frappe import _
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def disable_user_on_all_sites(email, site_configuration_name):
     """
     Disable user across all enabled sites using standard Frappe REST API.
@@ -51,7 +51,7 @@ def disable_user_on_all_sites(email, site_configuration_name):
     }
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def enable_user_on_all_sites(email, site_configuration_name):
     """
     Enable user across all enabled sites using standard Frappe REST API.
@@ -272,7 +272,7 @@ def _enable_user_on_site(email, site_name, site_url, api_key, api_secret):
             "message": f"Exception: {str(e)}"
         }
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def update_site_configuration(doc):
     """
     Update an existing Site Configuration document, including the child table.
@@ -291,5 +291,4 @@ def update_site_configuration(doc):
     existing_doc.save(ignore_permissions=True)
     
     return existing_doc
-
 

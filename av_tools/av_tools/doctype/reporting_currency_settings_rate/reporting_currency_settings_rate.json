@@ -42,6 +42,6 @@
  "name": "Reporting Currency Settings Rate",
  "owner": "Administrator",
  "permissions": [],
- "sort_field": "modified",
+ "sort_field": "creation",
  "sort_order": "DESC"
 }

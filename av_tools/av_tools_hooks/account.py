@@ -105,7 +105,7 @@ def check_expenses_in_parent_accounts(account_name):
 	return False
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def add_indirect_expense_item(account_name):
 	if not _is_feature_enabled():
 		frappe.throw(

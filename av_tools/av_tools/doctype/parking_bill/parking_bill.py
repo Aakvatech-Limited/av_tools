@@ -2,7 +2,6 @@
 # For license information, please see license.txt
 
 import json
-import re
 import frappe
 from frappe import _
 from frappe.utils import getdate
@@ -14,7 +13,7 @@ from frappe.model.document import Document
 class ParkingBill(Document):
     pass
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def check_bills_all_vehicles():
     plate_list = frappe.get_all("Vehicle", fields=['name', 'number_plate', 'license_plate'])
     
@@ -38,7 +37,6 @@ def check_bills_all_vehicles():
             except Exception as e:
                 frappe.log_error(frappe.get_traceback(), str(e))
     
-    frappe.db.commit()
 
 
 def get_bills(number_plate):

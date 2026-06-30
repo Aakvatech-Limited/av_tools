@@ -2,7 +2,7 @@ import frappe
 from frappe.utils import cint
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_repack_template(template_name, qty):
 	template_doc = frappe.get_doc("Repack Template", template_name)
 	rows = [

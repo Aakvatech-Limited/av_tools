@@ -10,7 +10,7 @@ from erpnext.accounts.utils import (get_outstanding_invoices,
 	update_reference_in_payment_entry, reconcile_against_document)
 
 class PaymentReconciliationPro(Document):
-	@frappe.whitelist()
+	@frappe.whitelist(methods=["POST"])
 	def get_unreconciled_entries(self):
 		self.get_nonreconciled_payment_entries()
 		self.get_invoice_entries()
@@ -147,7 +147,7 @@ class PaymentReconciliationPro(Document):
 			ent.currency = e.get('currency')
 			ent.outstanding_amount = e.get('outstanding_amount')
 
-	@frappe.whitelist()
+	@frappe.whitelist(methods=["POST"])
 	def reconcile(self, args):
 		for e in self.get('payments'):
 			e.invoice_type = None

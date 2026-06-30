@@ -199,7 +199,7 @@
    "read_only": 1
   },
   {
-   "default": "now",
+   "default": "Now",
    "fieldname": "posting_time",
    "fieldtype": "Time",
    "label": "Posting Time",

@@ -28,7 +28,7 @@ def _get_settings():
     return settings
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_uom_conversion_factor(from_uom, to_uom):
     """Return multiplier to convert qty in from_uom -> to_uom.
 
@@ -139,7 +139,7 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
     target_doc.set("items", kept_rows)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def make_target_from_ticket(source_name):
     """Create a mapped target document from a submitted Weighbridge Ticket.
 
@@ -218,7 +218,7 @@ def make_target_from_ticket(source_name):
     return target
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def read_weight(mode=None):
     settings = _get_settings()
     return {
@@ -227,7 +227,7 @@ def read_weight(mode=None):
     }
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_gateway_payload():
     settings = _get_settings()
     return {
@@ -236,7 +236,7 @@ def get_gateway_payload():
     }
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_reference_items(document_type=None, document_reference=None):
     if not document_type or not document_reference:
         frappe.throw("Document Type and Document Reference are required.")
@@ -272,7 +272,7 @@ def get_reference_items(document_type=None, document_reference=None):
     }
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_ticket_items(ticket, doctype=None, document_name=None):
     if not ticket:
         frappe.throw("Weighbridge Ticket is required.")

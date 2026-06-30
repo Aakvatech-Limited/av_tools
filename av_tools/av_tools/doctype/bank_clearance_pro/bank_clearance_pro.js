@@ -48,7 +48,6 @@ frappe.ui.form.on('Bank Clearance Pro', {
 			}
 		});
 	},
-	@frappe.whitelist()
 	get_payment_entries: function (frm) {
 		if (!frm.doc.statement_opening_balance || !frm.doc.statement_closing_balance) {
 			frappe.throw("Statement Opening balance and Statement Closing Balance is Mandatory")

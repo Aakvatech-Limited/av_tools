@@ -91,7 +91,7 @@
    "reqd": 1
   },
   {
-   "default": "now",
+   "default": "Now",
    "fieldname": "inspection_time",
    "fieldtype": "Time",
    "label": "Inspection Time"

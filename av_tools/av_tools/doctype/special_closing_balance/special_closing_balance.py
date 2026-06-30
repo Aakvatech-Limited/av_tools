@@ -104,7 +104,7 @@ class SpecialClosingBalance(Document):
 				url = frappe.utils.get_url_to_form(stock_entry_doc.doctype, stock_entry_doc.name)
 				frappe.msgprint("Stock Entry Created <a href='{0}'>{1}</a>".format(url,stock_entry_doc.name))
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_items(warehouse, posting_date, posting_time, company):
 	lft, rgt = frappe.db.get_value("Warehouse", warehouse, ["lft", "rgt"])
 

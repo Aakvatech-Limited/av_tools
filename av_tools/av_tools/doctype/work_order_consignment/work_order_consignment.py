@@ -14,7 +14,7 @@ class WorkOrderConsignment(Document):
         create_orders(self)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def get_boms(item):
     boms = frappe.get_all("BOM", filters={
         "docstatus": 1,
