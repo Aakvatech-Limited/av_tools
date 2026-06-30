@@ -15,12 +15,7 @@ ALLOWED_REFERENCE_DOCTYPES = {
     "Purchase Receipt",
 }
 
-ALLOWED_TARGETS_BY_SOURCE = {
-    "Sales Order": {"Sales Invoice"},
-    "Delivery Note": {"Sales Invoice"},
-    "Purchase Order": {"Purchase Invoice"},
-    "Purchase Receipt": {"Purchase Invoice"},
-}
+
 
 
 def _build_qty_map(rows):
@@ -35,7 +30,6 @@ def _build_qty_map(rows):
 
 class WeighbridgeTicket(Document):
     def validate(self):
-        self.validate_target_mapping()
         self.validate_items_against_reference()
 
     def on_submit(self):
@@ -53,19 +47,6 @@ class WeighbridgeTicket(Document):
     def on_cancel(self):
         self.clear_reference_document_link()
 
-    def validate_target_mapping(self):
-        source_type = self.document_type
-        target_type = self.target_document_type
-
-        if source_type and target_type and source_type == target_type:
-            frappe.throw("Source and Target document types cannot be the same.")
-
-        if source_type and target_type:
-            allowed_targets = ALLOWED_TARGETS_BY_SOURCE.get(source_type, set())
-            if target_type not in allowed_targets:
-                frappe.throw(
-                    f"Source {source_type} can only create: {', '.join(sorted(allowed_targets)) or 'None'}."
-                )
 
     def validate_items_against_reference(self):
         # Reference is optional. Only validate against source document when provided.
