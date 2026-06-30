@@ -139,10 +139,6 @@ const add_create_buttons = (frm) => {
     return;
   }
 
-  if (frm.doc.target_document_reference) {
-    return;
-  }
-
   const targets =
     CREATE_TARGETS_BY_SOURCE[frm.doc.document_type] || CREATE_TARGET_DOCTYPES;
 
