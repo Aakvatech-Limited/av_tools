@@ -1,6 +1,14 @@
 // Copyright (c) 2026, Aakvatech and contributors
 // For license information, please see license.txt
 
+const CREATE_TARGET_DOCTYPES = [
+  "Sales Invoice",
+  "Delivery Note",
+  "Sales Order",
+  "Purchase Order",
+  "Purchase Invoice",
+  "Purchase Receipt",
+];
 const CREATE_TARGETS_BY_SOURCE = {
   "Sales Order": ["Sales Invoice"],
   "Delivery Note": ["Sales Invoice"],
@@ -131,10 +139,8 @@ const add_create_buttons = (frm) => {
     return;
   }
 
-  const targets = CREATE_TARGETS_BY_SOURCE[frm.doc.document_type];
-  if (!targets || !targets.length) {
-    return;
-  }
+  const targets =
+    CREATE_TARGETS_BY_SOURCE[frm.doc.document_type] || CREATE_TARGET_DOCTYPES;
 
   targets.forEach((targetDoctype) => {
     frm.add_custom_button(
