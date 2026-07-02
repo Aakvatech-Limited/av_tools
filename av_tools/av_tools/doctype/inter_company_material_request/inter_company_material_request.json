@@ -92,21 +92,13 @@
    "fieldname": "section_break_byxrx",
    "fieldtype": "Section Break"
   },
+  
   {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
    "no_copy": 1,
-   "options": "Inter Company Stock Transfer",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Inter Company Stock Transfer",
+   "options": "Inter Company Material Request",
    "print_hide": 1,
    "read_only": 1
   },
