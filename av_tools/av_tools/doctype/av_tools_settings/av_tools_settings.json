@@ -14,7 +14,6 @@
   "override_sales_invoice_qty",
   "allow_multi_project_sales_invoice",
   "platform_admin_settings_section",
-  "allow_delete_in_sql_command",
   "manufacturing_settings_section",
   "is_manufacture",
   "buying_settings_section",
@@ -93,12 +92,6 @@
    "fieldname": "platform_admin_settings_section",
    "fieldtype": "Section Break",
    "label": "Platform and Admin Settings"
-  },
-  {
-   "default": "0",
-   "fieldname": "allow_delete_in_sql_command",
-   "fieldtype": "Check",
-   "label": "Allow Delete in SQL Command"
   },
   {
    "fieldname": "manufacturing_settings_section",
@@ -203,7 +196,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-06-23 09:04:28.322814",
+ "modified": "2026-07-10 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Av Tools",
  "name": "AV Tools Settings",

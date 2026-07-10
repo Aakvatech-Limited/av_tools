@@ -9,7 +9,6 @@ SETTINGS_FIELDS = (
 	"allow_reopen_of_material_request_based_on_role",
 	"role_to_reopen_material_request",
 	"override_sales_invoice_qty",
-	"allow_delete_in_sql_command",
 	"is_manufacture",
 )
 
