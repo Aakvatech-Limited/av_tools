@@ -23,6 +23,7 @@ from av_tools.trade_in.utils import (
 
 class AVToolsSettings(Document):
 	def on_update(self):
+		self.manage_parallel_approval_functionality()
 		self.manage_trade_in_functionality()
 		self.manage_parallel_approval_functionality()
 
@@ -51,7 +52,6 @@ class AVToolsSettings(Document):
 				# Log the error and notify the user
 				frappe.log_error(f"Error disabling Trade In feature: {e!s}")
 				frappe.msgprint(_("Failed to disable Trade In feature: {0}").format(str(e)))
-
 	def manage_parallel_approval_functionality(self):
 		clear_approval_cache()
 
