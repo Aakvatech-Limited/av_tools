@@ -29,6 +29,7 @@ app_license = "mit"
 app_include_js = [
 	"/assets/av_tools/js/financial_statements_override.js",
 	"/assets/av_tools/js/ai_assist.js",
+	"/assets/av_tools/js/parallel_approval.js",
 ]
 app_include_css = "/assets/av_tools/css/theme.css"
 
@@ -53,9 +54,16 @@ doctype_js = {
 		"weigh_bridge/doctype/sales_invoice_weighbridge_ticket.js",
 		"authotp/api/sales_invoice.js",
 		"av_tools/sales_invoice.js",
+		"av_tools/item_remaining_qty.js",
 	],
-	"Delivery Note": "weigh_bridge/doctype/delivery_note_weighbridge_ticket.js",
-	"Sales Order": "weigh_bridge/doctype/sales_order_weighbridge_ticket.js",
+	"Delivery Note": [
+		"weigh_bridge/doctype/delivery_note_weighbridge_ticket.js",
+		"av_tools/delivery_note.js",
+	],
+	"Sales Order": [
+		"weigh_bridge/doctype/sales_order_weighbridge_ticket.js",
+		"av_tools/sales_order.js",
+	],
 	"Purchase Order": [
 		"weigh_bridge/doctype/purchase_order_weighbridge_ticket.js",
 		"av_tools/purchase_order.js",
@@ -63,6 +71,7 @@ doctype_js = {
 	"Stock Entry": "av_tools/stock_entry.js",
 	"Purchase Invoice": "weigh_bridge/doctype/purchase_invoice_weighbridge_ticket.js",
 	"Purchase Receipt": "weigh_bridge/doctype/purchase_receipt_weighbridge_ticket.js",
+	"Material Request": "av_tools/material_request.js",
 	"Customer": "authotp/api/customer.js",
 	"Account": "av_tools/account.js",
 }
@@ -168,6 +177,8 @@ after_migrate = [
 # 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
 
+boot_session = "av_tools.av_tools_hooks.parallel_approval.boot_session"
+
 # Document Events
 # ---------------
 # Hook on document methods and events
@@ -185,6 +196,7 @@ doc_events = {
 			"av_tools.weigh_bridge.validation.validate_weighbridge_ticket",
 			"av_tools.av_tools_hooks.trade_in.validate_trade_in_serial_no_and_batch",
 			"av_tools.av_tools_hooks.trade_in.validate_trade_in_sales_percentage",
+			"av_tools.av_tools_hooks.item_remaining_qty.validate_items_remaining_qty",
 		],
 		"before_submit": "av_tools.authotp.api.sales_invoice.before_submit",
 		"on_submit": "av_tools.av_tools_hooks.trade_in.create_trade_in_stock_entry",
@@ -210,14 +222,23 @@ doc_events = {
 		"validate": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"onload": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_insert": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
-		"after_insert": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
+		"after_insert": [
+			"av_tools.av_tools.doctype.visibility.visibility.run_visibility",
+			"av_tools.av_tools_hooks.parallel_approval.sync_approver_shares",
+		],
 		"before_naming": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_change": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_update_after_submit": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_validate": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_save": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
-		"on_update": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
-		"before_submit": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
+		"on_update": [
+			"av_tools.av_tools.doctype.visibility.visibility.run_visibility",
+			"av_tools.av_tools_hooks.parallel_approval.sync_approver_shares",
+		],
+		"before_submit": [
+			"av_tools.av_tools.doctype.visibility.visibility.run_visibility",
+			"av_tools.av_tools_hooks.parallel_approval.block_submit_if_not_approved",
+		],
 		"autoname": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"on_cancel": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"on_trash": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],

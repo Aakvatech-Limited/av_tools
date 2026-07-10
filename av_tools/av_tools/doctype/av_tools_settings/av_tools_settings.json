@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "creation": "2026-06-22 18:03:02.295951",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -11,8 +12,8 @@
   "role_to_reopen_material_request",
   "sales_invoice_qty_settings_section",
   "override_sales_invoice_qty",
+  "allow_multi_project_sales_invoice",
   "platform_admin_settings_section",
-  "allow_delete_in_sql_command",
   "manufacturing_settings_section",
   "is_manufacture",
   "buying_settings_section",
@@ -24,7 +25,12 @@
   "indirect_expense_item_section",
   "enable_indirect_expense_item_creation",
   "trade_in_section",
-  "enable_trade_in"
+  "enable_trade_in",
+  "item_remaining_qty_section",
+  "enable_validate_item_remaining_qty",
+  "parallel_approval_section",
+  "enable_multi_approval_document",
+  "approval_doctype"
  ],
  "fields": [
   {
@@ -76,15 +82,16 @@
    "label": "Override Sales Invoice Qty"
   },
   {
+   "default": "0",
+   "description": "When enabled, a single Sales Invoice can consolidate items from Sales Orders belonging to different projects under the same customer.",
+   "fieldname": "allow_multi_project_sales_invoice",
+   "fieldtype": "Check",
+   "label": "Allow Multi-Project Sales Invoice"
+  },
+  {
    "fieldname": "platform_admin_settings_section",
    "fieldtype": "Section Break",
    "label": "Platform and Admin Settings"
-  },
-  {
-   "default": "0",
-   "fieldname": "allow_delete_in_sql_command",
-   "fieldtype": "Check",
-   "label": "Allow Delete in SQL Command"
   },
   {
    "fieldname": "manufacturing_settings_section",
@@ -154,28 +161,61 @@
    "fieldname": "enable_trade_in",
    "fieldtype": "Check",
    "label": "Enable Trade In"
+  },
+  {
+   "fieldname": "item_remaining_qty_section",
+   "fieldtype": "Section Break",
+   "label": "Item Remaining Qty Validation"
+  },
+  {
+   "default": "0",
+   "description": "When enabled, a Sales Invoice item that would oversell available stock (item balance minus pending Sales Orders and pending direct Sales Invoices) is blocked. Items marked \"Allow Over Sell\" are skipped, as is the whole check when Stock Settings allows negative stock.",
+   "fieldname": "enable_validate_item_remaining_qty",
+   "fieldtype": "Check",
+   "label": "Enable Item Remaining Qty Validation"
+  },
+   {
+   "fieldname": "parallel_approval_section",
+   "fieldtype": "Section Break",
+   "label": "Parallel Approval"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_multi_approval_document",
+   "fieldtype": "Check",
+   "label": "Enable Multi Approval Document"
+  },
+  {
+   "depends_on": "eval: doc.enable_multi_approval_document",
+   "fieldname": "approval_doctype",
+   "fieldtype": "Table MultiSelect",
+   "label": "Approval Doctype",
+   "options": "Approval Doctypes"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
+ "modified": "2026-06-23 09:04:28.322814",
+ "modified_by": "Administrator",
  "module": "Av Tools",
  "name": "AV Tools Settings",
+ "owner": "Administrator",
  "permissions": [
   {
    "create": 1,
    "delete": 1,
    "email": 1,
-   "export": 1,
    "print": 1,
    "read": 1,
-   "report": 1,
    "role": "System Manager",
    "share": 1,
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

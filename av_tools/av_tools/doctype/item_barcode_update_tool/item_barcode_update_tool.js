@@ -29,6 +29,9 @@ frappe.ui.form.on('Item Barcode Update Tool', {
 	refresh(frm) {
 		$(".btn-primary").hide()
 	},
+	'scan_barcode': function (frm) {
+		add_scanned_barcode(frm);
+	},
 	'update_barcodes': function (frm) {
 		frappe.call({
 			method: "av_tools.av_tools.doctype.item_barcode_update_tool.item_barcode_update_tool.update_barcodes",
@@ -42,3 +45,36 @@ frappe.ui.form.on('Item Barcode Update Tool', {
 		});
 	},
 })
+
+function add_scanned_barcode(frm) {
+	var barcode = (frm.doc.scan_barcode || "").trim();
+
+	if (!barcode) {
+		return;
+	}
+
+	frm.set_value("scan_barcode", "");
+
+	if (!frm.doc.item_code) {
+		frappe.msgprint(__("Select an Item before scanning a barcode."));
+		return;
+	}
+
+	var exists = (frm.doc.barcodes || []).some(function(row) {
+		return row.barcode === barcode;
+	});
+
+	if (exists) {
+		frappe.show_alert({ message: __("Barcode already added."), indicator: "orange" });
+		return;
+	}
+
+	var child = frm.add_child("barcodes");
+	frappe.model.set_value(child.doctype, child.name, "barcode", barcode);
+
+	if (frm.doc.default_unit_of_measure) {
+		frappe.model.set_value(child.doctype, child.name, "uom", frm.doc.default_unit_of_measure);
+	}
+
+	refresh_field("barcodes");
+}
