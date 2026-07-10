@@ -14,7 +14,6 @@
   "override_sales_invoice_qty",
   "allow_multi_project_sales_invoice",
   "platform_admin_settings_section",
-  "allow_delete_in_sql_command",
   "manufacturing_settings_section",
   "is_manufacture",
   "buying_settings_section",
@@ -25,6 +24,10 @@
   "enable_dependent_auto_permission",
   "indirect_expense_item_section",
   "enable_indirect_expense_item_creation",
+  "trade_in_section",
+  "enable_trade_in",
+  "item_remaining_qty_section",
+  "enable_validate_item_remaining_qty",
   "parallel_approval_section",
   "enable_multi_approval_document",
   "approval_doctype"
@@ -91,12 +94,6 @@
    "label": "Platform and Admin Settings"
   },
   {
-   "default": "0",
-   "fieldname": "allow_delete_in_sql_command",
-   "fieldtype": "Check",
-   "label": "Allow Delete in SQL Command"
-  },
-  {
    "fieldname": "manufacturing_settings_section",
    "fieldtype": "Section Break",
    "label": "Manufacturing Settings"
@@ -154,6 +151,30 @@
    "label": "Enable Indirect Expense Item Auto-Creation"
   },
   {
+   "fieldname": "trade_in_section",
+   "fieldtype": "Section Break",
+   "label": "Trade In"
+  },
+  {
+   "default": "0",
+   "description": "Enable this feature to handle trade-in items directly within Sales Invoices. Enabling it creates the \"Trade In\" Item and \"Trade In Control\" account; disabling it removes them.",
+   "fieldname": "enable_trade_in",
+   "fieldtype": "Check",
+   "label": "Enable Trade In"
+  },
+  {
+   "fieldname": "item_remaining_qty_section",
+   "fieldtype": "Section Break",
+   "label": "Item Remaining Qty Validation"
+  },
+  {
+   "default": "0",
+   "description": "When enabled, a Sales Invoice item that would oversell available stock (item balance minus pending Sales Orders and pending direct Sales Invoices) is blocked. Items marked \"Allow Over Sell\" are skipped, as is the whole check when Stock Settings allows negative stock.",
+   "fieldname": "enable_validate_item_remaining_qty",
+   "fieldtype": "Check",
+   "label": "Enable Item Remaining Qty Validation"
+  },
+   {
    "fieldname": "parallel_approval_section",
    "fieldtype": "Section Break",
    "label": "Parallel Approval"

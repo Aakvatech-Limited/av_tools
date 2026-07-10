@@ -13,6 +13,7 @@
   "item_brand",
   "default_unit_of_measure",
   "barcode_section",
+  "scan_barcode",
   "barcodes",
   "update_barcodes"
  ],
@@ -49,6 +50,12 @@
    "fieldname": "barcode_section",
    "fieldtype": "Section Break",
    "label": "Barcode"
+  },
+  {
+   "fieldname": "scan_barcode",
+   "fieldtype": "Data",
+   "label": "Scan Barcode",
+   "options": "Barcode"
   },
   {
    "fieldname": "barcodes",
