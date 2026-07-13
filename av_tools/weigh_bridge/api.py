@@ -67,6 +67,10 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
         item_code = (row.get("item_code") or "").strip()
         matches = ticket_by_item_code.get(item_code) if item_code else None
         if not matches:
+            if item_code:
+                is_stock_item = frappe.db.get_value("Item", item_code, "is_stock_item")
+                if not is_stock_item:
+                    kept_rows.append(row)
             continue
 
         ticket_row = matches.pop(0)
