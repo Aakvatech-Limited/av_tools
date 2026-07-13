@@ -30,7 +30,9 @@
   "enable_validate_item_remaining_qty",
   "parallel_approval_section",
   "enable_multi_approval_document",
-  "approval_doctype"
+  "approval_doctype",
+  "employee_checkins_section",
+  "enable_missing_employee_checkin_alert"
  ],
  "fields": [
   {
@@ -191,6 +193,18 @@
    "fieldtype": "Table MultiSelect",
    "label": "Approval Doctype",
    "options": "Approval Doctypes"
+  },
+  {
+   "fieldname": "employee_checkins_section",
+   "fieldtype": "Section Break",
+   "label": "Employee Checkins"
+  },
+  {
+   "default": "0",
+   "description": "When enabled, a daily scheduled job emails all active System Managers if any active employee has no Employee Checkin recorded for the previous day.",
+   "fieldname": "enable_missing_employee_checkin_alert",
+   "fieldtype": "Check",
+   "label": "Enable Missing Employee Checkin Alert"
   }
  ],
  "index_web_pages_for_search": 1,
