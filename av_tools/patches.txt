@@ -4,3 +4,28 @@
 
 [post_model_sync]
 # Patches added in this section will be executed after doctypes are migrated
+av_tools.patches.v1_0.move_authotp_module
+av_tools.patches.v1_0.move_feedback_module
+av_tools.patches.v1_0.move_piecework_doctypes
+av_tools.patches.v1_0.ensure_piecework_type_search_fields
+av_tools.patches.v1_0.move_parking_bill_doctypes
+av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides
+av_tools.patches.v1_0.migrate_ai_integration_site_data
+av_tools.patches.v1_0.migrate_generic_technical_admin_reports
+av_tools.patches.v1_0.migrate_report_extension_site_data
+av_tools.patches.v1_0.move_price_change_and_dynamic_price_list_feature
+av_tools.patches.v1_0.move_delivery_exchange_doctypes
+av_tools.patches.v1_0.move_inter_company_transfer_feature
+av_tools.patches.v1_0.move_custom_docperm_feature
+av_tools.patches.v1_0.remove_core_doctype_custom_docperm
+av_tools.patches.v1_0.move_attachment_and_maintenance_doctypes
+av_tools.patches.v1_0.move_root_cause_doctypes
+av_tools.patches.v1_0.move_misc_csf_tz_doctypes
+av_tools.patches.v1_0.move_repack_and_consignment_doctypes
+av_tools.patches.v1_0.move_indirect_expense_item_feature
+av_tools.patches.v1_0.move_csf_tz_print_formats
+av_tools.patches.v1_0.move_salary_register_reports
+av_tools.patches.v1_0.move_financial_and_trade_reports
+av_tools.patches.v1_0.move_hr_access_and_loan_reports
+av_tools.patches.v1_0.move_finance_and_education_doctypes
+av_tools.patches.v1_0.move_trade_in_feature

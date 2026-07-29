@@ -1,0 +1,106 @@
+{
+ "actions": [],
+ "creation": "2026-02-09 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_general",
+  "enabled",
+  "unit_of_measure",
+  "timeout_seconds",
+  "gateway_url",
+  "read_weight_url",
+  "section_break_device",
+  "device_ip",
+  "device_port",
+  "section_break_nci",
+  "command_read_weight"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_general",
+   "fieldtype": "Section Break",
+   "label": "General"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "default": "t",
+   "fieldname": "unit_of_measure",
+   "fieldtype": "Select",
+   "label": "Weight UOM",
+   "options": "kg\nt"
+  },
+  {
+   "default": "5",
+   "fieldname": "timeout_seconds",
+   "fieldtype": "Int",
+   "label": "Timeout (Seconds)"
+  },
+  {
+   "fieldname": "gateway_url",
+   "fieldtype": "Data",
+   "label": "Gateway URL"
+  },
+  {
+   "fieldname": "read_weight_url",
+   "fieldtype": "Data",
+   "label": "Read Weight URL"
+  },
+  {
+   "fieldname": "section_break_device",
+   "fieldtype": "Section Break",
+   "label": "Device"
+  },
+  {
+   "fieldname": "device_ip",
+   "fieldtype": "Data",
+   "label": "Device IP"
+  },
+  {
+   "fieldname": "device_port",
+   "fieldtype": "Int",
+   "label": "Device Port"
+  },
+  {
+   "fieldname": "section_break_nci",
+   "fieldtype": "Section Break",
+   "label": "Avery/NCI (SCP)"
+  },
+  {
+   "default": "RW",
+   "fieldname": "command_read_weight",
+   "fieldtype": "Data",
+   "label": "Read Weight Command"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-02-09 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Weigh Bridge",
+ "name": "Weighbridge Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
