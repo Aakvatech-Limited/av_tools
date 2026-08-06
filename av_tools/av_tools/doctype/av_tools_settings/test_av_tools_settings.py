@@ -7,6 +7,8 @@ from frappe.core.doctype.user.test_user import test_user
 from frappe.tests.utils import FrappeTestCase
 
 from av_tools.av_tools.doctype.av_tools_settings.av_tools_settings import AVToolsSettings
+from av_tools.av_tools_hooks.boot import boot_session
+from av_tools.av_tools_hooks.capture import get_capture_boot_settings
 from av_tools.av_tools_hooks.generic_erp_behavior_overrides import (
 	close_or_unclose_purchase_orders,
 	get_item_details,
@@ -29,6 +31,12 @@ class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
 		"allow_reopen_of_material_request_based_on_role": 0,
 		"role_to_reopen_material_request": "",
 		"override_sales_invoice_qty": 0,
+		"enable_camera_capture_override": 0,
+		"force_web_capture_on_mobile": 0,
+		"camera_capture_ideal_width": 1920,
+		"camera_capture_ideal_height": 1080,
+		"camera_capture_min_width": 0,
+		"camera_capture_min_height": 0,
 	}
 	test_company_name = "Rubis Technical Services Limited"
 	test_supplier_name = "AV Tools Test Supplier"
@@ -179,7 +187,7 @@ class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
 
 	def ensure_test_data(self):
 		self.set_company_context()
-		self.create_supplier(supplier_name=self.test_supplier_name)
+		self.ensure_supplier()
 		self.create_customer(customer_name=self.test_customer_name)
 		self.create_item(
 			item_name=self.test_item_code,
@@ -192,6 +200,19 @@ class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
 		self.project = self.get_project()
 		self.ensure_buying_price_list()
 		self.ensure_item_price()
+
+	def ensure_supplier(self):
+		if frappe.db.exists("Supplier", self.test_supplier_name):
+			self.supplier = self.test_supplier_name
+			return
+
+		supplier = frappe.new_doc("Supplier")
+		supplier.supplier_name = self.test_supplier_name
+		supplier.supplier_type = "Individual"
+		supplier.supplier_group = "Local"
+		supplier.tax_id = "AV-TOOLS-TEST-TAX-ID"
+		supplier.save()
+		self.supplier = supplier.name
 
 	def set_company_context(self):
 		self.company = frappe.db.exists("Company", self.test_company_name)
@@ -324,3 +345,58 @@ class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
 			"ignore_pricing_rule": 1,
 			"qty": 1,
 		}
+
+
+class TestAVToolsCaptureSettings(FrappeTestCase):
+	settings_defaults = {
+		"enable_camera_capture_override": 0,
+		"force_web_capture_on_mobile": 0,
+		"camera_capture_ideal_width": 1920,
+		"camera_capture_ideal_height": 1080,
+		"camera_capture_min_width": 0,
+		"camera_capture_min_height": 0,
+	}
+
+	def setUp(self):
+		frappe.set_user("Administrator")
+		self.set_settings()
+
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		self.set_settings()
+		frappe.db.rollback()
+		super().tearDown()
+
+	def set_settings(self, **overrides):
+		values = {**self.settings_defaults, **overrides}
+		for fieldname, value in values.items():
+			frappe.db.set_single_value(SETTINGS_DOCTYPE, fieldname, value)
+
+	def test_capture_boot_settings_use_single_doctype_values(self):
+		self.set_settings(
+			enable_camera_capture_override=1,
+			force_web_capture_on_mobile=1,
+			camera_capture_ideal_width=2560,
+			camera_capture_ideal_height=1440,
+			camera_capture_min_width=1280,
+			camera_capture_min_height=720,
+		)
+
+		settings = get_capture_boot_settings()
+
+		self.assertTrue(settings["enabled"])
+		self.assertTrue(settings["force_web_capture_on_mobile"])
+		self.assertEqual(settings["ideal_width"], 2560)
+		self.assertEqual(settings["ideal_height"], 1440)
+		self.assertEqual(settings["min_width"], 1280)
+		self.assertEqual(settings["min_height"], 720)
+
+	def test_boot_session_includes_capture_settings(self):
+		self.set_settings(enable_camera_capture_override=1, camera_capture_ideal_width=1600)
+		bootinfo = frappe._dict()
+
+		boot_session(bootinfo)
+
+		self.assertIn("av_tools_capture_settings", bootinfo)
+		self.assertTrue(bootinfo.av_tools_capture_settings["enabled"])
+		self.assertEqual(bootinfo.av_tools_capture_settings["ideal_width"], 1600)

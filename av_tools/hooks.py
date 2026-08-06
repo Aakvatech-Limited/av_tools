@@ -30,6 +30,7 @@ app_include_js = [
 	"/assets/av_tools/js/financial_statements_override.js",
 	"/assets/av_tools/js/ai_assist.js",
 	"/assets/av_tools/js/parallel_approval.js",
+	"/assets/av_tools/js/capture_override.js",
 ]
 app_include_css = "/assets/av_tools/css/theme.css"
 
@@ -177,7 +178,7 @@ after_migrate = [
 # 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
 
-boot_session = "av_tools.av_tools_hooks.parallel_approval.boot_session"
+boot_session = "av_tools.av_tools_hooks.boot.boot_session"
 
 # Document Events
 # ---------------

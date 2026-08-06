@@ -13,7 +13,15 @@
   "sales_invoice_qty_settings_section",
   "override_sales_invoice_qty",
   "allow_multi_project_sales_invoice",
-  "platform_admin_settings_section",
+ "platform_admin_settings_section",
+  "camera_capture_settings_section",
+  "enable_camera_capture_override",
+  "force_web_capture_on_mobile",
+  "camera_capture_column_break",
+  "camera_capture_ideal_width",
+  "camera_capture_ideal_height",
+  "camera_capture_min_width",
+  "camera_capture_min_height",
   "manufacturing_settings_section",
   "is_manufacture",
   "buying_settings_section",
@@ -92,6 +100,62 @@
    "fieldname": "platform_admin_settings_section",
    "fieldtype": "Section Break",
    "label": "Platform and Admin Settings"
+  },
+  {
+   "fieldname": "camera_capture_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Camera Capture Settings"
+  },
+  {
+   "default": "0",
+   "description": "Apply AV Tools camera stream constraints to Frappe web capture. This affects desktop capture immediately and mobile capture when web capture mode is used.",
+   "fieldname": "enable_camera_capture_override",
+   "fieldtype": "Check",
+   "label": "Enable Camera Capture Override"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.enable_camera_capture_override == 1",
+   "description": "Use the browser camera stream on mobile instead of the native file input so the AV Tools capture resolution settings apply.",
+   "fieldname": "force_web_capture_on_mobile",
+   "fieldtype": "Check",
+   "label": "Force Web Capture on Mobile"
+  },
+  {
+   "fieldname": "camera_capture_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1920",
+   "depends_on": "eval:doc.enable_camera_capture_override == 1",
+   "description": "Preferred capture width. The browser treats this as a preference, not a guarantee.",
+   "fieldname": "camera_capture_ideal_width",
+   "fieldtype": "Int",
+   "label": "Preferred Width"
+  },
+  {
+   "default": "1080",
+   "depends_on": "eval:doc.enable_camera_capture_override == 1",
+   "description": "Preferred capture height. The browser treats this as a preference, not a guarantee.",
+   "fieldname": "camera_capture_ideal_height",
+   "fieldtype": "Int",
+   "label": "Preferred Height"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.enable_camera_capture_override == 1",
+   "description": "Optional minimum capture width. Leave at 0 to avoid enforcing a minimum width.",
+   "fieldname": "camera_capture_min_width",
+   "fieldtype": "Int",
+   "label": "Minimum Width"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.enable_camera_capture_override == 1",
+   "description": "Optional minimum capture height. Leave at 0 to avoid enforcing a minimum height.",
+   "fieldname": "camera_capture_min_height",
+   "fieldtype": "Int",
+   "label": "Minimum Height"
   },
   {
    "fieldname": "manufacturing_settings_section",
