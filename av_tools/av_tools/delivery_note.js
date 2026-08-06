@@ -75,21 +75,19 @@ frappe.ui.keys.add_shortcut({
 									item_row.doctype,
 									item_row.name,
 									"warehouse",
-									$(input).attr("data-warehouse"),
+									$(input).attr("data-warehouse")
 								);
 								if ($(input).attr("data-batch")) {
 									frappe.model.set_value(
 										item_row.doctype,
 										item_row.name,
 										"batch_no",
-										$(input).attr("data-batch"),
+										$(input).attr("data-batch")
 									);
 								}
 							});
-						cur_frm.rec_dialog.hide();
-						cur_frm.refresh_fields();
+						d.hide();
 					});
-					cur_frm.rec_dialog = d;
 					d.show();
 				} else {
 					frappe.show_alert({ message: __("There is No Records"), indicator: "red" }, 5);

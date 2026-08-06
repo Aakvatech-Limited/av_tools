@@ -1,5 +1,3 @@
-
-
 from __future__ import annotations
 
 import json
@@ -59,9 +57,7 @@ def get_item_info(item_code: Any):
 			expires_in_days = (exp_date - frappe.utils.datetime.date.today()).days
 			qty_dict.expiry_status = expires_in_days if expires_in_days > 0 else 0
 
-		qty_dict.actual_qty = flt(qty_dict.actual_qty, float_precision) + flt(
-			d.actual_qty, float_precision
-		)
+		qty_dict.actual_qty = flt(qty_dict.actual_qty, float_precision) + flt(d.actual_qty, float_precision)
 
 	result = []
 	for item_code_key, warehouses in iwb_map.items():
@@ -90,8 +86,8 @@ def get_item_prices(item_code: Any, currency: Any, customer: Any = None, company
 		conditions = " AND SI.customer = %(customer)s"
 		params["customer"] = customer
 
-	rows = frappe.db.sql(
-		f"""
+	query = (
+		"""
 		SELECT SI.name, SI.posting_date, SI.customer, SIT.item_code, SIT.qty, SIT.rate
 		FROM `tabSales Invoice` AS SI
 		INNER JOIN `tabSales Invoice Item` AS SIT ON SIT.parent = SI.name
@@ -100,9 +96,15 @@ def get_item_prices(item_code: Any, currency: Any, customer: Any = None, company
 		  AND SI.currency = %(currency)s
 		  AND SI.is_return != 1
 		  AND SI.company = %(company)s
-		  {conditions}
+	"""
+		+ conditions
+		+ """
 		ORDER BY SI.posting_date DESC
-		""",
+	"""
+	)
+
+	rows = frappe.db.sql(
+		query,
 		params,
 		as_dict=True,
 	)
@@ -142,7 +144,7 @@ def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20)
 
 	conditions = ""
 	params: dict = {"item_code": item_code, "currency": currency, "company": company}
-	if posting_date_range and isinstance(posting_date_range, (list, tuple)) and len(posting_date_range) > 1:
+	if posting_date_range and isinstance(posting_date_range, list | tuple) and len(posting_date_range) > 1:
 		try:
 			conditions += " AND DATE(SI.posting_date) BETWEEN %(from_date)s AND %(to_date)s"
 			params["from_date"] = posting_date_range[1][0]
@@ -153,8 +155,8 @@ def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20)
 		conditions += " AND SI.customer = %(customer)s"
 		params["customer"] = customer
 
-	rows = frappe.db.sql(
-		f"""
+	query = (
+		"""
 		SELECT SI.name, SI.posting_date, SI.customer, SIT.item_code, SIT.qty, SIT.rate
 		FROM `tabSales Invoice` AS SI
 		INNER JOIN `tabSales Invoice Item` AS SIT ON SIT.parent = SI.name
@@ -163,9 +165,15 @@ def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20)
 		  AND SI.currency = %(currency)s
 		  AND SI.is_return != 1
 		  AND SI.company = %(company)s
-		  {conditions}
+	"""
+		+ conditions
+		+ """
 		ORDER BY SI.posting_date DESC
-		""",
+	"""
+	)
+
+	rows = frappe.db.sql(
+		query,
 		params,
 		as_dict=True,
 	)
@@ -205,7 +213,7 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 
 	conditions = ""
 	params: dict = {"item_code": item_code, "currency": currency, "company": company}
-	if posting_date_range and isinstance(posting_date_range, (list, tuple)) and len(posting_date_range) > 1:
+	if posting_date_range and isinstance(posting_date_range, list | tuple) and len(posting_date_range) > 1:
 		try:
 			conditions += " AND DATE(PI.posting_date) BETWEEN %(from_date)s AND %(to_date)s"
 			params["from_date"] = posting_date_range[1][0]
@@ -216,8 +224,8 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 		conditions += " AND PI.supplier = %(supplier)s"
 		params["supplier"] = supplier
 
-	rows = frappe.db.sql(
-		f"""
+	query = (
+		"""
 		SELECT PI.name, PI.posting_date, PI.supplier, PIT.item_code, PIT.qty, PIT.rate
 		FROM `tabPurchase Invoice` AS PI
 		INNER JOIN `tabPurchase Invoice Item` AS PIT ON PIT.parent = PI.name
@@ -226,9 +234,15 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 		  AND PI.currency = %(currency)s
 		  AND PI.is_return != 1
 		  AND PI.company = %(company)s
-		  {conditions}
+	"""
+		+ conditions
+		+ """
 		ORDER BY PI.posting_date DESC
-		""",
+	"""
+	)
+
+	rows = frappe.db.sql(
+		query,
 		params,
 		as_dict=True,
 	)
@@ -258,8 +272,8 @@ def get_item_prices_po(item_code: Any, currency: Any, customer: Any = None, comp
 		conditions = " AND PI.supplier = %(supplier)s"
 		params["supplier"] = customer
 
-	rows = frappe.db.sql(
-		f"""
+	query = (
+		"""
 		SELECT PI.name, PI.posting_date, PI.supplier, PIT.item_code, PIT.qty, PIT.rate
 		FROM `tabPurchase Invoice` AS PI
 		INNER JOIN `tabPurchase Invoice Item` AS PIT ON PIT.parent = PI.name
@@ -268,9 +282,15 @@ def get_item_prices_po(item_code: Any, currency: Any, customer: Any = None, comp
 		  AND PI.currency = %(currency)s
 		  AND PI.is_return != 1
 		  AND PI.company = %(company)s
-		  {conditions}
+	"""
+		+ conditions
+		+ """
 		ORDER BY PI.posting_date DESC
-		""",
+	"""
+	)
+
+	rows = frappe.db.sql(
+		query,
 		params,
 		as_dict=True,
 	)

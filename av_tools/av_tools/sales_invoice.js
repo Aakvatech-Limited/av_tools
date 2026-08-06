@@ -1,13 +1,13 @@
+/* global ctrlI, ctrlQ, ctrlU */
+
 // Trade In feature for Sales Invoice (moved from csf_tz)
 
-frappe.require([
-	"/assets/av_tools/js/shortcuts.js",
-]);
+frappe.require(["/assets/av_tools/js/shortcuts.js"]);
 
 frappe.ui.keys.add_shortcut({
 	shortcut: "ctrl+q",
 	action: () => {
-		ctrlQ("Sales Invoice Item");
+		ctrlQ("Sales Invoice Item", window.cur_page?.page?.frm);
 	},
 	page: this.page,
 	description: __("Select Item Warehouse"),
@@ -17,7 +17,7 @@ frappe.ui.keys.add_shortcut({
 frappe.ui.keys.add_shortcut({
 	shortcut: "ctrl+i",
 	action: () => {
-		ctrlI("Sales Invoice Item");
+		ctrlI("Sales Invoice Item", window.cur_page?.page?.frm);
 	},
 	page: this.page,
 	description: __("Select Customer Item Price"),
@@ -27,13 +27,12 @@ frappe.ui.keys.add_shortcut({
 frappe.ui.keys.add_shortcut({
 	shortcut: "ctrl+u",
 	action: () => {
-		ctrlU("Sales Invoice Item");
+		ctrlU("Sales Invoice Item", window.cur_page?.page?.frm);
 	},
 	page: this.page,
 	description: __("Select Item Price"),
 	ignore_inputs: true,
 });
-
 
 frappe.ui.form.on("Sales Invoice", {
 	refresh: function (frm) {
@@ -111,10 +110,10 @@ frappe.ui.form.on("Sales Invoice Item", {
 			// Check if the item_code is "Trade In"
 			if (row.item_code === "Trade In") {
 				// Use toggle_reqd to make the UOM field non-mandatory
-				cur_frm.fields_dict.items.grid.toggle_reqd("uom", false);
+				frm.fields_dict.items.grid.toggle_reqd("uom", false);
 			} else {
 				// For non "Trade In" items, make the UOM field mandatory
-				cur_frm.fields_dict.items.grid.toggle_reqd("uom", true);
+				frm.fields_dict.items.grid.toggle_reqd("uom", true);
 			}
 			set_trade_in_fields_readonly(frm, row);
 		}

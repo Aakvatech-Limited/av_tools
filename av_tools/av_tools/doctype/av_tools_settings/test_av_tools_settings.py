@@ -1,8 +1,12 @@
 import json
 from contextlib import contextmanager
+from typing import ClassVar
 from unittest.mock import patch
 
 import frappe
+from erpnext.accounts.test.accounts_mixin import AccountsTestMixin
+from erpnext.buying.doctype.purchase_order.test_purchase_order import create_purchase_order
+from erpnext.stock.get_item_details import get_item_details as original_get_item_details
 from frappe.core.doctype.user.test_user import test_user
 from frappe.tests.utils import FrappeTestCase
 
@@ -17,15 +21,14 @@ from av_tools.av_tools_hooks.generic_erp_behavior_overrides import (
 )
 from av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides import (
 	SETTINGS_DOCTYPE,
+)
+from av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides import (
 	execute as migrate_generic_settings,
 )
-from erpnext.accounts.test.accounts_mixin import AccountsTestMixin
-from erpnext.buying.doctype.purchase_order.test_purchase_order import create_purchase_order
-from erpnext.stock.get_item_details import get_item_details as original_get_item_details
 
 
 class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
-	settings_defaults = {
+	settings_defaults: ClassVar[dict[str, object]] = {
 		"allow_reopen_of_po_based_on_role": 0,
 		"role_to_reopen_po": "",
 		"allow_reopen_of_material_request_based_on_role": 0,
@@ -155,12 +158,15 @@ class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
 			"override_sales_invoice_qty": 1,
 		}
 
-		with patch(
-			"av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides.source_settings_doctype_exists",
-			return_value=True,
-		), patch(
-			"av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides.get_source_values",
-			return_value=expected_values,
+		with (
+			patch(
+				"av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides.source_settings_doctype_exists",
+				return_value=True,
+			),
+			patch(
+				"av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides.get_source_values",
+				return_value=expected_values,
+			),
 		):
 			migrate_generic_settings()
 			migrate_generic_settings()
@@ -348,7 +354,7 @@ class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
 
 
 class TestAVToolsCaptureSettings(FrappeTestCase):
-	settings_defaults = {
+	settings_defaults: ClassVar[dict[str, object]] = {
 		"enable_camera_capture_override": 0,
 		"force_web_capture_on_mobile": 0,
 		"camera_capture_ideal_width": 1920,

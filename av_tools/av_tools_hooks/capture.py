@@ -1,7 +1,6 @@
 import frappe
 from frappe.utils import cint
 
-
 SETTINGS_DOCTYPE = "AV Tools Settings"
 DEFAULT_CAPTURE_SETTINGS = {
 	"enabled": False,

@@ -1,5 +1,6 @@
 import json
 import re
+from typing import Any
 
 import frappe
 from frappe import scrub
@@ -7,7 +8,6 @@ from frappe.desk.reportview import get_filters_cond, get_match_cond
 from frappe.desk.search import search_link as original_search_link
 from frappe.desk.search import search_widget as original_search_widget
 from frappe.utils import nowdate
-
 
 ERP_ITEM_QUERY = "erpnext.controllers.queries.item_query"
 AV_TOOLS_ITEM_QUERY = "av_tools.av_tools_hooks.item_search.item_query"
@@ -20,7 +20,7 @@ def split_search_terms(txt: str | None) -> list[str]:
 	return [part for part in re.split(r"\s+", txt.strip()) if part]
 
 
-def route_item_query(doctype, query):
+def route_item_query(doctype: str, query: str | None) -> str | None:
 	if doctype == "Item" and not query:
 		return AV_TOOLS_ITEM_QUERY
 
@@ -32,15 +32,15 @@ def route_item_query(doctype, query):
 
 @frappe.whitelist()
 def search_link(
-	doctype,
-	txt,
-	query=None,
-	filters=None,
-	page_length=10,
-	searchfield=None,
-	reference_doctype=None,
-	ignore_user_permissions=False,
-):
+	doctype: str,
+	txt: str,
+	query: str | None = None,
+	filters: dict[str, Any] | str | None = None,
+	page_length: int = 10,
+	searchfield: str | None = None,
+	reference_doctype: str | None = None,
+	ignore_user_permissions: bool = False,
+) -> list[dict[str, Any]]:
 	return original_search_link(
 		doctype=doctype,
 		txt=txt,
@@ -55,18 +55,18 @@ def search_link(
 
 @frappe.whitelist()
 def search_widget(
-	doctype,
-	txt,
-	query=None,
-	searchfield=None,
-	start=0,
-	page_length=10,
-	filters=None,
-	filter_fields=None,
-	as_dict=False,
-	reference_doctype=None,
-	ignore_user_permissions=False,
-):
+	doctype: str,
+	txt: str,
+	query: str | None = None,
+	searchfield: str | None = None,
+	start: int = 0,
+	page_length: int = 10,
+	filters: dict[str, Any] | str | None = None,
+	filter_fields: list[str] | None = None,
+	as_dict: bool = False,
+	reference_doctype: str | None = None,
+	ignore_user_permissions: bool = False,
+) -> list[dict[str, Any]]:
 	return original_search_widget(
 		doctype=doctype,
 		txt=txt,
@@ -84,7 +84,15 @@ def search_widget(
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
+def item_query(
+	doctype: str,
+	txt: str,
+	searchfield: str | None,
+	start: int,
+	page_len: int,
+	filters: dict[str, Any] | str | None,
+	as_dict: bool = False,
+) -> list[dict[str, Any]]:
 	doctype = "Item"
 	conditions = []
 	search_terms = split_search_terms(txt)
@@ -153,29 +161,37 @@ def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=Fals
 	if frappe.db.count(doctype, cache=True) < 50000:
 		description_cond = f"or {build_search_condition('tabItem.description')}"
 
-	return frappe.db.sql(
+	query = (
 		"""select
-			tabItem.name {columns}
+			tabItem.name """
+		+ columns
+		+ """
 		from tabItem
 		where tabItem.docstatus < 2
 			and tabItem.disabled=0
 			and tabItem.has_variants=0
 			and (tabItem.end_of_life > %(today)s or ifnull(tabItem.end_of_life, '0000-00-00')='0000-00-00')
-			and ({scond} or tabItem.item_code IN (select parent from `tabItem Barcode` where barcode LIKE %(txt)s)
-				{description_cond})
-			{fcond} {mcond}
+			and ("""
+		+ searchfields
+		+ """ or tabItem.item_code IN (select parent from `tabItem Barcode` where barcode LIKE %(txt)s)
+				"""
+		+ description_cond
+		+ """)
+			"""
+		+ get_filters_cond(doctype, filters, conditions).replace("%", "%%")
+		+ " "
+		+ get_match_cond(doctype).replace("%", "%%")
+		+ """
 		order by
 			if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
 			if(locate(%(_txt)s, item_name), locate(%(_txt)s, item_name), 99999),
 			idx desc,
 			name, item_name
-		limit %(start)s, %(page_len)s """.format(
-			columns=columns,
-			scond=searchfields,
-			fcond=get_filters_cond(doctype, filters, conditions).replace("%", "%%"),
-			mcond=get_match_cond(doctype).replace("%", "%%"),
-			description_cond=description_cond,
-		),
+		limit %(start)s, %(page_len)s """
+	)
+
+	return frappe.db.sql(
+		query,
 		{
 			"today": nowdate(),
 			"txt": f"%{search_text}%",

@@ -9,7 +9,9 @@
 	function normalizeCaptureSettings(settings) {
 		return {
 			enabled: Boolean(Number(settings && settings.enabled)),
-			force_web_capture_on_mobile: Boolean(Number(settings && settings.force_web_capture_on_mobile)),
+			force_web_capture_on_mobile: Boolean(
+				Number(settings && settings.force_web_capture_on_mobile)
+			),
 			ideal_width: parsePositiveInt(settings && settings.ideal_width, 1920),
 			ideal_height: parsePositiveInt(settings && settings.ideal_height, 1080),
 			min_width: parsePositiveInt(settings && settings.min_width, 0),
@@ -28,7 +30,10 @@
 
 	function shouldUseWebCaptureOnMobile(settings) {
 		var sysdefaults = (frappe.boot && frappe.boot.sysdefaults) || {};
-		return shouldForceAppWebCapture(settings) || Boolean(Number(sysdefaults.force_web_capture_mode_for_uploads));
+		return (
+			shouldForceAppWebCapture(settings) ||
+			Boolean(Number(sysdefaults.force_web_capture_mode_for_uploads))
+		);
 	}
 
 	function buildTrackConstraints(capture, settings) {
@@ -137,7 +142,8 @@
 
 	function captureStillImage(capture) {
 		var fallbackImage = frappe._.get_data_uri(capture.video);
-		var track = capture.stream && capture.stream.getVideoTracks && capture.stream.getVideoTracks()[0];
+		var track =
+			capture.stream && capture.stream.getVideoTracks && capture.stream.getVideoTracks()[0];
 
 		if (!track || typeof ImageCapture !== "function") {
 			return Promise.resolve(fallbackImage);
@@ -149,10 +155,13 @@
 				return Promise.resolve(fallbackImage);
 			}
 
-			return imageCapture.takePhoto().then(blobToPngDataUrl).catch(function (error) {
-				console.warn("[av_tools] Falling back to stream-frame capture", error);
-				return fallbackImage;
-			});
+			return imageCapture
+				.takePhoto()
+				.then(blobToPngDataUrl)
+				.catch(function (error) {
+					console.warn("[av_tools] Falling back to stream-frame capture", error);
+					return fallbackImage;
+				});
 		} catch (error) {
 			console.warn("[av_tools] Falling back to stream-frame capture", error);
 			return Promise.resolve(fallbackImage);
@@ -214,7 +223,11 @@
 	}
 
 	function installCaptureOverride() {
-		if (!frappe.ui || !frappe.ui.Capture || frappe.ui.Capture.__av_tools_capture_override_installed) {
+		if (
+			!frappe.ui ||
+			!frappe.ui.Capture ||
+			frappe.ui.Capture.__av_tools_capture_override_installed
+		) {
 			return Boolean(frappe.ui && frappe.ui.Capture);
 		}
 
