@@ -28,9 +28,9 @@ def update_barcodes(doc):
         item.append(
             "barcodes",
             {
-                "barcode": barcode["barcode"],
-                "barcode_type": barcode["barcode_type"],
-                "uom": barcode["uom"],
+                "barcode": barcode.get("barcode"),
+                "barcode_type": barcode.get("barcode_type"),
+                "uom": barcode.get("uom"),
             },
         )
     item.save(ignore_permissions=True)

@@ -30,3 +30,4 @@ av_tools.patches.v1_0.move_hr_access_and_loan_reports
 av_tools.patches.v1_0.move_finance_and_education_doctypes
 av_tools.patches.v1_0.move_trade_in_feature
 av_tools.patches.custom_fields.auth_otp_custom_fields
+av_tools.patches.remove_weighbridge_ticket_fields
