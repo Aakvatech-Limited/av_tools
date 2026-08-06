@@ -1,5 +1,15 @@
 (function () {
 	frappe.provide("av_tools.capture_override");
+	var defaultCaptureSettings = {
+		enabled: 0,
+		force_web_capture_on_mobile: 0,
+		ideal_width: 1920,
+		ideal_height: 1080,
+		min_width: 0,
+		min_height: 0,
+	};
+	var captureSettingsCache = null;
+	var captureSettingsPromise = null;
 
 	function parsePositiveInt(value, fallback) {
 		var parsed = parseInt(value, 10);
@@ -20,8 +30,35 @@
 	}
 
 	function getCaptureSettings() {
-		var bootSettings = (frappe.boot && frappe.boot.av_tools_capture_settings) || {};
-		return normalizeCaptureSettings(bootSettings);
+		return normalizeCaptureSettings(captureSettingsCache || defaultCaptureSettings);
+	}
+
+	function fetchCaptureSettings(forceRefresh) {
+		if (!forceRefresh && captureSettingsCache) {
+			return Promise.resolve(getCaptureSettings());
+		}
+
+		if (!forceRefresh && captureSettingsPromise) {
+			return captureSettingsPromise;
+		}
+
+		captureSettingsPromise = new Promise(function (resolve) {
+			frappe.call({
+				method: "av_tools.av_tools_hooks.capture.get_capture_settings",
+				callback: function (response) {
+					captureSettingsCache = normalizeCaptureSettings(response.message || {});
+					resolve(captureSettingsCache);
+				},
+				error: function () {
+					captureSettingsCache = normalizeCaptureSettings(defaultCaptureSettings);
+					resolve(captureSettingsCache);
+				},
+			});
+		}).finally(function () {
+			captureSettingsPromise = null;
+		});
+
+		return captureSettingsPromise;
 	}
 
 	function shouldForceAppWebCapture(settings) {
@@ -237,28 +274,35 @@
 		var originalSetupTakePhotoAction = proto.setup_take_photo_action;
 
 		proto.show = function () {
-			var settings = getCaptureSettings();
+			var me = this;
+			return fetchCaptureSettings().then(function (settings) {
+				me.__av_tools_capture_settings = settings;
 
-			if (!shouldForceAppWebCapture(settings)) {
-				return originalShow.call(this);
-			}
+				if (!shouldForceAppWebCapture(settings)) {
+					return originalShow.call(me);
+				}
 
-			this.build_dialog();
-			this.show_for_desktop();
+				me.build_dialog();
+				me.show_for_desktop();
+				return undefined;
+			});
 		};
 
 		proto.render_stream = function () {
-			var settings = getCaptureSettings();
+			var me = this;
+			return fetchCaptureSettings().then(function (settings) {
+				me.__av_tools_capture_settings = settings;
 
-			if (!settings.enabled) {
-				return originalRenderStream.call(this);
-			}
+				if (!settings.enabled) {
+					return originalRenderStream.call(me);
+				}
 
-			return renderStreamWithConstraints(this, buildConstraints(this, settings), settings);
+				return renderStreamWithConstraints(me, buildConstraints(me, settings), settings);
+			});
 		};
 
 		proto.setup_take_photo_action = function () {
-			var settings = getCaptureSettings();
+			var settings = this.__av_tools_capture_settings || getCaptureSettings();
 			var me = this;
 
 			if (!settings.enabled) {
@@ -279,13 +323,15 @@
 
 			this.dialog.set_secondary_action_label(__("Capture"));
 			this.dialog.set_secondary_action(function () {
-				var settings = getCaptureSettings();
-				if (frappe.is_mobile() && !shouldUseWebCaptureOnMobile(settings)) {
-					me.show_for_mobile();
-					return;
-				}
+				fetchCaptureSettings().then(function (settings) {
+					me.__av_tools_capture_settings = settings;
+					if (frappe.is_mobile() && !shouldUseWebCaptureOnMobile(settings)) {
+						me.show_for_mobile();
+						return;
+					}
 
-				me.render_stream();
+					me.render_stream();
+				});
 			});
 		};
 

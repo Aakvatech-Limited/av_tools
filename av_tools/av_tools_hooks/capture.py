@@ -19,7 +19,7 @@ def _sanitize_positive_int(value, default=0):
 	return default
 
 
-def get_capture_boot_settings():
+def _get_capture_settings():
 	settings = DEFAULT_CAPTURE_SETTINGS.copy()
 
 	try:
@@ -39,4 +39,4 @@ def get_capture_boot_settings():
 
 @frappe.whitelist()
 def get_capture_settings():
-	return get_capture_boot_settings()
+	return _get_capture_settings()

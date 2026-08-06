@@ -178,7 +178,7 @@ after_migrate = [
 # 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
 
-boot_session = "av_tools.av_tools_hooks.boot.boot_session"
+boot_session = "av_tools.av_tools_hooks.parallel_approval.boot_session"
 
 # Document Events
 # ---------------
@@ -283,7 +283,7 @@ override_whitelisted_methods = {
 }
 
 # Override doctype class to intercept report execution
-override_doctype_class = {"Report": "av_tools.av_tools_hooks.report_override.ReportOverride"}
+override_doctype_class = {"Report": "av_tools.av_tools_hooks.report_override.ReportOverride"}  # nosemgrep: override-doctype-class - v15 report extension depends on overriding execute_script_report
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,

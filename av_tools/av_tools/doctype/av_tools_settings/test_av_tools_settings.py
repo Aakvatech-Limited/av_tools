@@ -11,8 +11,7 @@ from frappe.core.doctype.user.test_user import test_user
 from frappe.tests.utils import FrappeTestCase
 
 from av_tools.av_tools.doctype.av_tools_settings.av_tools_settings import AVToolsSettings
-from av_tools.av_tools_hooks.boot import boot_session
-from av_tools.av_tools_hooks.capture import get_capture_boot_settings
+from av_tools.av_tools_hooks.capture import get_capture_settings
 from av_tools.av_tools_hooks.generic_erp_behavior_overrides import (
 	close_or_unclose_purchase_orders,
 	get_item_details,
@@ -388,7 +387,7 @@ class TestAVToolsCaptureSettings(FrappeTestCase):
 			camera_capture_min_height=720,
 		)
 
-		settings = get_capture_boot_settings()
+		settings = get_capture_settings()
 
 		self.assertTrue(settings["enabled"])
 		self.assertTrue(settings["force_web_capture_on_mobile"])
@@ -396,13 +395,3 @@ class TestAVToolsCaptureSettings(FrappeTestCase):
 		self.assertEqual(settings["ideal_height"], 1440)
 		self.assertEqual(settings["min_width"], 1280)
 		self.assertEqual(settings["min_height"], 720)
-
-	def test_boot_session_includes_capture_settings(self):
-		self.set_settings(enable_camera_capture_override=1, camera_capture_ideal_width=1600)
-		bootinfo = frappe._dict()
-
-		boot_session(bootinfo)
-
-		self.assertIn("av_tools_capture_settings", bootinfo)
-		self.assertTrue(bootinfo.av_tools_capture_settings["enabled"])
-		self.assertEqual(bootinfo.av_tools_capture_settings["ideal_width"], 1600)
