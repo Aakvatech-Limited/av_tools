@@ -34,7 +34,6 @@ class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
 		"role_to_reopen_material_request": "",
 		"override_sales_invoice_qty": 0,
 		"enable_camera_capture_override": 0,
-		"force_web_capture_on_mobile": 0,
 		"camera_capture_ideal_width": 1920,
 		"camera_capture_ideal_height": 1080,
 		"camera_capture_min_width": 0,
@@ -342,7 +341,6 @@ class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
 class TestAVToolsCaptureSettings(FrappeTestCase):
 	settings_defaults: ClassVar[dict[str, object]] = {
 		"enable_camera_capture_override": 0,
-		"force_web_capture_on_mobile": 0,
 		"camera_capture_ideal_width": 1920,
 		"camera_capture_ideal_height": 1080,
 		"camera_capture_min_width": 0,
@@ -367,7 +365,6 @@ class TestAVToolsCaptureSettings(FrappeTestCase):
 	def test_get_capture_settings_uses_single_doctype_values(self):
 		self.set_settings(
 			enable_camera_capture_override=1,
-			force_web_capture_on_mobile=1,
 			camera_capture_ideal_width=2560,
 			camera_capture_ideal_height=1440,
 			camera_capture_min_width=1280,
@@ -377,7 +374,6 @@ class TestAVToolsCaptureSettings(FrappeTestCase):
 		settings = get_capture_settings()
 
 		self.assertTrue(settings["enabled"])
-		self.assertTrue(settings["force_web_capture_on_mobile"])
 		self.assertEqual(settings["ideal_width"], 2560)
 		self.assertEqual(settings["ideal_height"], 1440)
 		self.assertEqual(settings["min_width"], 1280)

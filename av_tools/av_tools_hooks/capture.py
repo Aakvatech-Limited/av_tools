@@ -4,7 +4,6 @@ from frappe.utils import cint
 SETTINGS_DOCTYPE = "AV Tools Settings"
 DEFAULT_CAPTURE_SETTINGS = {
 	"enabled": False,
-	"force_web_capture_on_mobile": False,
 	"ideal_width": 1920,
 	"ideal_height": 1080,
 	"min_width": 0,
@@ -28,11 +27,18 @@ def _get_capture_settings():
 		return settings
 
 	settings["enabled"] = bool(cint(values.get("enable_camera_capture_override")))
-	settings["force_web_capture_on_mobile"] = bool(cint(values.get("force_web_capture_on_mobile")))
-	settings["ideal_width"] = _sanitize_positive_int(values.get("camera_capture_ideal_width"), 1920)
-	settings["ideal_height"] = _sanitize_positive_int(values.get("camera_capture_ideal_height"), 1080)
-	settings["min_width"] = _sanitize_positive_int(values.get("camera_capture_min_width"), 0)
-	settings["min_height"] = _sanitize_positive_int(values.get("camera_capture_min_height"), 0)
+	settings["ideal_width"] = _sanitize_positive_int(
+		values.get("camera_capture_ideal_width"), DEFAULT_CAPTURE_SETTINGS["ideal_width"]
+	)
+	settings["ideal_height"] = _sanitize_positive_int(
+		values.get("camera_capture_ideal_height"), DEFAULT_CAPTURE_SETTINGS["ideal_height"]
+	)
+	settings["min_width"] = _sanitize_positive_int(
+		values.get("camera_capture_min_width"), DEFAULT_CAPTURE_SETTINGS["min_width"]
+	)
+	settings["min_height"] = _sanitize_positive_int(
+		values.get("camera_capture_min_height"), DEFAULT_CAPTURE_SETTINGS["min_height"]
+	)
 
 	return settings
 

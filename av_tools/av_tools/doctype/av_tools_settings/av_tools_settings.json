@@ -30,7 +30,6 @@
   "enable_validate_item_remaining_qty",
   "camera_capture_section",
   "enable_camera_capture_override",
-  "force_web_capture_on_mobile",
   "camera_capture_column_break",
   "camera_capture_ideal_width",
   "camera_capture_ideal_height",
@@ -193,14 +192,6 @@
    "fieldname": "enable_camera_capture_override",
    "fieldtype": "Check",
    "label": "Enable Camera Capture Override"
-  },
-  {
-   "default": "0",
-   "depends_on": "eval:doc.enable_camera_capture_override == 1",
-   "description": "When enabled, mobile users will use the browser camera dialog instead of the native device capture flow.",
-   "fieldname": "force_web_capture_on_mobile",
-   "fieldtype": "Check",
-   "label": "Force Web Capture On Mobile"
   },
   {
    "depends_on": "eval:doc.enable_camera_capture_override == 1",
