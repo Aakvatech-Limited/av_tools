@@ -1,12 +1,17 @@
 import json
 from contextlib import contextmanager
+from typing import ClassVar
 from unittest.mock import patch
 
 import frappe
+from erpnext.accounts.test.accounts_mixin import AccountsTestMixin
+from erpnext.buying.doctype.purchase_order.test_purchase_order import create_purchase_order
+from erpnext.stock.get_item_details import get_item_details as original_get_item_details
 from frappe.core.doctype.user.test_user import test_user
 from frappe.tests.utils import FrappeTestCase
 
 from av_tools.av_tools.doctype.av_tools_settings.av_tools_settings import AVToolsSettings
+from av_tools.av_tools_hooks.capture import get_capture_settings
 from av_tools.av_tools_hooks.generic_erp_behavior_overrides import (
 	close_or_unclose_purchase_orders,
 	get_item_details,
@@ -15,20 +20,25 @@ from av_tools.av_tools_hooks.generic_erp_behavior_overrides import (
 )
 from av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides import (
 	SETTINGS_DOCTYPE,
+)
+from av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides import (
 	execute as migrate_generic_settings,
 )
-from erpnext.accounts.test.accounts_mixin import AccountsTestMixin
-from erpnext.buying.doctype.purchase_order.test_purchase_order import create_purchase_order
-from erpnext.stock.get_item_details import get_item_details as original_get_item_details
 
 
 class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
-	settings_defaults = {
+	settings_defaults: ClassVar[dict[str, object]] = {
 		"allow_reopen_of_po_based_on_role": 0,
 		"role_to_reopen_po": "",
 		"allow_reopen_of_material_request_based_on_role": 0,
 		"role_to_reopen_material_request": "",
 		"override_sales_invoice_qty": 0,
+		"enable_camera_capture_override": 0,
+		"force_web_capture_on_mobile": 0,
+		"camera_capture_ideal_width": 1920,
+		"camera_capture_ideal_height": 1080,
+		"camera_capture_min_width": 0,
+		"camera_capture_min_height": 0,
 	}
 	test_company_name = "Rubis Technical Services Limited"
 	test_supplier_name = "AV Tools Test Supplier"
@@ -147,12 +157,15 @@ class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
 			"override_sales_invoice_qty": 1,
 		}
 
-		with patch(
-			"av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides.source_settings_doctype_exists",
-			return_value=True,
-		), patch(
-			"av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides.get_source_values",
-			return_value=expected_values,
+		with (
+			patch(
+				"av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides.source_settings_doctype_exists",
+				return_value=True,
+			),
+			patch(
+				"av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides.get_source_values",
+				return_value=expected_values,
+			),
 		):
 			migrate_generic_settings()
 			migrate_generic_settings()
@@ -324,3 +337,48 @@ class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
 			"ignore_pricing_rule": 1,
 			"qty": 1,
 		}
+
+
+class TestAVToolsCaptureSettings(FrappeTestCase):
+	settings_defaults: ClassVar[dict[str, object]] = {
+		"enable_camera_capture_override": 0,
+		"force_web_capture_on_mobile": 0,
+		"camera_capture_ideal_width": 1920,
+		"camera_capture_ideal_height": 1080,
+		"camera_capture_min_width": 0,
+		"camera_capture_min_height": 0,
+	}
+
+	def setUp(self):
+		frappe.set_user("Administrator")
+		self.set_settings()
+
+	def tearDown(self):
+		frappe.set_user("Administrator")
+		self.set_settings()
+		frappe.db.rollback()
+		super().tearDown()
+
+	def set_settings(self, **overrides):
+		values = {**self.settings_defaults, **overrides}
+		for fieldname, value in values.items():
+			frappe.db.set_single_value(SETTINGS_DOCTYPE, fieldname, value)
+
+	def test_get_capture_settings_uses_single_doctype_values(self):
+		self.set_settings(
+			enable_camera_capture_override=1,
+			force_web_capture_on_mobile=1,
+			camera_capture_ideal_width=2560,
+			camera_capture_ideal_height=1440,
+			camera_capture_min_width=1280,
+			camera_capture_min_height=720,
+		)
+
+		settings = get_capture_settings()
+
+		self.assertTrue(settings["enabled"])
+		self.assertTrue(settings["force_web_capture_on_mobile"])
+		self.assertEqual(settings["ideal_width"], 2560)
+		self.assertEqual(settings["ideal_height"], 1440)
+		self.assertEqual(settings["min_width"], 1280)
+		self.assertEqual(settings["min_height"], 720)
