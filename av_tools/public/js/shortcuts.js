@@ -14,6 +14,7 @@ function ctrlQ (TableName) {
                 });
                 $(`<div class="modal-body ui-front">
                             <h2>${item_row.item_code} : ${item_row.qty}</h2>
+                            <p class="text-muted">${item_row.item_name || ''}</p>
                             <p>Choose Warehouse and click Select :</p>
                             <table class="table table-bordered">
                             <thead>
