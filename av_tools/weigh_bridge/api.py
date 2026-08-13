@@ -62,6 +62,13 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
             continue
         ticket_by_item_code.setdefault(item_code, []).append(row)
 
+    settings = frappe.get_single("Weighbridge Settings")
+    allowed_transport_items = {
+        (row.item_code or "").strip()
+        for row in (settings.get("transport_items") or [])
+        if row.get("item_code")
+    }
+
     kept_rows = []
     for row in (target_doc.get("items") or []):
         item_code = (row.get("item_code") or "").strip()
@@ -69,7 +76,7 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
         if not matches:
             if item_code:
                 is_stock_item = frappe.db.get_value("Item", item_code, "is_stock_item")
-                if not is_stock_item:
+                if not is_stock_item and item_code in allowed_transport_items:
                     kept_rows.append(row)
             continue
 
@@ -94,8 +101,6 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
         if ticket_row.get("so_detail") and hasattr(row, "so_detail"):
             row.so_detail = ticket_row.get("so_detail")
 
-        row.weighbridge_ticket = ticket_doc.name
-
         kept_rows.append(row)
 
     # Add remaining ticket items that didn't exist on mapped target.
@@ -119,8 +124,6 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
                 child.sales_order = ticket_row.get("sales_order")
             if ticket_row.get("so_detail") and hasattr(child, "so_detail"):
                 child.so_detail = ticket_row.get("so_detail")
-
-            child.weighbridge_ticket = ticket_doc.name
 
             from erpnext.stock.get_item_details import get_item_details
             
@@ -192,6 +195,10 @@ def make_target_from_ticket(source_name):
             target.customer = ticket.customer
         if ticket.supplier and target.meta.has_field("supplier"):
             target.supplier = ticket.supplier
+
+    # Link ticket so existing validation + UI continue to work.
+    if target.meta.has_field("weighbridge_ticket"):
+        target.weighbridge_ticket = ticket.name
 
     # Prefer ticket posting date/time when target supports them.
     if ticket.get("posting_date") and target.meta.has_field("posting_date"):
@@ -302,6 +309,21 @@ def get_ticket_items(ticket, doctype=None, document_name=None):
         )
 
     if (
+        doctype
+        and doc.target_document_type
+        and doc.target_document_type != doctype
+        and not is_source_request
+    ):
+        frappe.throw("Weighbridge Ticket target document type does not match.")
+    if (
+        document_name
+        and doc.target_document_reference
+        and doc.target_document_reference != document_name
+        and not is_source_request
+    ):
+        frappe.throw("Weighbridge Ticket belongs to another document.")
+
+    if (
         document_name
         and doctype
         and frappe.db.exists(doctype, document_name)
@@ -313,6 +335,18 @@ def get_ticket_items(ticket, doctype=None, document_name=None):
                 frappe.throw(
                     f"Weighbridge source {doc.document_type} can only create: {', '.join(sorted(allowed_targets)) or 'None'}."
                 )
+
+        frappe.db.set_value(
+            "Weighbridge Ticket",
+            doc.name,
+            {
+                "target_document_type": doctype,
+                "target_document_reference": document_name,
+            },
+            update_modified=True,
+        )
+        doc.target_document_type = doctype
+        doc.target_document_reference = document_name
 
     so_name = None
     so_details_by_item_code = {}
@@ -350,6 +384,8 @@ def get_ticket_items(ticket, doctype=None, document_name=None):
         "items": items,
         "document_type": doc.document_type,
         "document_reference": doc.document_reference,
+        "target_document_type": doc.target_document_type,
+        "target_document_reference": doc.target_document_reference,
         "company": doc.company,
         "customer": doc.customer,
         "supplier": doc.supplier,

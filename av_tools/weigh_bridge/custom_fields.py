@@ -14,25 +14,4 @@ def setup_custom_fields():
         ],
     }
 
-    item_doctypes = [
-        "Sales Invoice Item",
-        "Delivery Note Item",
-        "Sales Order Item",
-        "Purchase Order Item",
-        "Purchase Invoice Item",
-        "Purchase Receipt Item",
-    ]
-
-    for dt in item_doctypes:
-        custom_fields[dt] = [
-            {
-                "fieldname": "weighbridge_ticket",
-                "label": "Weighbridge Ticket",
-                "fieldtype": "Link",
-                "options": "Weighbridge Ticket",
-                "insert_after": "item_code",
-                "read_only": 1,
-            }
-        ]
-
     create_custom_fields(custom_fields, update=True)

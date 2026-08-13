@@ -139,10 +139,12 @@ const add_create_buttons = (frm) => {
     return;
   }
 
-  const targets = CREATE_TARGETS_BY_SOURCE[frm.doc.document_type || "Sales Order"];
-  if (!targets || !targets.length) {
+  if (frm.doc.target_document_reference) {
     return;
   }
+
+  const targets =
+    CREATE_TARGETS_BY_SOURCE[frm.doc.document_type] || CREATE_TARGET_DOCTYPES;
 
   targets.forEach((targetDoctype) => {
     frm.add_custom_button(
