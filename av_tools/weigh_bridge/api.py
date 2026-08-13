@@ -62,11 +62,22 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
             continue
         ticket_by_item_code.setdefault(item_code, []).append(row)
 
+    settings = frappe.get_single("Weighbridge Settings")
+    allowed_transport_items = {
+        (row.item_code or "").strip()
+        for row in (settings.get("transport_items") or [])
+        if row.get("item_code")
+    }
+
     kept_rows = []
     for row in (target_doc.get("items") or []):
         item_code = (row.get("item_code") or "").strip()
         matches = ticket_by_item_code.get(item_code) if item_code else None
         if not matches:
+            if item_code:
+                is_stock_item = frappe.db.get_value("Item", item_code, "is_stock_item")
+                if not is_stock_item and item_code in allowed_transport_items:
+                    kept_rows.append(row)
             continue
 
         ticket_row = matches.pop(0)

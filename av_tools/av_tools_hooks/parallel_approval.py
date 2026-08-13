@@ -2,7 +2,6 @@ import frappe
 from frappe import _
 from frappe.custom.doctype.custom_field.custom_field import (
     create_custom_fields,
-    delete_custom_fields,
 )
 from frappe import share as frappe_share
 
@@ -17,7 +16,9 @@ def _get_approval_doctypes() -> set:
         if getattr(frappe.flags, "in_migrate", False):
             return set()
 
-        if not frappe.db.get_single_value("AV Tools Settings", "enable_multi_approval_document"):
+        if not frappe.db.get_single_value(
+            "AV Tools Settings", "enable_multi_approval_document"
+        ):
             return set()
 
         if not frappe.db.table_exists("Approval Doctypes"):
@@ -31,7 +32,9 @@ def _get_approval_doctypes() -> set:
         return set(rows)
 
     except Exception:
-        frappe.log_error(frappe.get_traceback(), "Parallel Approval: _get_approval_doctypes failed")
+        frappe.log_error(
+            frappe.get_traceback(), "Parallel Approval: _get_approval_doctypes failed"
+        )
         return set()
 
 
@@ -61,12 +64,21 @@ def sync_approver_shares(doc, method=None):
     for row in approver_rows:
         if row.approver:
             desired.add(row.approver)
-            user_info[row.approver] = {"name": row.approver_name or row.approver, "position": row.position or ""}
+            user_info[row.approver] = {
+                "name": row.approver_name or row.approver,
+                "position": row.position or "",
+            }
         if row.delegate_to:
             desired.add(row.delegate_to)
             if row.delegate_to not in user_info:
-                delegate_name = frappe.get_cached_value("User", row.delegate_to, "full_name") or row.delegate_to
-                user_info[row.delegate_to] = {"name": delegate_name, "position": row.position or ""}
+                delegate_name = (
+                    frappe.get_cached_value("User", row.delegate_to, "full_name")
+                    or row.delegate_to
+                )
+                user_info[row.delegate_to] = {
+                    "name": delegate_name,
+                    "position": row.position or "",
+                }
 
     # Capture existing DocShare users BEFORE adding new ones to detect new additions
     existing = frappe.get_all(
@@ -78,7 +90,9 @@ def sync_approver_shares(doc, method=None):
 
     flags = {"ignore_share_permission": True}
     for user in desired:
-        frappe_share.add_docshare(doc.doctype, doc.name, user, read=1, write=0, flags=flags)
+        frappe_share.add_docshare(
+            doc.doctype, doc.name, user, read=1, write=0, flags=flags
+        )
         if user not in existing_users:
             _notify_approver_added(user, user_info.get(user, {}), doc)
 
@@ -97,11 +111,20 @@ def _notify_approver_added(user, info, doc):
         route = frappe.scrub(doc.doctype).replace("_", "-")
         doc_url = f"{site_url}/app/{route}/{doc.name}"
 
-        added_by = frappe.get_cached_value("User", frappe.session.user, "full_name") or frappe.session.user
+        added_by = (
+            frappe.get_cached_value("User", frappe.session.user, "full_name")
+            or frappe.session.user
+        )
 
-        subject = _("You have been added as an approver — {0} {1}").format(doc.doctype, doc.name)
+        subject = _("You have been added as an approver — {0} {1}").format(
+            doc.doctype, doc.name
+        )
 
-        position_line = f"<p><b>{_('Position')}:</b> {frappe.utils.escape_html(position)}</p>" if position else ""
+        position_line = (
+            f"<p><b>{_('Position')}:</b> {frappe.utils.escape_html(position)}</p>"
+            if position
+            else ""
+        )
 
         message = f"""
 <p>{_("Dear")} {frappe.utils.escape_html(display_name)},</p>
@@ -126,7 +149,9 @@ def _notify_approver_added(user, info, doc):
             now=True,
         )
     except Exception:
-        frappe.log_error(frappe.get_traceback(), "Parallel Approval: approver email failed")
+        frappe.log_error(
+            frappe.get_traceback(), "Parallel Approval: approver email failed"
+        )
 
 
 def block_submit_if_not_approved(doc, method=None):
@@ -196,7 +221,9 @@ def create_approval_fields(doctype: str) -> None:
 
 
 def delete_approval_fields(doctype: str) -> None:
-    delete_custom_fields({doctype: [_APPROVER_TAB, _APPROVER_TABLE]})
+    for fieldname in [_APPROVER_TAB, _APPROVER_TABLE]:
+        frappe.db.delete("Custom Field", {"dt": doctype, "fieldname": fieldname})
+    frappe.clear_cache(doctype=doctype)
 
 
 def clear_approval_cache() -> None:
@@ -285,13 +312,15 @@ def create_approver_qr_print_format(doctype: str) -> None:
                 continue
             if any(f.get("fieldname") == _QR_FIELD_NAME for f in fd):
                 continue
-            fd.append({
-                "fieldname": _QR_FIELD_NAME,
-                "fieldtype": "HTML",
-                "label": "Approver QR Codes",
-                "print_hide": 0,
-                "options": _QR_PRINT_FORMAT_HTML,
-            })
+            fd.append(
+                {
+                    "fieldname": _QR_FIELD_NAME,
+                    "fieldtype": "HTML",
+                    "label": "Approver QR Codes",
+                    "print_hide": 0,
+                    "options": _QR_PRINT_FORMAT_HTML,
+                }
+            )
             pf.format_data = json.dumps(fd)
             pf.save(ignore_permissions=True)
 
@@ -334,7 +363,9 @@ def boot_session(bootinfo):
     try:
         bootinfo.parallel_approval_doctypes = list(_get_approval_doctypes())
     except Exception:
-        frappe.log_error(frappe.get_traceback(), "Parallel Approval: boot_session failed")
+        frappe.log_error(
+            frappe.get_traceback(), "Parallel Approval: boot_session failed"
+        )
         bootinfo.parallel_approval_doctypes = []
 
 
@@ -352,7 +383,7 @@ def submit_approval_action(doctype, docname, action, reason=None):
     current_user = frappe.session.user
 
     approver_row = None
-    for row in (getattr(doc, _APPROVER_TABLE, None) or []):
+    for row in getattr(doc, _APPROVER_TABLE, None) or []:
         if row.approver == current_user or row.delegate_to == current_user:
             approver_row = row
             break
@@ -360,50 +391,90 @@ def submit_approval_action(doctype, docname, action, reason=None):
     if not approver_row:
         frappe.throw(_("You are not listed as an approver for this document."))
 
-    is_expired = approver_row.expiry_date and frappe.utils.getdate(approver_row.expiry_date) < frappe.utils.getdate(frappe.utils.nowdate())
-    if is_expired and current_user == approver_row.approver and approver_row.delegate_to:
-        frappe.throw(_(
-            "Your approval authority for this document expired on {0}. "
-            "This has been escalated to {1}."
-        ).format(frappe.utils.formatdate(approver_row.expiry_date), approver_row.delegate_to))
+    is_expired = approver_row.expiry_date and frappe.utils.getdate(
+        approver_row.expiry_date
+    ) < frappe.utils.getdate(frappe.utils.nowdate())
+    if (
+        is_expired
+        and current_user == approver_row.approver
+        and approver_row.delegate_to
+    ):
+        frappe.throw(
+            _(
+                "Your approval authority for this document expired on {0}. "
+                "This has been escalated to {1}."
+            ).format(
+                frappe.utils.formatdate(approver_row.expiry_date),
+                approver_row.delegate_to,
+            )
+        )
 
-    acting_name = frappe.get_cached_value("User", current_user, "full_name") or current_user
+    acting_name = (
+        frappe.get_cached_value("User", current_user, "full_name") or current_user
+    )
 
-    acting_as_delegate = current_user == approver_row.delegate_to and current_user != approver_row.approver
+    acting_as_delegate = (
+        current_user == approver_row.delegate_to
+        and current_user != approver_row.approver
+    )
     if acting_as_delegate:
-        approver_name = frappe.get_cached_value("User", approver_row.approver, "full_name") or approver_row.approver
+        approver_name = (
+            frappe.get_cached_value("User", approver_row.approver, "full_name")
+            or approver_row.approver
+        )
         delegate_suffix = _(" (as delegate for {0})").format(approver_name)
     else:
         delegate_suffix = ""
 
     if action == "approve":
-        updates = {"approved": 1, "rejected": 0, "rejection_reason": "", "date": frappe.utils.now()}
-        comment_html = _("<b>{0}</b> reviewed and approved this document{1}.").format(acting_name, delegate_suffix)
+        updates = {
+            "approved": 1,
+            "rejected": 0,
+            "rejection_reason": "",
+            "date": frappe.utils.now(),
+        }
+        comment_html = _("<b>{0}</b> reviewed and approved this document{1}.").format(
+            acting_name, delegate_suffix
+        )
 
     elif action == "reject":
         if not reason:
             frappe.throw(_("A rejection reason is required."))
         safe_reason = frappe.utils.escape_html(reason)
-        updates = {"approved": 0, "rejected": 1, "rejection_reason": reason, "date": frappe.utils.now()}
+        updates = {
+            "approved": 0,
+            "rejected": 1,
+            "rejection_reason": reason,
+            "date": frappe.utils.now(),
+        }
         comment_html = _(
             "<b>{0}</b> rejected this document{1}.<br><b>Reason:</b> {2}"
         ).format(acting_name, delegate_suffix, safe_reason)
 
     else:  # clear_rejection
-        updates = {"approved": 0, "rejected": 0, "rejection_reason": "", "date": frappe.utils.now()}
-        comment_html = _("<b>{0}</b> cleared their rejection{1}.").format(acting_name, delegate_suffix)
+        updates = {
+            "approved": 0,
+            "rejected": 0,
+            "rejection_reason": "",
+            "date": frappe.utils.now(),
+        }
+        comment_html = _("<b>{0}</b> cleared their rejection{1}.").format(
+            acting_name, delegate_suffix
+        )
 
     approver_row.update(updates)
     doc.save(ignore_permissions=True)
 
-    frappe.get_doc({
-        "doctype": "Comment",
-        "comment_type": "Comment",
-        "reference_doctype": doctype,
-        "reference_name": docname,
-        "comment_email": current_user,
-        "comment_by": acting_name,
-        "content": comment_html,
-    }).insert(ignore_permissions=True)
+    frappe.get_doc(
+        {
+            "doctype": "Comment",
+            "comment_type": "Comment",
+            "reference_doctype": doctype,
+            "reference_name": docname,
+            "comment_email": current_user,
+            "comment_by": acting_name,
+            "content": comment_html,
+        }
+    ).insert(ignore_permissions=True)
 
     return True
