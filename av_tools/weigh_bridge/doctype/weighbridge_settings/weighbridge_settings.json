@@ -60,7 +60,7 @@
   },
   {
    "fieldname": "transport_items",
-   "fieldtype": "Table",
+   "fieldtype": "Table MultiSelect",
    "label": "Allowed Transport / Service Items",
    "options": "Weighbridge Transport Item"
   },
@@ -94,7 +94,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-08-13 08:00:00.000000",
+ "modified": "2026-08-13 10:15:00.000000",
  "modified_by": "Administrator",
  "module": "Weigh Bridge",
  "name": "Weighbridge Settings",
