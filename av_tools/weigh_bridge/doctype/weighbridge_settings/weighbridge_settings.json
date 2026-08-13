@@ -10,6 +10,8 @@
   "timeout_seconds",
   "gateway_url",
   "read_weight_url",
+  "section_break_transport",
+  "transport_items",
   "section_break_device",
   "device_ip",
   "device_port",
@@ -52,6 +54,17 @@
    "label": "Read Weight URL"
   },
   {
+   "fieldname": "section_break_transport",
+   "fieldtype": "Section Break",
+   "label": "Transport Items Configuration"
+  },
+  {
+   "fieldname": "transport_items",
+   "fieldtype": "Table",
+   "label": "Allowed Transport / Service Items",
+   "options": "Weighbridge Transport Item"
+  },
+  {
    "fieldname": "section_break_device",
    "fieldtype": "Section Break",
    "label": "Device"
@@ -81,7 +94,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-02-09 00:00:00.000000",
+ "modified": "2026-08-13 08:00:00.000000",
  "modified_by": "Administrator",
  "module": "Weigh Bridge",
  "name": "Weighbridge Settings",
