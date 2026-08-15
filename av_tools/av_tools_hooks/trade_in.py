@@ -39,7 +39,7 @@ def validate_trade_in_serial_no_and_batch(doc, method):
 						)
 					)
 				else:
-					serial_numbers = row.custom_trade_in_serial_no.split("\n")
+					serial_numbers = [s.strip() for s in row.custom_trade_in_serial_no.split("\n") if s.strip()]
 					if len(serial_numbers) != row.custom_trade_in_qty:
 						error_messages.append(
 							_(
@@ -52,6 +52,20 @@ def validate_trade_in_serial_no_and_batch(doc, method):
 								row.idx,
 							)
 						)
+					else:
+						for sn in serial_numbers:
+							existing_sn = frappe.db.get_value(
+								"Serial No", sn, ["name", "warehouse", "status"], as_dict=True
+							)
+							if existing_sn and (
+								existing_sn.get("warehouse") or existing_sn.get("status") == "Active"
+							):
+								wh = existing_sn.get("warehouse") or "Active Stock"
+								error_messages.append(
+									_(
+										"<b>Row {0} ({1}):</b> Serial No <code><b>{2}</b></code> is already present in warehouse stock (<b>{3}</b>)."
+									).format(row.idx, row.custom_trade_in_item, sn, wh)
+								)
 	if error_messages:
 		frappe.throw(
 			title=_("Validation Errors"),
