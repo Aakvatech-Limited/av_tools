@@ -36,8 +36,6 @@ class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
 		"enable_camera_capture_override": 0,
 		"camera_capture_ideal_width": 1920,
 		"camera_capture_ideal_height": 1080,
-		"camera_capture_min_width": 0,
-		"camera_capture_min_height": 0,
 	}
 	test_company_name = "Rubis Technical Services Limited"
 	test_supplier_name = "AV Tools Test Supplier"
@@ -343,8 +341,6 @@ class TestAVToolsCaptureSettings(FrappeTestCase):
 		"enable_camera_capture_override": 0,
 		"camera_capture_ideal_width": 1920,
 		"camera_capture_ideal_height": 1080,
-		"camera_capture_min_width": 0,
-		"camera_capture_min_height": 0,
 	}
 
 	def setUp(self):
@@ -367,8 +363,6 @@ class TestAVToolsCaptureSettings(FrappeTestCase):
 			enable_camera_capture_override=1,
 			camera_capture_ideal_width=2560,
 			camera_capture_ideal_height=1440,
-			camera_capture_min_width=1280,
-			camera_capture_min_height=720,
 		)
 
 		settings = get_capture_settings()
@@ -376,5 +370,3 @@ class TestAVToolsCaptureSettings(FrappeTestCase):
 		self.assertTrue(settings["enabled"])
 		self.assertEqual(settings["ideal_width"], 2560)
 		self.assertEqual(settings["ideal_height"], 1440)
-		self.assertEqual(settings["min_width"], 1280)
-		self.assertEqual(settings["min_height"], 720)

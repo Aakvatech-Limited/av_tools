@@ -33,8 +33,6 @@
   "camera_capture_column_break",
   "camera_capture_ideal_width",
   "camera_capture_ideal_height",
-  "camera_capture_min_width",
-  "camera_capture_min_height",
   "parallel_approval_section",
   "enable_multi_approval_document",
   "approval_doctype"
@@ -188,7 +186,7 @@
   },
   {
    "default": "0",
-   "description": "Improve browser camera capture by applying AV Tools camera constraints before a photo is taken.",
+   "description": "Request the preferred camera resolution for browser web capture. Mobile devices keep native capture unless Force Web Capture Mode for Uploads is enabled.",
    "fieldname": "enable_camera_capture_override",
    "fieldtype": "Check",
    "label": "Enable Camera Capture Override"
@@ -213,22 +211,6 @@
    "fieldname": "camera_capture_ideal_height",
    "fieldtype": "Int",
    "label": "Ideal Height"
-  },
-  {
-   "default": "0",
-   "depends_on": "eval:doc.enable_camera_capture_override == 1",
-   "description": "Optional minimum width. Leave 0 to avoid enforcing a minimum width.",
-   "fieldname": "camera_capture_min_width",
-   "fieldtype": "Int",
-   "label": "Minimum Width"
-  },
-  {
-   "default": "0",
-   "depends_on": "eval:doc.enable_camera_capture_override == 1",
-   "description": "Optional minimum height. Leave 0 to avoid enforcing a minimum height.",
-   "fieldname": "camera_capture_min_height",
-   "fieldtype": "Int",
-   "label": "Minimum Height"
   },
    {
    "fieldname": "parallel_approval_section",
