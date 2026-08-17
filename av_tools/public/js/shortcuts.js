@@ -12,8 +12,12 @@ function ctrlQ (TableName) {
                     title: __('Item Balance'),
                     width: 600
                 });
+                const item_name_html = (item_row.item_name && item_row.item_name !== item_row.item_code)
+                    ? `<p class="text-muted">${item_row.item_name}</p>`
+                    : '';
                 $(`<div class="modal-body ui-front">
                             <h2>${item_row.item_code} : ${item_row.qty}</h2>
+                            ${item_name_html}
                             <p>Choose Warehouse and click Select :</p>
                             <table class="table table-bordered">
                             <thead>
@@ -109,8 +113,13 @@ function ctrlI(TableName) {
                     width: 600
                 });
 
+                const item_name_html = (item_row.item_name && item_row.item_name !== item_row.item_code)
+                    ? `<p class="text-muted">${item_row.item_name}</p>`
+                    : '';
+
                 $(`<div class="modal-body ui-front">
                             <h2>${item_row.item_code} : ${item_row.qty}</h2>
+                            ${item_name_html}
                             <p>Choose Price and click Select :</p>
                             <table class="table table-bordered">
                             <thead>
@@ -181,8 +190,12 @@ function ctrlU (TableName) {
                     title: __('Item Prices'),
                     width: 600
                 });
+                const item_name_html = (item_row.item_name && item_row.item_name !== item_row.item_code)
+                    ? `<p class="text-muted">${item_row.item_name}</p>`
+                    : '';
                 $(`<div class="modal-body ui-front">
                             <h2>${item_row.item_code} : ${item_row.qty}</h2>
+                            ${item_name_html}
                             <p>Choose Price and click Select :</p>
                             <table class="table table-bordered">
                             <thead>
