@@ -28,6 +28,11 @@
   "enable_trade_in",
   "item_remaining_qty_section",
   "enable_validate_item_remaining_qty",
+  "camera_capture_section",
+  "enable_camera_capture_override",
+  "camera_capture_column_break",
+  "camera_capture_ideal_width",
+  "camera_capture_ideal_height",
   "parallel_approval_section",
   "enable_multi_approval_document",
   "approval_doctype"
@@ -173,6 +178,39 @@
    "fieldname": "enable_validate_item_remaining_qty",
    "fieldtype": "Check",
    "label": "Enable Item Remaining Qty Validation"
+  },
+  {
+   "fieldname": "camera_capture_section",
+   "fieldtype": "Section Break",
+   "label": "Camera Capture"
+  },
+  {
+   "default": "0",
+   "description": "Request the preferred camera resolution for browser web capture. Mobile devices keep native capture unless Force Web Capture Mode for Uploads is enabled.",
+   "fieldname": "enable_camera_capture_override",
+   "fieldtype": "Check",
+   "label": "Enable Camera Capture Override"
+  },
+  {
+   "depends_on": "eval:doc.enable_camera_capture_override == 1",
+   "fieldname": "camera_capture_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1920",
+   "depends_on": "eval:doc.enable_camera_capture_override == 1",
+   "description": "Preferred capture width requested from the browser camera stream.",
+   "fieldname": "camera_capture_ideal_width",
+   "fieldtype": "Int",
+   "label": "Ideal Width"
+  },
+  {
+   "default": "1080",
+   "depends_on": "eval:doc.enable_camera_capture_override == 1",
+   "description": "Preferred capture height requested from the browser camera stream.",
+   "fieldname": "camera_capture_ideal_height",
+   "fieldtype": "Int",
+   "label": "Ideal Height"
   },
    {
    "fieldname": "parallel_approval_section",
