@@ -30,7 +30,7 @@ app_include_js = [
 	"/assets/av_tools/js/financial_statements_override.js",
 	"/assets/av_tools/js/ai_assist.js",
 	"/assets/av_tools/js/parallel_approval.js",
-  	"av_tools.bundle.js",
+  "av_tools.bundle.js",
 ]
 app_include_css = "/assets/av_tools/css/theme.css"
 
@@ -178,8 +178,6 @@ after_migrate = [
 # 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
 
-boot_session = "av_tools.av_tools_hooks.parallel_approval.boot_session"
-
 # Document Events
 # ---------------
 # Hook on document methods and events
@@ -223,23 +221,14 @@ doc_events = {
 		"validate": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"onload": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_insert": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
-		"after_insert": [
-			"av_tools.av_tools.doctype.visibility.visibility.run_visibility",
-			"av_tools.av_tools_hooks.parallel_approval.sync_approver_shares",
-		],
+		"after_insert": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_naming": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_change": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_update_after_submit": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_validate": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_save": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
-		"on_update": [
-			"av_tools.av_tools.doctype.visibility.visibility.run_visibility",
-			"av_tools.av_tools_hooks.parallel_approval.sync_approver_shares",
-		],
-		"before_submit": [
-			"av_tools.av_tools.doctype.visibility.visibility.run_visibility",
-			"av_tools.av_tools_hooks.parallel_approval.block_submit_if_not_approved",
-		],
+		"on_update": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
+		"before_submit": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"autoname": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"on_cancel": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"on_trash": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],

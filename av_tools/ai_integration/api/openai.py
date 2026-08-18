@@ -4,7 +4,7 @@ import frappe
 from openai import OpenAI
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def analyze_doctype_with_openai(
 	doctype_name,
 	prompt,
