@@ -101,6 +101,8 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
         if ticket_row.get("so_detail") and hasattr(row, "so_detail"):
             row.so_detail = ticket_row.get("so_detail")
 
+        row.weighbridge_ticket = ticket_doc.name
+
         kept_rows.append(row)
 
     # Add remaining ticket items that didn't exist on mapped target.
@@ -124,6 +126,8 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
                 child.sales_order = ticket_row.get("sales_order")
             if ticket_row.get("so_detail") and hasattr(child, "so_detail"):
                 child.so_detail = ticket_row.get("so_detail")
+
+            child.weighbridge_ticket = ticket_doc.name
 
             from erpnext.stock.get_item_details import get_item_details
             
