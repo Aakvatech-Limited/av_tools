@@ -15,64 +15,78 @@ def create_indirect_expense_item(doc, method=None):
 	if frappe.local.flags.ignore_root_company_validation:
 		return
 
-	if (
-		not doc.parent_account
-		or doc.is_group
-		or not check_expenses_in_parent_accounts(doc.name)
-		or not doc.company
-	):
+	is_income = doc.root_type == "Income"
+	is_expense = doc.root_type == "Expense"
+
+	if not doc.company or doc.is_group or not (is_income or is_expense):
 		return
-	if (
-		not doc.parent_account
-		and not check_expenses_in_parent_accounts(doc.account_name)
-		and doc.item
-	):
-		doc.item = ""
+
+	if not check_expenses_in_parent_accounts(doc.name):
+		# Unlink the item if it was moved out of Indirect Expenses/Income
+		if doc.item:
+			doc.item = ""
 		return
-	indirect_expenses_group = frappe.db.exists("Item Group", "Indirect Expenses")
-	if not indirect_expenses_group:
-		indirect_expenses_group = frappe.get_doc(
+
+	item_group_name = "Indirect Income" if is_income else "Indirect Expenses"
+	if not frappe.db.exists("Item Group", item_group_name):
+		ig = frappe.get_doc(
 			dict(
 				doctype="Item Group",
-				item_group_name="Indirect Expenses",
+				item_group_name=item_group_name,
 			)
 		)
-		indirect_expenses_group.flags.ignore_permissions = True
+		ig.flags.ignore_permissions = True
 		frappe.flags.ignore_account_permission = True
-		indirect_expenses_group.save()
+		ig.save()
+
 	item = frappe.db.exists("Item", doc.account_name)
 	if item:
 		item = frappe.get_doc("Item", doc.account_name)
 		doc.item = item.name
+		
+		if is_income:
+			item.is_sales_item = 1
+		elif is_expense:
+			item.is_purchase_item = 1
+			
 		company_list = []
 		for i in item.item_defaults:
 			if doc.company not in company_list:
 				if i.company == doc.company:
 					company_list.append(doc.company)
-					if i.expense_account != doc.name:
+					if is_expense and i.expense_account != doc.name:
 						i.expense_account = doc.name
+						item.save()
+					elif is_income and i.default_income_account != doc.name:
+						i.default_income_account = doc.name
 						item.save()
 		if doc.company not in company_list:
 			row = item.append("item_defaults", {})
 			row.company = doc.company
-			row.expense_account = doc.name
+			if is_expense:
+				row.expense_account = doc.name
+			elif is_income:
+				row.default_income_account = doc.name
 			item.save()
 			company_list.append(doc.company)
 			doc.db_update()
 		return item.name
+
 	new_item = frappe.get_doc(
 		dict(
 			doctype="Item",
 			item_code=doc.account_name,
-			item_group="Indirect Expenses",
+			item_group=item_group_name,
 			is_stock_item=0,
-			is_sales_item=0,
+			is_sales_item=1 if is_income else 0,
+			is_purchase_item=1 if is_expense else 0,
 			stock_uom="Nos",
 			include_item_in_manufacturing=0,
 			item_defaults=[
 				{
 					"company": doc.company,
-					"expense_account": doc.name,
+					"expense_account": doc.name if is_expense else "",
+					"default_income_account": doc.name if is_income else "",
 					"default_warehouse": "",
 				}
 			],
@@ -94,13 +108,13 @@ def create_indirect_expense_item(doc, method=None):
 
 def check_expenses_in_parent_accounts(account_name):
 	parent_account_1 = frappe.get_value("Account", account_name, "parent_account")
-	if "Indirect Expenses" in str(parent_account_1):
+	if "Indirect Expenses" in str(parent_account_1) or "Indirect Income" in str(parent_account_1):
 		return True
 	parent_account_2 = frappe.get_value("Account", parent_account_1, "parent_account")
-	if "Indirect Expenses" in str(parent_account_2):
+	if "Indirect Expenses" in str(parent_account_2) or "Indirect Income" in str(parent_account_2):
 		return True
 	parent_account_3 = frappe.get_value("Account", parent_account_2, "parent_account")
-	if "Indirect Expenses" in str(parent_account_3):
+	if "Indirect Expenses" in str(parent_account_3) or "Indirect Income" in str(parent_account_3):
 		return True
 	return False
 
@@ -109,7 +123,7 @@ def check_expenses_in_parent_accounts(account_name):
 def add_indirect_expense_item(account_name):
 	if not _is_feature_enabled():
 		frappe.throw(
-			_("Indirect Expense Item auto-creation is disabled. Enable it in AV Tools Settings.")
+			_("Indirect Expense/Income Item auto-creation is disabled. Enable it in AV Tools Settings.")
 		)
 	account = frappe.get_doc("Account", account_name)
 	return create_indirect_expense_item(account)

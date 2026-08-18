@@ -29,6 +29,8 @@ app_license = "mit"
 app_include_js = [
 	"/assets/av_tools/js/financial_statements_override.js",
 	"/assets/av_tools/js/ai_assist.js",
+	"/assets/av_tools/js/parallel_approval.js",
+  "av_tools.bundle.js",
 ]
 app_include_css = "/assets/av_tools/css/theme.css"
 
