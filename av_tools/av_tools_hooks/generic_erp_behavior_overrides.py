@@ -70,8 +70,8 @@ def update_material_request_status(name, status):
 
 
 @frappe.whitelist()
-def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=True):
-	response = original_get_item_details(args, doc, for_validate, overwrite_warehouse)
+def get_item_details(ctx, doc=None, for_validate=False, overwrite_warehouse=True):
+	response = original_get_item_details(ctx, doc, for_validate, overwrite_warehouse)
 
 	if _get_setting("override_sales_invoice_qty"):
 		response.pop("qty", None)
