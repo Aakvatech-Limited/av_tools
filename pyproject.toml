@@ -10,6 +10,13 @@ dynamic = ["version"]
 dependencies = [
     # "frappe~=15.0.0" # Installed and managed by bench.
     "openai>=1.0.0,<2.0.0",
+    # Employee Checkin & Checkout report
+    "pandas>=2.3.3,<3.0.0",
+    "numpy>=2.3.4,<3.0.0",
+    # Weighbridge service + gateway
+    "fastapi>=0.115.0,<1.0.0",
+    "uvicorn>=0.34.0,<1.0.0",
+    "pydantic>=2.9.0,<3.0.0",
 ]
 
 [build-system]
