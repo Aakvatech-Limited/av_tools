@@ -178,6 +178,11 @@ after_migrate = [
 # 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
 
+# Bootinfo
+# --------
+
+extend_bootinfo = "av_tools.av_tools_hooks.parallel_approval.boot_session"
+
 # Document Events
 # ---------------
 # Hook on document methods and events
@@ -221,14 +226,23 @@ doc_events = {
 		"validate": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"onload": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_insert": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
-		"after_insert": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
+		"after_insert": [
+			"av_tools.av_tools.doctype.visibility.visibility.run_visibility",
+			"av_tools.av_tools_hooks.parallel_approval.sync_approver_shares",
+		],
 		"before_naming": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_change": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_update_after_submit": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_validate": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_save": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
-		"on_update": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
-		"before_submit": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
+		"on_update": [
+			"av_tools.av_tools.doctype.visibility.visibility.run_visibility",
+			"av_tools.av_tools_hooks.parallel_approval.sync_approver_shares",
+		],
+		"before_submit": [
+			"av_tools.av_tools.doctype.visibility.visibility.run_visibility",
+			"av_tools.av_tools_hooks.parallel_approval.block_submit_if_not_approved",
+		],
 		"autoname": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"on_cancel": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"on_trash": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
