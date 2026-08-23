@@ -68,61 +68,45 @@ def get_context(context):
 		forbidden_document_types = ("Email Queue",)
 		if (self.document_type in forbidden_document_types
 			or frappe.get_meta(self.document_type).istable):
-			# currently notifications don't work on child tables as events are not fired for each record of child table
-
 			frappe.throw(_("Cannot set Notification on Document Type {0}").format(self.document_type))
 
 	def get_documents_for_today(self):
 		'''get list of documents that will be triggered today'''
 		docs = []
-
 		diff_days = self.days_in_advance
 		if self.event=="Days After":
 			diff_days = -diff_days
-
 		reference_date = add_to_date(nowdate(), days=diff_days)
 		reference_date_start = reference_date + ' 00:00:00.000000'
 		reference_date_end = reference_date + ' 23:59:59.000000'
-
 		doc_list = frappe.get_all(self.document_type,
 			fields='name',
 			filters=[
 				{ self.date_changed: ('>=', reference_date_start) },
 				{ self.date_changed: ('<=', reference_date_end) }
 			])
-
 		for d in doc_list:
 			doc = frappe.get_doc(self.document_type, d.name)
-
 			if self.condition and not frappe.safe_eval(self.condition, None, get_context(doc)):
 				continue
-
 			docs.append(doc)
-
 		return docs
 
 	def send(self, doc):
 		'''Build recipients and send Notification'''
-
 		context = get_context(doc)
 		context = {"doc": doc, "alert": self, "comments": None}
-
 		if self.is_standard:
 			self.load_standard_properties(context)
-
-		
 		if self.set_property_after_alert:
 			allow_update = True
 			if doc.docstatus == 1 and not doc.meta.get_field(self.set_property_after_alert).allow_on_submit:
 				allow_update = False
-
 			if allow_update:
 				frappe.db.set_value(doc.doctype, doc.name, self.set_property_after_alert,
 					self.property_value, update_modified = False)
 				doc.db_set(self.set_property_after_alert, self.property_value)
 				frappe.db.commit()
-
-
 
 	def load_standard_properties(self, context):
 		'''load templates and run get_context'''
@@ -138,10 +122,8 @@ def run_visibility(doc, method):
 	'''Run notifications for this method'''
 	if frappe.flags.in_import or frappe.flags.in_patch or frappe.flags.in_install:
 		return
-
 	if doc.flags.vis_notifications_executed==None:
 		doc.flags.vis_notifications_executed = []
-
 	if doc.flags.vis_notifications == None:
 		alerts = frappe.cache().hget('vis_notifications', doc.doctype)
 		if alerts==None:
@@ -149,15 +131,12 @@ def run_visibility(doc, method):
 				filters={'enabled': 1, 'document_type': doc.doctype})
 			frappe.cache().hset('vis_notifications', doc.doctype, alerts)
 		doc.flags.vis_notifications = alerts
-
 	if not doc.flags.vis_notifications:
 		return
-
 	def _evaluate_alert(alert):
 		if not alert.name in doc.flags.vis_notifications_executed:
 			evaluate_alert(doc, alert.name, alert.event)
 			doc.flags.vis_notifications_executed.append(alert.name)
-
 	event_map = {
 		"on_update": "Save",
 		"after_insert": "New",
@@ -166,21 +145,16 @@ def run_visibility(doc, method):
 		"before_update_after_submit": "Submit",
 		"on_cancel": "Cancel"
 	}
-
 	if not doc.flags.in_insert:
-		# value change is not applicable in insert
 		event_map['validate'] = 'Value Change'
 		event_map['before_change'] = 'Value Change'
 		event_map['before_update_after_submit'] = 'Value Change'
-
-	
 	for alert in doc.flags.vis_notifications:
 		event = event_map.get(method, None)
 		if event and alert.event == event:
 			_evaluate_alert(alert)
 		elif alert.event=='Method' and method == alert.method:
-			_evaluate_alert(alert)	
-
+			_evaluate_alert(alert)
 
 
 @frappe.whitelist()
@@ -191,12 +165,15 @@ def get_documents_for_today(notification):
 
 def trigger_daily_alerts():
 	trigger_notifications(None, "daily")
+	try:
+		from av_tools.error_reporting.reporter import process_previous_day_errors
+		process_previous_day_errors()
+	except Exception:
+		frappe.log_error(frappe.get_traceback(), "Aakvatech Error Reporter Daily Run")
 
 def trigger_notifications(doc, method=None):
 	if frappe.flags.in_import or frappe.flags.in_patch:
-		# don't send notifications while syncing or patching
 		return
-
 	if method == "daily":
 		doc_list = frappe.get_all('Visibility',
 			filters={
@@ -205,7 +182,6 @@ def trigger_notifications(doc, method=None):
 			})
 		for d in doc_list:
 			alert = frappe.get_doc("Visibility", d.name)
-
 			for doc in alert.get_documents_for_today():
 				evaluate_alert(doc, alert, alert.event)
 				frappe.db.commit()
@@ -215,13 +191,10 @@ def evaluate_alert(doc, alert, event):
 	try:
 		if isinstance(alert, string_types):
 			alert = frappe.get_doc("Visibility", alert)
-
 		context = get_context(doc)
-
 		if alert.condition:
 			if not frappe.safe_eval(alert.condition, None, context):
 				return
-
 		if event=="Value Change" and not doc.is_new():
 			try:
 				db_value = frappe.db.get_value(doc.doctype, doc.name, alert.value_changed)
@@ -234,11 +207,8 @@ def evaluate_alert(doc, alert, event):
 					raise
 			db_value = parse_val(db_value)
 			if (doc.get(alert.value_changed) == db_value) or (not db_value and not doc.get(alert.value_changed)):
-				return # value not changed
-
+				return
 		if event != "Value Change" and not doc.is_new():
-			# reload the doc for the latest values & comments,
-			# except for validate type event.
 			doc = frappe.get_doc(doc.doctype, doc.name)
 		alert.send(doc)
 	except TemplateError:
@@ -258,7 +228,7 @@ def get_doc_fields(doctype_name):
 	field_names =["Customer","Supplier","Student","Employee"]
 	for d in fields:
 		if d.fieldtype == "Link" and  d.options in field_names:
-			field = {	
+			field = {
 				"label":d.label,
 				"fieldname": d.fieldname,
 				"fieldtype" : d.fieldtype,
