@@ -1,0 +1,32 @@
+{
+ "actions": [],
+ "creation": "2026-08-23 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": ["enabled","central_server_url","site_uuid","site_name","enrollment_status","column_break_1","public_key","private_key","last_enrollment_attempt","last_successful_report","last_batch_id"],
+ "fields": [
+  {"default":"0","fieldname":"enabled","fieldtype":"Check","label":"Enable Error Reporter"},
+  {"fieldname":"central_server_url","fieldtype":"Data","label":"Central Server URL"},
+  {"fieldname":"site_uuid","fieldtype":"Data","label":"Site UUID","read_only":1},
+  {"fieldname":"site_name","fieldtype":"Data","label":"Site Name","read_only":1},
+  {"default":"Not Enrolled","fieldname":"enrollment_status","fieldtype":"Select","label":"Enrollment Status","options":"Not Enrolled\nPending Approval\nActive\nRejected\nBlocked","read_only":1},
+  {"fieldname":"column_break_1","fieldtype":"Column Break"},
+  {"fieldname":"public_key","fieldtype":"Long Text","label":"Public Key","read_only":1},
+  {"fieldname":"private_key","fieldtype":"Password","label":"Private Key","read_only":1},
+  {"fieldname":"last_enrollment_attempt","fieldtype":"Datetime","label":"Last Enrollment Attempt","read_only":1},
+  {"fieldname":"last_successful_report","fieldtype":"Date","label":"Last Successful Report","read_only":1},
+  {"fieldname":"last_batch_id","fieldtype":"Data","label":"Last Batch ID","read_only":1}
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-23 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Av Tools",
+ "name": "Error Reporter Settings",
+ "owner": "Administrator",
+ "permissions": [{"create":1,"read":1,"role":"System Manager","write":1}],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
