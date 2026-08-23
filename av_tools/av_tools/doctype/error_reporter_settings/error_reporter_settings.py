@@ -1,5 +1,5 @@
 import base64
-import json
+import hashlib
 import time
 import uuid
 
@@ -66,24 +66,27 @@ def enroll_now():
         "site_name": settings.site_name,
         "site_url": frappe.utils.get_url(),
         "public_key": settings.public_key,
-        "frappe_version": frappe.get_attr("frappe.__version__") if hasattr(frappe, "__version__") else None,
+        "frappe_version": getattr(frappe, "__version__", None),
         "erpnext_version": _get_app_version("erpnext"),
         "av_tools_version": _get_app_version("av_tools"),
     }
     response = requests.post(url, json=payload, timeout=30)
     settings.last_enrollment_attempt = now_datetime()
+    response_data = response.json()
+    result = response_data.get("message") if isinstance(response_data, dict) else response_data
+    if not isinstance(result, dict):
+        result = response_data
+
     if response.status_code in (200, 202):
         settings.enrollment_status = "Pending Approval"
     elif response.status_code == 403:
-        try:
-            status = (response.json().get("message") or {}).get("status") or response.json().get("status")
-        except Exception:
-            status = None
+        status = result.get("status") if isinstance(result, dict) else None
         if status in ("Active", "Pending Approval", "Rejected"):
             settings.enrollment_status = status
     settings.save(ignore_permissions=True)
-    response.raise_for_status() if response.status_code not in (403,) else None
-    return response.json()
+    if response.status_code not in (200, 202, 403):
+        response.raise_for_status()
+    return result
 
 
 def sign_payload(body_bytes):
@@ -92,7 +95,7 @@ def sign_payload(body_bytes):
     private_key = serialization.load_pem_private_key(private_pem.encode("utf-8"), password=None)
     timestamp = str(int(time.time()))
     nonce = uuid.uuid4().hex
-    body_hash = frappe.utils.sha256_hash(body_bytes)
+    body_hash = hashlib.sha256(body_bytes).hexdigest()
     message = (settings.site_uuid + "\n" + timestamp + "\n" + nonce + "\n" + body_hash).encode("utf-8")
     signature = base64.b64encode(private_key.sign(message)).decode("ascii")
     return {
@@ -106,6 +109,7 @@ def sign_payload(body_bytes):
 
 def _get_app_version(app_name):
     try:
-        return frappe.get_attr(app_name + ".__version__")
+        module = frappe.get_module(app_name)
+        return getattr(module, "__version__", None)
     except Exception:
         return None
