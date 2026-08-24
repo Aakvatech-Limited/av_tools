@@ -224,3 +224,18 @@ def create_trade_in_stock_entry(doc, method):
 			frappe.throw(_("Error during Stock Entry creation: {0}").format(str(e)))
 	else:
 		frappe.msgprint(_("No valid items found for stock entry."))
+
+
+@trade_in_flag_check
+def cancel_trade_in_stock_entry(doc, method=None):
+	stock_entries = frappe.get_all(
+		"Stock Entry",
+		filters={"custom_sales_invoice": doc.name, "docstatus": 1},
+		pluck="name",
+	)
+	for se_name in stock_entries:
+		se_doc = frappe.get_doc("Stock Entry", se_name)
+		se_doc.flags.ignore_permissions = True
+		se_doc.cancel()
+
+

@@ -204,6 +204,7 @@ doc_events = {
 		],
 		"before_submit": "av_tools.authotp.api.sales_invoice.before_submit",
 		"on_submit": "av_tools.av_tools_hooks.trade_in.create_trade_in_stock_entry",
+		"on_cancel": "av_tools.av_tools_hooks.trade_in.cancel_trade_in_stock_entry",
 	},
 	"Delivery Note": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
 	"Sales Order": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
