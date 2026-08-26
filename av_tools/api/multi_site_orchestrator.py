@@ -4,7 +4,7 @@ from frappe import _
 
 
 @frappe.whitelist()
-def disable_user_on_all_sites(email, site_configuration_name):
+def disable_user_on_all_sites(email: str, site_configuration_name: str):
 	"""
 	Disable user across all enabled sites using standard Frappe REST API.
 	No custom app needed on client sites.
@@ -55,7 +55,7 @@ def disable_user_on_all_sites(email, site_configuration_name):
 
 
 @frappe.whitelist()
-def enable_user_on_all_sites(email, site_configuration_name):
+def enable_user_on_all_sites(email: str, site_configuration_name: str):
 	"""
 	Enable user across all enabled sites using standard Frappe REST API.
 	No custom app needed on client sites.
@@ -274,7 +274,7 @@ def _enable_user_on_site(email, site_name, site_url, api_key, api_secret):
 
 
 @frappe.whitelist()
-def update_site_configuration(doc):
+def update_site_configuration(doc: str | dict):
 	"""
 	Update an existing Site Configuration document, including the child table.
 	"""
