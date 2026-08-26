@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt
 
@@ -59,7 +60,7 @@ class WeighbridgeTicket(Document):
 		target_type = self.target_document_type
 
 		if source_type and target_type and source_type == target_type:
-			frappe.throw("Source and Target document types cannot be the same.")
+			frappe.throw(_("Source and Target document types cannot be the same."))
 
 		if source_type and target_type:
 			allowed_targets = ALLOWED_TARGETS_BY_SOURCE.get(source_type, set())
@@ -74,15 +75,15 @@ class WeighbridgeTicket(Document):
 			return
 
 		if not self.document_type:
-			frappe.throw("Document Type is required when Document Reference is set.")
+			frappe.throw(_("Document Type is required when Document Reference is set."))
 
 		if self.document_type not in ALLOWED_REFERENCE_DOCTYPES:
-			frappe.throw(f"Unsupported document type: {self.document_type}")
+			frappe.throw(_("Unsupported document type: {0}").format(self.document_type))
 
 		reference_doc = frappe.get_doc(self.document_type, self.document_reference)
 
 		if reference_doc.meta.is_submittable and reference_doc.docstatus == 2:
-			frappe.throw(f"{self.document_type} {self.document_reference} is Cancelled.")
+			frappe.throw(_("{0} {1} is Cancelled.").format(self.document_type, self.document_reference))
 
 		reference_qty = _build_qty_map(reference_doc.get("items"))
 		ticket_qty = _build_qty_map(self.get("items"))
@@ -131,11 +132,11 @@ class WeighbridgeTicket(Document):
 			return
 
 		if self.document_type not in ALLOWED_REFERENCE_DOCTYPES:
-			frappe.throw(f"Unsupported document type: {self.document_type}")
+			frappe.throw(_("Unsupported document type: {0}").format(self.document_type))
 
 		reference_doc = frappe.get_doc(self.document_type, self.document_reference)
 		if reference_doc.meta.is_submittable and reference_doc.docstatus == 2:
-			frappe.throw(f"{self.document_type} {self.document_reference} is Cancelled.")
+			frappe.throw(_("{0} {1} is Cancelled.").format(self.document_type, self.document_reference))
 
 		ticket_qty = {}
 		for row in self.get("items") or []:
@@ -144,7 +145,7 @@ class WeighbridgeTicket(Document):
 				ticket_qty[item_code] = flt(row.get("qty"))
 
 		if not ticket_qty:
-			frappe.throw("Please add at least one item before submitting Weighbridge Ticket.")
+			frappe.throw(_("Please add at least one item before submitting Weighbridge Ticket."))
 
 		reference_items = reference_doc.get("items") or []
 		reference_codes = {
