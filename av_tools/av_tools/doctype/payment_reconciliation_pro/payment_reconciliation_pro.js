@@ -62,8 +62,8 @@ function toggle_primary_action(frm) {
 
 function set_invoice_options(frm) {
 	const invoices = [];
-	$.each(frm.doc.invoices || [], function (i, row) {
-		if (row.invoice_number && !in_list(invoices, row.invoice_number))
+	(frm.doc.invoices || []).forEach((row) => {
+		if (row.invoice_number && !invoices.includes(row.invoice_number))
 			invoices.push(row.invoice_type + " | " + row.invoice_number);
 	});
 
@@ -73,8 +73,8 @@ function set_invoice_options(frm) {
 			"invoice_number",
 			frm.doc.name
 		).options = "\n" + invoices.join("\n");
-		$.each(frm.doc.payments || [], function (i, p) {
-			if (!in_list(invoices, cstr(p.invoice_number))) p.invoice_number = null;
+		(frm.doc.payments || []).forEach((p) => {
+			if (!invoices.includes(cstr(p.invoice_number))) p.invoice_number = null;
 		});
 	}
 	frm.refresh_field("payments");
