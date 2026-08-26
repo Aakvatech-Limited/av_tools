@@ -296,7 +296,7 @@ def _fallback_solve(structure, target_field, target_amount, precision, selected,
 		else:
 			hi = mid
 
-	base_int = int(round(flt(best["base"], precision)))
+	base_int = round(flt(best["base"], precision))
 	for offset in range(-3, 4):
 		cand = base_int + offset
 		if cand < 0:
