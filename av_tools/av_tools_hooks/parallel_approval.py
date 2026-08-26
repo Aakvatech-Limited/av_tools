@@ -344,7 +344,7 @@ def get_approval_doctypes_for_js():
 
 
 @frappe.whitelist()
-def submit_approval_action(doctype, docname, action, reason=None):
+def submit_approval_action(doctype: str, docname: str, action: str, reason: str | None = None):
 	if action not in ("approve", "reject", "clear_rejection"):
 		frappe.throw(_("Invalid action"))
 
@@ -377,7 +377,7 @@ def submit_approval_action(doctype, docname, action, reason=None):
 		approver_name = (
 			frappe.get_cached_value("User", approver_row.approver, "full_name") or approver_row.approver
 		)
-		delegate_suffix = _(" (as delegate for {0})").format(approver_name)
+		delegate_suffix = " " + _("(as delegate for {0})").format(approver_name)
 	else:
 		delegate_suffix = ""
 
