@@ -4,10 +4,10 @@
 from unittest.mock import patch
 
 import frappe
-from frappe.tests.utils import FrappeTestCase
+from frappe.tests import IntegrationTestCase
 
 
-class TestSQLCommand(FrappeTestCase):
+class TestSQLCommand(IntegrationTestCase):
 	def test_on_submit_deletes_selected_documents_when_allowed(self):
 		doc = frappe.get_doc(
 			{
@@ -17,10 +17,8 @@ class TestSQLCommand(FrappeTestCase):
 			}
 		)
 
-		with patch("frappe.db.get_single_value", return_value=1), patch(
-			"frappe.db.sql"
-		) as mock_sql, patch("frappe.db.commit") as mock_commit:
+		with patch("frappe.db.get_single_value", return_value=1), patch("frappe.db.sql") as mock_sql:
 			doc.on_submit()
 
+		# v16: document hooks must not commit; the runner's transaction owns the commit
 		mock_sql.assert_called_once_with("DELETE FROM `tabToDo` WHERE NAME IN ('TEST-1','TEST-2')")
-		mock_commit.assert_called_once()
