@@ -118,6 +118,9 @@ def get_salary_slip_preview(
 			if d.get("salary_component") in employer_comps:
 				ctc += flt(d.get("amount"))
 
+	# The template path is a hardcoded literal shipped in this app and the template
+	# has no include, import or extends. Only context values vary.
+	# nosemgrep: frappe-semgrep-rules.rules.security.frappe-ssti
 	return frappe.render_template(
 		"av_tools/av_tools/page/salary_calculator/salary_slip_preview.html",
 		{
@@ -296,7 +299,7 @@ def _fallback_solve(structure, target_field, target_amount, precision, selected,
 		else:
 			hi = mid
 
-	base_int = int(round(flt(best["base"], precision)))
+	base_int = round(flt(best["base"], precision))
 	for offset in range(-3, 4):
 		cand = base_int + offset
 		if cand < 0:

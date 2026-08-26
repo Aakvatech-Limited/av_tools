@@ -108,7 +108,7 @@ class SpecialClosingBalance(Document):
 				frappe.flags.ignore_account_permission = True
 				stock_entry_doc.submit()
 				# return stock_entry_doc.name
-				self.stock_entry = stock_entry_doc.name
+				self.db_set("stock_entry", stock_entry_doc.name)
 				url = frappe.utils.get_url_to_form(stock_entry_doc.doctype, stock_entry_doc.name)
 				frappe.msgprint(f"Stock Entry Created <a href='{url}'>{stock_entry_doc.name}</a>")
 
