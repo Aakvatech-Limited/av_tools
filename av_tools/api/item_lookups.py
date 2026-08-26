@@ -86,7 +86,8 @@ def get_item_prices(item_code: Any, currency: Any, customer: Any = None, company
 		conditions = " AND SI.customer = %(customer)s"
 		params["customer"] = customer
 
-	rows = frappe.db.sql(
+	# conditions holds fixed fragments with %(name)s placeholders; values are bound in params
+	rows = frappe.db.sql(  # nosemgrep
 		f"""
 		SELECT SI.name, SI.posting_date, SI.customer, SIT.item_code, SIT.qty, SIT.rate
 		FROM `tabSales Invoice` AS SI
@@ -149,7 +150,8 @@ def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20)
 		conditions += " AND SI.customer = %(customer)s"
 		params["customer"] = customer
 
-	rows = frappe.db.sql(
+	# conditions holds fixed fragments with %(name)s placeholders; values are bound in params
+	rows = frappe.db.sql(  # nosemgrep
 		f"""
 		SELECT SI.name, SI.posting_date, SI.customer, SIT.item_code, SIT.qty, SIT.rate
 		FROM `tabSales Invoice` AS SI
@@ -212,7 +214,8 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 		conditions += " AND PI.supplier = %(supplier)s"
 		params["supplier"] = supplier
 
-	rows = frappe.db.sql(
+	# conditions holds fixed fragments with %(name)s placeholders; values are bound in params
+	rows = frappe.db.sql(  # nosemgrep
 		f"""
 		SELECT PI.name, PI.posting_date, PI.supplier, PIT.item_code, PIT.qty, PIT.rate
 		FROM `tabPurchase Invoice` AS PI
@@ -254,7 +257,8 @@ def get_item_prices_po(item_code: Any, currency: Any, customer: Any = None, comp
 		conditions = " AND PI.supplier = %(supplier)s"
 		params["supplier"] = customer
 
-	rows = frappe.db.sql(
+	# conditions holds fixed fragments with %(name)s placeholders; values are bound in params
+	rows = frappe.db.sql(  # nosemgrep
 		f"""
 		SELECT PI.name, PI.posting_date, PI.supplier, PIT.item_code, PIT.qty, PIT.rate
 		FROM `tabPurchase Invoice` AS PI
