@@ -4,17 +4,19 @@
 from unittest.mock import patch
 
 import frappe
-from frappe.tests.utils import FrappeTestCase
+from frappe.tests import IntegrationTestCase
 
 from av_tools.ai_integration.api.openai import analyze_doctype_with_openai
 from av_tools.patches.v1_0.migrate_ai_integration_site_data import (
 	APP_NAME,
 	MODULE_NAME,
+)
+from av_tools.patches.v1_0.migrate_ai_integration_site_data import (
 	execute as migrate_ai_integration_site_data,
 )
 
 
-class TestOpenAI(FrappeTestCase):
+class TestOpenAI(IntegrationTestCase):
 	def tearDown(self):
 		frappe.db.rollback()
 		super().tearDown()
