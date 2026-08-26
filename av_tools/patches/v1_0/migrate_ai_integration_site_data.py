@@ -1,6 +1,5 @@
 import frappe
 
-
 MODULE_NAME = "AI Integration"
 APP_NAME = "av_tools"
 

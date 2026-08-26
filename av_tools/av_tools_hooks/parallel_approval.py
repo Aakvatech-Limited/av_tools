@@ -366,7 +366,7 @@ def submit_approval_action(doctype: str, docname: str, action: str, reason: str 
 	if is_expired and current_user == approver_row.approver and approver_row.delegate_to:
 		frappe.throw(
 			_(
-				"Your approval authority for this document expired on {0}. " "This has been escalated to {1}."
+				"Your approval authority for this document expired on {0}. This has been escalated to {1}."
 			).format(frappe.utils.formatdate(approver_row.expiry_date), approver_row.delegate_to)
 		)
 

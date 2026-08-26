@@ -1,6 +1,5 @@
 import frappe
 
-
 PRINT_FORMATS = (
 	"AV Jounrnal Entry",
 	"AV Payment Entry Voucher",

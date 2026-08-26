@@ -22,7 +22,7 @@
 		</tr>
 	</thead>
 	<tbody>
-		{% 
+		{%
 		var current_po = null;
 		for (var i=0, l=data.length; i<l; i++) {
 			if (current_po !== data[i].purchase_order) {
@@ -30,9 +30,9 @@
 			<tr class="table-secondary fw-bold" style="background-color:#ffe5e5;">
 				<td colspan="10"><strong>{%= __("Warehouses:") %} {%= data[i].warehouse %} {%= __("Status:") %} {%= data[i].status %}</strong></td>
 			</tr>
-		{% 
+		{%
 			current_po = data[i].purchase_order;
-			} 
+			}
 		%}
 		<tr>
 			<td>{%= data[i].purchase_order %}</td>
@@ -51,5 +51,5 @@
 </table>
 
 <p class="text-right text-muted">
-	{%= __("Printed On") %} {%= frappe.datetime.str_to_user(frappe.datetime.get_datetime_as_string()) %} 
+	{%= __("Printed On") %} {%= frappe.datetime.str_to_user(frappe.datetime.get_datetime_as_string()) %}
 </p>
