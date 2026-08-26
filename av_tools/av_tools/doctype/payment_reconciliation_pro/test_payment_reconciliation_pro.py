@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
 # Copyright (c) 2020, Aakvatech and Contributors
 # See license.txt
-from __future__ import unicode_literals
 
 import frappe
-from frappe.tests.utils import FrappeTestCase
+from frappe.tests import IntegrationTestCase
 
 
-class TestPaymentReconciliationPro(FrappeTestCase):
+class TestPaymentReconciliationPro(IntegrationTestCase):
 	def test_check_mandatory_to_fetch_requires_core_filters(self):
 		doc = frappe.new_doc("Payment Reconciliation Pro")
 
