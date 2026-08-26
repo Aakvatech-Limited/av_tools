@@ -47,11 +47,11 @@ frappe.query_reports["Sales Transaction Currency Recon"] = {
 
 		// Calmer pastel palette (sober)
 		const COLORS = {
-			SO_CLOSED: "#F8D7DA", // soft rose
-			SO_HOLD: "#FFF3CD", // soft amber
-			SO_OTHER: "#D1F2EB", // soft mint
-			SI: "#FFFBE6", // soft cream
-			PE: "#DFF5E1", // soft teal/green (slightly more visible)
+			SO_CLOSED: "#F8D7DA",   // soft rose
+			SO_HOLD: "#FFF3CD",   // soft amber
+			SO_OTHER: "#D1F2EB",   // soft mint
+			SI: "#FFFBE6",   // soft cream
+			PE: "#DFF5E1",   // soft teal/green (slightly more visible)
 		};
 
 		const wrap = (html, background) => {
@@ -79,5 +79,5 @@ frappe.query_reports["Sales Transaction Currency Recon"] = {
 		}
 
 		return value;
-	},
+	}
 };

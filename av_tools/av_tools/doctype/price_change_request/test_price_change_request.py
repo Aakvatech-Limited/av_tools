@@ -4,6 +4,5 @@
 # import frappe
 import unittest
 
-
 class TestPriceChangeRequest(unittest.TestCase):
 	pass

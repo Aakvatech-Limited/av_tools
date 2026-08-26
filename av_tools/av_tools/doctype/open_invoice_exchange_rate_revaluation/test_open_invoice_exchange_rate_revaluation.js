@@ -10,14 +10,14 @@ QUnit.test("test: Open Invoice Exchange Rate Revaluation", function (assert) {
 
 	frappe.run_serially([
 		// insert a new Open Invoice Exchange Rate Revaluation
-		() =>
-			frappe.tests.make("Open Invoice Exchange Rate Revaluation", [
-				// values to be set
-				{ key: "value" },
-			]),
+		() => frappe.tests.make('Open Invoice Exchange Rate Revaluation', [
+			// values to be set
+			{key: 'value'}
+		]),
 		() => {
-			assert.equal(cur_frm.doc.key, "value");
+			assert.equal(cur_frm.doc.key, 'value');
 		},
-		() => done(),
+		() => done()
 	]);
+
 });

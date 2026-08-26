@@ -39,9 +39,7 @@ def validate_trade_in_serial_no_and_batch(doc, method):
 						)
 					)
 				else:
-					serial_numbers = [
-						s.strip() for s in row.custom_trade_in_serial_no.split("\n") if s.strip()
-					]
+					serial_numbers = [s.strip() for s in row.custom_trade_in_serial_no.split("\n") if s.strip()]
 					if len(serial_numbers) != row.custom_trade_in_qty:
 						error_messages.append(
 							_(
@@ -239,3 +237,5 @@ def cancel_trade_in_stock_entry(doc, method=None):
 		se_doc = frappe.get_doc("Stock Entry", se_name)
 		se_doc.flags.ignore_permissions = True
 		se_doc.cancel()
+
+

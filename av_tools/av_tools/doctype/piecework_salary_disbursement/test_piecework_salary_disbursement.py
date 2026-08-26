@@ -4,6 +4,5 @@
 # import frappe
 import unittest
 
-
 class TestPieceworkSalaryDisbursement(unittest.TestCase):
 	pass

@@ -1,5 +1,6 @@
 import frappe
 
+
 REPORTS = (
 	"Customer GL Entries by Fiscal Year",
 	"Customer Ledger Summary Multicurrency",

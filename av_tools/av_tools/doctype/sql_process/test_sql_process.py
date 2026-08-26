@@ -4,6 +4,5 @@
 # import frappe
 import unittest
 
-
 class TestSQLProcess(unittest.TestCase):
 	pass

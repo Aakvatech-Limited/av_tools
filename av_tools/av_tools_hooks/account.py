@@ -3,7 +3,9 @@ from frappe import _
 
 
 def _is_feature_enabled():
-	return bool(frappe.db.get_single_value("AV Tools Settings", "enable_indirect_expense_item_creation"))
+	return bool(
+		frappe.db.get_single_value("AV Tools Settings", "enable_indirect_expense_item_creation")
+	)
 
 
 def create_indirect_expense_item(doc, method=None):
@@ -41,12 +43,12 @@ def create_indirect_expense_item(doc, method=None):
 	if item:
 		item = frappe.get_doc("Item", doc.account_name)
 		doc.item = item.name
-
+		
 		if is_income:
 			item.is_sales_item = 1
 		elif is_expense:
 			item.is_purchase_item = 1
-
+			
 		company_list = []
 		for i in item.item_defaults:
 			if doc.company not in company_list:
@@ -95,7 +97,9 @@ def create_indirect_expense_item(doc, method=None):
 	new_item.save()
 	if new_item.name:
 		url = frappe.utils.get_url_to_form(new_item.doctype, new_item.name)
-		msgprint = f"New Item is Created <a href='{url}'>{new_item.name}</a>"
+		msgprint = "New Item is Created <a href='{0}'>{1}</a>".format(
+			url, new_item.name
+		)
 		frappe.msgprint(_(msgprint))
 		doc.item = new_item.name
 	doc.db_update()

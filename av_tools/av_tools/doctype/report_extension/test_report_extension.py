@@ -8,8 +8,6 @@ from av_tools.av_tools_hooks.query_report import get_script
 from av_tools.patches.v1_0.migrate_report_extension_site_data import (
 	SOURCE_DOCTYPE,
 	TARGET_DOCTYPE,
-)
-from av_tools.patches.v1_0.migrate_report_extension_site_data import (
 	execute as migrate_report_extension_site_data,
 )
 

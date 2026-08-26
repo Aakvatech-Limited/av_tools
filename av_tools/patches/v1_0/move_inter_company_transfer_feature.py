@@ -2,6 +2,7 @@ import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.utils import cint
 
+
 INTER_COMPANY_DOCTYPES = (
 	"Inter Company Material Request",
 	"Inter Company Material Request Details",
@@ -19,7 +20,8 @@ def execute():
 def _create_custom_fields():
 	_delete_legacy_custom_fields()
 
-	custom_fields = {}
+	custom_fields = {
+	}
 
 	if not frappe.db.exists(
 		"Custom Field", {"dt": "Stock Entry", "fieldname": "transfer_goods_between_company"}
@@ -54,12 +56,16 @@ def _delete_legacy_custom_fields():
 
 def _migrate_setting_value():
 	legacy_value = None
-	if frappe.db.exists("DocType", "CSF TZ Settings") and frappe.get_meta("CSF TZ Settings").has_field(
-		"allow_inter_company_stock_transfer"
-	):
-		legacy_value = frappe.db.get_single_value("CSF TZ Settings", "allow_inter_company_stock_transfer")
+	if frappe.db.exists("DocType", "CSF TZ Settings") and frappe.get_meta(
+		"CSF TZ Settings"
+	).has_field("allow_inter_company_stock_transfer"):
+		legacy_value = frappe.db.get_single_value(
+			"CSF TZ Settings", "allow_inter_company_stock_transfer"
+		)
 
-	current_value = frappe.db.get_single_value("AV Tools Settings", "allow_inter_company_stock_transfer")
+	current_value = frappe.db.get_single_value(
+		"AV Tools Settings", "allow_inter_company_stock_transfer"
+	)
 	if current_value is None:
 		frappe.db.set_single_value(
 			"AV Tools Settings",

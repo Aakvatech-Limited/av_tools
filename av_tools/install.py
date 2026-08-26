@@ -13,18 +13,10 @@ def before_install():
 	try:
 		modules = frappe.get_module_list("av_tools")
 	except Exception:
-		modules = [
-			"Av Tools",
-			"Weigh Bridge",
-			"AuthOTP",
-			"Feedback",
-			"AI Integration",
-			"Compliance",
-			"Trade In",
-		]
+		modules = ["Av Tools", "Weigh Bridge", "AuthOTP", "Feedback", "AI Integration", "Compliance", "Trade In"]
 
 	for module in modules:
 		if frappe.db.exists("Module Def", module):
 			frappe.db.delete("Module Def", {"name": module})
-
+			
 	frappe.db.commit()

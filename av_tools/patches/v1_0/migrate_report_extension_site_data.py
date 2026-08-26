@@ -1,5 +1,6 @@
 import frappe
 
+
 SOURCE_DOCTYPE = "AV Report Extension"
 TARGET_DOCTYPE = "Report Extension"
 FIELDS_TO_COPY = ("active", "script", "html_format")

@@ -1,7 +1,8 @@
 // Copyright (c) 2025, Aakvatech and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on("Temporary Role Access Grant Log", {
+frappe.ui.form.on('Temporary Role Access Grant Log', {
 	// refresh: function(frm) {
+
 	// }
 });

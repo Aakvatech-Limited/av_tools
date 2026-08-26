@@ -1,33 +1,14 @@
 // Copyright (c) 2023, Aakvatech and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on("OTP Register", {
+frappe.ui.form.on('OTP Register', {
 	refresh: function (frm) {
 		// set filter for on party_type field
 		frm.set_query("party_type", function () {
 			return {
 				filters: {
-					name: [
-						"in",
-						[
-							"Customer",
-							"Supplier",
-							"Employee",
-							"User",
-							"Lead",
-							"Student",
-							"Guardian",
-							"Instructor",
-							"Member",
-							"Sales Partner",
-							"Sales Person",
-							"Teacher",
-							"Tenant",
-							"Visitor",
-							"Patient",
-						],
-					],
-				},
+					"name": ["in", ["Customer", "Supplier", "Employee", "User", "Lead", "Student", "Guardian", "Instructor", "Member", "Sales Partner", "Sales Person", "Teacher", "Tenant", "Visitor", "Patient"]]
+				}
 			};
 		});
 		// if not Validate == 1 add custom button to validate OTP
@@ -37,23 +18,24 @@ frappe.ui.form.on("OTP Register", {
 				if (frm.is_dirty()) {
 					frappe.show_alert({
 						message: __("Please save the document first"),
-						indicator: "red",
+						indicator: 'red'
 					});
 					return;
 				}
 				frappe.call({
 					method: "av_tools.authotp.doctype.otp_register.otp_register.register_otp",
 					args: {
-						otp_doc: frm.doc,
+						"otp_doc": frm.doc
 					},
 					callback: function (r) {
 						if (r.message) {
 							show_popup_for_otp_validation(frm, r.message);
 						}
-					},
+					}
 				});
 			});
 		}
+
 	},
 	party_type: function (frm) {
 		// clear party, party_name and user_name fields
@@ -63,32 +45,34 @@ frappe.ui.form.on("OTP Register", {
 	},
 });
 
-function show_popup_for_otp_validation(frm, qr_code_link) {
+
+function show_popup_for_otp_validation (frm, qr_code_link) {
 	// show popup to dispaly QR code and validate OTP
 	const fields = [
 		{
-			fieldtype: "Data",
-			fieldname: "otp_code",
-			label: __("OTP Code"),
-			reqd: 1,
+			"fieldtype": "Data",
+			"fieldname": "otp_code",
+			"label": __("OTP Code"),
+			"reqd": 1
 		},
 		{
-			fieldtype: "Button",
-			fieldname: "validate_otp",
-			label: __("Validate OTP"),
-			click: function () {
+			"fieldtype": "Button",
+			"fieldname": "validate_otp",
+			"label": __("Validate OTP"),
+			"click": function () {
 				// validate OTP
 				validate_otp(frm, d);
-			},
+			}
 		},
 	];
 	if (qr_code_link) {
 		// add field to show QR code image as first field
 		fields.unshift({
-			fieldtype: "HTML",
-			fieldname: "qr_code",
-			label: __("QR Code"),
-			options: `<img src="${qr_code_link}" style="width: 100%; height: 100%;"/>`,
+			"fieldtype": "HTML",
+			"fieldname": "qr_code",
+			"label": __("QR Code"),
+			"options": `<img src="${qr_code_link}" style="width: 100%; height: 100%;"/>`
+
 		});
 	}
 	var d = new frappe.ui.Dialog({
@@ -98,14 +82,14 @@ function show_popup_for_otp_validation(frm, qr_code_link) {
 	d.show();
 }
 
-function validate_otp(frm, d) {
+function validate_otp (frm, d) {
 	// validate OTP
 	frappe.call({
 		method: "av_tools.authotp.doctype.otp_register.otp_register.validate_otp",
 		args: {
-			otp_doc: frm.doc,
-			otp_code: d.get_value("otp_code"),
-			submit: true,
+			"otp_doc": frm.doc,
+			"otp_code": d.get_value("otp_code"),
+			"submit": true
 		},
 		callback: function (r) {
 			if (r.message) {
@@ -113,6 +97,6 @@ function validate_otp(frm, d) {
 				// close popup
 				d.hide();
 			}
-		},
+		}
 	});
 }

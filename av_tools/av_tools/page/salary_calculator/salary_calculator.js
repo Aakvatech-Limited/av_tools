@@ -92,47 +92,27 @@ class SalaryCalculatorPage {
 
 		const defs = [
 			{
-				fieldtype: "Link",
-				fieldname: "salary_structure",
-				label: "Salary Structure",
-				options: "Salary Structure",
-				reqd: 1,
+				fieldtype: "Link", fieldname: "salary_structure", label: "Salary Structure",
+				options: "Salary Structure", reqd: 1,
 				get_query: () => ({ filters: { is_active: "Yes", docstatus: 1 } }),
 				change: () => this.on_structure_change(),
 			},
 			{
-				fieldtype: "Link",
-				fieldname: "employee",
-				label: "Employee",
+				fieldtype: "Link", fieldname: "employee", label: "Employee",
 				options: "Employee",
 				get_query: () => ({ filters: { status: "Active" } }),
-				change: () => {
-					this.state.employee = this.val("employee");
-					this.schedule_calc();
-				},
+				change: () => { this.state.employee = this.val("employee"); this.schedule_calc(); },
 			},
 			{
-				fieldtype: "Select",
-				fieldname: "calculate_based_on",
-				label: "Calculate Based On",
-				options: ["Net Pay", "Gross Pay"],
-				default: "Net Pay",
-				reqd: 1,
-				change: () => {
-					this.state.calculate_based_on = this.val("calculate_based_on");
-					this.apply_field_states();
-					this.schedule_calc();
-				},
+				fieldtype: "Select", fieldname: "calculate_based_on", label: "Calculate Based On",
+				options: ["Net Pay", "Gross Pay"], default: "Net Pay", reqd: 1,
+				change: () => { this.state.calculate_based_on = this.val("calculate_based_on"); this.apply_field_states(); this.schedule_calc(); },
 			},
 		];
 
 		for (const df of defs) {
 			const $w = $('<div class="sc-field-wrap"></div>').appendTo($fields);
-			this.fields[df.fieldname] = frappe.ui.form.make_control({
-				df,
-				parent: $w,
-				render_input: true,
-			});
+			this.fields[df.fieldname] = frappe.ui.form.make_control({ df, parent: $w, render_input: true });
 		}
 		this.fields.calculate_based_on.set_value("Net Pay");
 
@@ -141,9 +121,7 @@ class SalaryCalculatorPage {
 			const $w = $('<div class="sc-field-wrap sc-field-half"></div>').appendTo($row);
 			this.fields[name] = frappe.ui.form.make_control({
 				df: {
-					fieldtype: "Currency",
-					fieldname: name,
-					precision: 0,
+					fieldtype: "Currency", fieldname: name, precision: 0,
 					label: name === "gross_pay" ? "Gross Pay" : "Net Pay",
 					change: () => {
 						this.state.gross_pay = flt(this.val("gross_pay"));
@@ -151,24 +129,18 @@ class SalaryCalculatorPage {
 						this.schedule_calc();
 					},
 				},
-				parent: $w,
-				render_input: true,
+				parent: $w, render_input: true,
 			});
 		}
 
 		this.apply_field_states();
 	}
 
-	val(name) {
-		return this.fields[name]?.get_value();
-	}
+	val(name) { return this.fields[name]?.get_value(); }
 
 	apply_field_states() {
 		const is_net = this.state.calculate_based_on === "Net Pay";
-		for (const [name, disabled] of [
-			["gross_pay", is_net],
-			["net_pay", !is_net],
-		]) {
+		for (const [name, disabled] of [["gross_pay", is_net], ["net_pay", !is_net]]) {
 			const f = this.fields[name];
 			if (f?.$input) {
 				f.$input.prop("disabled", disabled);
@@ -193,43 +165,33 @@ class SalaryCalculatorPage {
 			return;
 		}
 
-		frappe
-			.xcall(
-				"av_tools.av_tools.page.salary_calculator.salary_calculator.get_salary_structure_components",
-				{ salary_structure: value }
-			)
-			.then((data) => {
-				this.structure_data = data;
-				this.currency = data.currency || "TZS";
-				this.earning_overrides = {};
+		frappe.xcall(
+			"av_tools.av_tools.page.salary_calculator.salary_calculator.get_salary_structure_components",
+			{ salary_structure: value },
+		).then((data) => {
+			this.structure_data = data;
+			this.currency = data.currency || "TZS";
+			this.earning_overrides = {};
 
-				this.active_keys = new Set();
-				for (const comp of [...data.earnings, ...data.deductions]) {
-					if (!comp.statistical_component && !comp.do_not_include_in_total) {
-						this.active_keys.add(comp.key);
-					}
+			this.active_keys = new Set();
+			for (const comp of [...data.earnings, ...data.deductions]) {
+				if (!comp.statistical_component && !comp.do_not_include_in_total) {
+					this.active_keys.add(comp.key);
 				}
+			}
 
-				this.render_components();
-				this.$(".sc-components-card").show();
-				this.schedule_calc();
-			});
+			this.render_components();
+			this.$(".sc-components-card").show();
+			this.schedule_calc();
+		});
 	}
 
 	// ── Components UI ───────────────────────────────────────────────────
 
 	render_components() {
 		if (!this.structure_data) return;
-		this.render_component_list(
-			this.$(".sc-earnings-list"),
-			this.structure_data.earnings,
-			true
-		);
-		this.render_component_list(
-			this.$(".sc-deductions-list"),
-			this.structure_data.deductions,
-			false
-		);
+		this.render_component_list(this.$(".sc-earnings-list"), this.structure_data.earnings, true);
+		this.render_component_list(this.$(".sc-deductions-list"), this.structure_data.deductions, false);
 		this.update_counts();
 	}
 
@@ -261,9 +223,7 @@ class SalaryCalculatorPage {
 		const is_base = this.is_base(comp);
 		const hint = comp.formula
 			? `Formula: ${comp.formula}`
-			: comp.amount
-			? `Amount: ${comp.amount}`
-			: "";
+			: comp.amount ? `Amount: ${comp.amount}` : "";
 		const esc = frappe.utils.escape_html;
 
 		const $row = $(`
@@ -284,10 +244,8 @@ class SalaryCalculatorPage {
 			const comp_name = comp.salary_component;
 			const ctrl = frappe.ui.form.make_control({
 				df: {
-					fieldtype: "Currency",
-					fieldname: `ovr_${comp.key}`,
-					placeholder: "Amount",
-					precision: 0,
+					fieldtype: "Currency", fieldname: `ovr_${comp.key}`,
+					placeholder: "Amount", precision: 0,
 					change: () => {
 						const v = flt(ctrl.get_value());
 						if (v > 0) {
@@ -298,8 +256,7 @@ class SalaryCalculatorPage {
 						this.schedule_calc();
 					},
 				},
-				parent: $wrap,
-				render_input: true,
+				parent: $wrap, render_input: true,
 			});
 			const existing = this.earning_overrides[comp_name];
 			if (existing !== undefined) ctrl.set_value(existing);
@@ -329,19 +286,14 @@ class SalaryCalculatorPage {
 
 	is_base(comp) {
 		const f = (comp.formula || "").replace(/\s/g, "").toLowerCase();
-		return (
-			comp.abbr === "B" ||
-			(comp.salary_component || "").toLowerCase() === "basic" ||
-			f === "base"
-		);
+		return comp.abbr === "B" || (comp.salary_component || "").toLowerCase() === "basic" || f === "base";
 	}
 
 	get_inactive_components() {
 		if (!this.structure_data) return [];
 		const seen = new Set();
 		return [...this.structure_data.earnings, ...this.structure_data.deductions].filter((c) => {
-			if (c.statistical_component || c.do_not_include_in_total || this.is_base(c))
-				return false;
+			if (c.statistical_component || c.do_not_include_in_total || this.is_base(c)) return false;
 			if (this.active_keys.has(c.key)) return false;
 			if (seen.has(c.salary_component)) return false;
 			seen.add(c.salary_component);
@@ -354,9 +306,7 @@ class SalaryCalculatorPage {
 		const inactive = this.get_inactive_components();
 		const $btn = this.$(".sc-add-btn");
 		if (inactive.length) {
-			$btn.show()
-				.off("click")
-				.on("click", () => this.show_add_dialog());
+			$btn.show().off("click").on("click", () => this.show_add_dialog());
 		} else {
 			$btn.hide();
 		}
@@ -368,25 +318,17 @@ class SalaryCalculatorPage {
 
 		const d = new frappe.ui.Dialog({
 			title: __("Add Salary Component"),
-			fields: [
-				{
-					fieldtype: "Select",
-					fieldname: "key",
-					label: "Component",
-					reqd: 1,
-					options: inactive.map((c) => ({ label: c.salary_component, value: c.key })),
-				},
-			],
+			fields: [{
+				fieldtype: "Select", fieldname: "key", label: "Component", reqd: 1,
+				options: inactive.map((c) => ({ label: c.salary_component, value: c.key })),
+			}],
 			primary_action_label: __("Add"),
 			primary_action: ({ key }) => {
 				d.hide();
 				const selected = inactive.find((c) => c.key === key);
 				if (selected) {
 					// Re-activate ALL rows with same salary_component (handles deduction dupes)
-					for (const c of [
-						...this.structure_data.earnings,
-						...this.structure_data.deductions,
-					]) {
+					for (const c of [...this.structure_data.earnings, ...this.structure_data.deductions]) {
 						if (c.salary_component === selected.salary_component) {
 							this.active_keys.add(c.key);
 						}
@@ -405,11 +347,7 @@ class SalaryCalculatorPage {
 		if (!this.structure_data) return [];
 		const names = [];
 		for (const comp of [...this.structure_data.earnings, ...this.structure_data.deductions]) {
-			if (
-				this.active_keys.has(comp.key) &&
-				!comp.statistical_component &&
-				!comp.do_not_include_in_total
-			) {
+			if (this.active_keys.has(comp.key) && !comp.statistical_component && !comp.do_not_include_in_total) {
 				names.push(comp.salary_component);
 			}
 		}
@@ -434,8 +372,9 @@ class SalaryCalculatorPage {
 			return;
 		}
 
-		frappe
-			.xcall("av_tools.av_tools.page.salary_calculator.salary_calculator.run_calculation", {
+		frappe.xcall(
+			"av_tools.av_tools.page.salary_calculator.salary_calculator.run_calculation",
+			{
 				salary_structure: ss,
 				calculate_based_on: mode,
 				gross_pay: this.state.gross_pay,
@@ -443,32 +382,25 @@ class SalaryCalculatorPage {
 				selected_components: this.get_selected_names(),
 				earning_overrides: this.earning_overrides,
 				employee: this.state.employee || undefined,
-			})
-			.then((r) => {
-				if (!r) return;
-				this.result = r;
+			},
+		).then((r) => {
+			if (!r) return;
+			this.result = r;
 
-				// Update computed field without retriggering calculation
-				this._applying_result = true;
-				if (mode === "Net Pay") {
-					this.fields.gross_pay.set_value(r.gross_pay);
-				} else {
-					this.fields.net_pay.set_value(r.net_pay);
-				}
-				this._applying_result = false;
+			// Update computed field without retriggering calculation
+			this._applying_result = true;
+			if (mode === "Net Pay") {
+				this.fields.gross_pay.set_value(r.gross_pay);
+			} else {
+				this.fields.net_pay.set_value(r.net_pay);
+			}
+			this._applying_result = false;
 
-				this.refresh_preview();
-			})
-			.catch((err) => {
-				this.result = null;
-				frappe.show_alert(
-					{
-						message: __("Calculation error: {0}", [err?.message || err]),
-						indicator: "orange",
-					},
-					5
-				);
-			});
+			this.refresh_preview();
+		}).catch((err) => {
+			this.result = null;
+			frappe.show_alert({ message: __("Calculation error: {0}", [err?.message || err]), indicator: "orange" }, 5);
+		});
 	}
 
 	// ── Preview ──────────────────────────────────────────────────────────
@@ -487,24 +419,22 @@ class SalaryCalculatorPage {
 		const deductions = r.deductions || [];
 
 		const emp = this.state.employee;
-		frappe
-			.xcall(
-				"av_tools.av_tools.page.salary_calculator.salary_calculator.get_salary_slip_preview",
-				{
-					salary_structure: ss,
-					base: r.base,
-					gross_pay: r.gross_pay,
-					net_pay: r.net_pay,
-					earnings_data: earnings,
-					deductions_data: deductions,
-					employee: emp || undefined,
-				}
-			)
-			.then((html) => {
-				this.$(".sc-placeholder").hide();
-				this.$(".sc-preview-content").html(html).show();
-				this.render_preview_actions();
-			});
+		frappe.xcall(
+			"av_tools.av_tools.page.salary_calculator.salary_calculator.get_salary_slip_preview",
+			{
+				salary_structure: ss,
+				base: r.base,
+				gross_pay: r.gross_pay,
+				net_pay: r.net_pay,
+				earnings_data: earnings,
+				deductions_data: deductions,
+				employee: emp || undefined,
+			},
+		).then((html) => {
+			this.$(".sc-placeholder").hide();
+			this.$(".sc-preview-content").html(html).show();
+			this.render_preview_actions();
+		});
 	}
 
 	show_placeholder() {
@@ -528,62 +458,23 @@ class SalaryCalculatorPage {
 		const d = new frappe.ui.Dialog({
 			title: __("Create Salary Structure Assignment"),
 			fields: [
-				{
-					fieldtype: "Link",
-					fieldname: "employee",
-					label: "Employee",
-					options: "Employee",
-					default: this.state.employee,
-					read_only: 1,
-				},
-				{
-					fieldtype: "Link",
-					fieldname: "salary_structure",
-					label: "Salary Structure",
-					options: "Salary Structure",
-					default: this.state.salary_structure,
-					read_only: 1,
-				},
-				{
-					fieldtype: "Currency",
-					fieldname: "base",
-					label: "Base Amount",
-					default: this.result?.base || 0,
-					precision: 0,
-					description: "Calculated base salary",
-				},
-				{
-					fieldtype: "Date",
-					fieldname: "from_date",
-					label: "From Date",
-					reqd: 1,
-					default: frappe.datetime.get_today(),
-				},
+				{ fieldtype: "Link", fieldname: "employee", label: "Employee", options: "Employee", default: this.state.employee, read_only: 1 },
+				{ fieldtype: "Link", fieldname: "salary_structure", label: "Salary Structure", options: "Salary Structure", default: this.state.salary_structure, read_only: 1 },
+				{ fieldtype: "Currency", fieldname: "base", label: "Base Amount", default: this.result?.base || 0, precision: 0, description: "Calculated base salary" },
+				{ fieldtype: "Date", fieldname: "from_date", label: "From Date", reqd: 1, default: frappe.datetime.get_today() },
 			],
 			primary_action_label: __("Create & Submit"),
 			primary_action: (v) => {
 				d.hide();
-				frappe
-					.xcall(
-						"av_tools.av_tools.page.salary_calculator.salary_calculator.create_salary_structure_assignment",
-						{
-							employee: v.employee,
-							salary_structure: v.salary_structure,
-							from_date: v.from_date,
-							base: v.base,
-						}
-					)
-					.then((name) => {
-						frappe.show_alert(
-							{
-								message: __("Assignment {0} created", [
-									`<a href="/app/salary-structure-assignment/${name}">${name}</a>`,
-								]),
-								indicator: "green",
-							},
-							7
-						);
-					});
+				frappe.xcall(
+					"av_tools.av_tools.page.salary_calculator.salary_calculator.create_salary_structure_assignment",
+					{ employee: v.employee, salary_structure: v.salary_structure, from_date: v.from_date, base: v.base },
+				).then((name) => {
+					frappe.show_alert({
+						message: __("Assignment {0} created", [`<a href="/app/salary-structure-assignment/${name}">${name}</a>`]),
+						indicator: "green",
+					}, 7);
+				});
 			},
 		});
 		d.show();
@@ -591,9 +482,7 @@ class SalaryCalculatorPage {
 
 	// ── Helpers ──────────────────────────────────────────────────────────
 
-	$(selector) {
-		return this.page.main.find(selector);
-	}
+	$(selector) { return this.page.main.find(selector); }
 
 	fmt(amount) {
 		return format_number(flt(amount), null, this.currency === "TZS" ? 0 : 2);

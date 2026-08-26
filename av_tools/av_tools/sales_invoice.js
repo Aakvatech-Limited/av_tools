@@ -1,6 +1,8 @@
 // Trade In feature for Sales Invoice (moved from csf_tz)
 
-frappe.require(["/assets/av_tools/js/shortcuts.js"]);
+frappe.require([
+	"/assets/av_tools/js/shortcuts.js",
+]);
 
 frappe.ui.keys.add_shortcut({
 	shortcut: "ctrl+q",
@@ -31,6 +33,7 @@ frappe.ui.keys.add_shortcut({
 	description: __("Select Item Price"),
 	ignore_inputs: true,
 });
+
 
 frappe.ui.form.on("Sales Invoice", {
 	refresh: function (frm) {

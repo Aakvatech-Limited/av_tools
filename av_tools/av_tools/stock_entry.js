@@ -1,4 +1,6 @@
-frappe.require(["/assets/av_tools/js/shortcuts.js"]);
+frappe.require([
+	"/assets/av_tools/js/shortcuts.js",
+]);
 
 frappe.ui.keys.add_shortcut({
 	shortcut: "ctrl+q",
@@ -75,14 +77,14 @@ frappe.ui.keys.add_shortcut({
 									item_row.doctype,
 									item_row.name,
 									"s_warehouse",
-									$(input).attr("data-warehouse")
+									$(input).attr("data-warehouse"),
 								);
 								if ($(input).attr("data-batch")) {
 									frappe.model.set_value(
 										item_row.doctype,
 										item_row.name,
 										"batch_no",
-										$(input).attr("data-batch")
+										$(input).attr("data-batch"),
 									);
 								}
 							});
@@ -141,20 +143,10 @@ frappe.ui.form.on("Stock Entry", {
 					frappe.model.set_value(child.doctype, child.name, "qty", d.qty);
 					frappe.model.set_value(child.doctype, child.name, "uom", d.item_uom);
 					if (d.s_warehouse) {
-						frappe.model.set_value(
-							child.doctype,
-							child.name,
-							"s_warehouse",
-							d.s_warehouse
-						);
+						frappe.model.set_value(child.doctype, child.name, "s_warehouse", d.s_warehouse);
 					}
 					if (d.t_warehouse) {
-						frappe.model.set_value(
-							child.doctype,
-							child.name,
-							"t_warehouse",
-							d.t_warehouse
-						);
+						frappe.model.set_value(child.doctype, child.name, "t_warehouse", d.t_warehouse);
 					}
 				});
 				frm.refresh_field("items");
@@ -163,16 +155,8 @@ frappe.ui.form.on("Stock Entry", {
 	},
 	stock_entry_type(frm) {
 		if (frm.doc.stock_entry_type === "Repack from template") {
-			frappe.meta.get_docfield(
-				"Stock Entry Detail",
-				"item_code",
-				frm.doc.name
-			).read_only = 1;
-			frappe.meta.get_docfield(
-				"Stock Entry Detail",
-				"item_group",
-				frm.doc.name
-			).read_only = 1;
+			frappe.meta.get_docfield("Stock Entry Detail", "item_code", frm.doc.name).read_only = 1;
+			frappe.meta.get_docfield("Stock Entry Detail", "item_group", frm.doc.name).read_only = 1;
 			$(".grid-add-multiple-rows").hide();
 			$(".grid-add-row").hide();
 			$(".grid-remove-rows").hide();
@@ -180,16 +164,8 @@ frappe.ui.form.on("Stock Entry", {
 			$(".grid-upload").hide();
 			frm.toggle_reqd("qty", 1);
 		} else {
-			frappe.meta.get_docfield(
-				"Stock Entry Detail",
-				"item_code",
-				frm.doc.name
-			).read_only = 0;
-			frappe.meta.get_docfield(
-				"Stock Entry Detail",
-				"item_group",
-				frm.doc.name
-			).read_only = 0;
+			frappe.meta.get_docfield("Stock Entry Detail", "item_code", frm.doc.name).read_only = 0;
+			frappe.meta.get_docfield("Stock Entry Detail", "item_group", frm.doc.name).read_only = 0;
 			$(".grid-add-multiple-rows").show();
 			$(".grid-add-row").show();
 			$(".grid-remove-rows").show();

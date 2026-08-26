@@ -18,33 +18,33 @@
     {% if (supplier_name !== "" ) { %}
         {% fix_supplier_name = supplier_name %}
     {% } %}
-
+    
     {% if (data[i]['supplier_name'] === "" ) { %}
         {% data[i]['supplier_name'] = fix_supplier_name %}
     {% } %}
-
+    
     {% if (!supplierName.includes(supplier_name) && supplier_name !== "" ) { %}
         {% supplierName.push(supplier_name) %}
     {% } %}
-
+    
     {% if (!itemCode.includes(item_code)) { %}
         {% itemCode.push(item_code) %}
     {% } %}
-
+    
     {% if (!supplier_payment_terms.hasOwnProperty(supplier_name)) { %}
         {% supplier_payment_terms[supplier_name] = data[i]['terms'] %}
     {% } %}
-
+    
     {% if (!supplier_warranty.hasOwnProperty(supplier_name)) { %}
         {% supplier_warranty[supplier_name] = data[i]['custom_warranty'] %}
     {% } %}
-
+    
     {% if (data[i]['custom_right'] !== "" ) { %}
         {% if (!remarks_right.hasOwnProperty(data[i]['supplier_name'])) { %}
             {% remarks_right[data[i]['supplier_name']] = data[i]['custom_right'] %}
         {% } %}
     {% } %}
-
+    
     {% if (data[i]['custom_bottom'] !== "" ) { %}
         {% if (!remarks_bottom.hasOwnProperty(data[i]['supplier_name'])) { %}
             {% remarks_bottom[data[i]['supplier_name']] = data[i]['custom_bottom'] %}
@@ -104,10 +104,10 @@
                 {% if(taxes_and_charges == "Tanzania Tax - KSL"){ %}
                     {% vat_by_supplier[supplier_name] = true %}
                 {% } %}
-
+               
             {% } %}
         {% } %}
-
+        
         {% for (var k = 0, n = itemCode.length; k < n; k++) { %}
             <tr>
                 <td style="border: 1px solid black;">{{ itemCode[k] }}</td>
@@ -148,7 +148,7 @@
                         <td style="border: 1px solid black;"></td>
                     {% } %}
                 {% } %}
-
+                
                 {% if ((k + 1) == n) { %}
                     <td>
                         {% if (different_right_remarks) { %}
@@ -164,7 +164,7 @@
                 {% } %}
             </tr>
         {% } %}
-
+        
         <tr>
             <th style="border: 1px solid black;">PAYMENT TERMS</th>
             {% for (var m = 0; m < supplierName.length; m++) { %}
@@ -173,7 +173,7 @@
                 </td>
             {% } %}
         </tr>
-
+        
         <tr>
             <th style="border: 1px solid black;">WARRANTY</th>
             {% for (var m = 0; m < supplierName.length; m++) { %}
@@ -182,7 +182,7 @@
                 </td>
             {% } %}
         </tr>
-
+        
         <tr>
             <th style="border: 1px solid black;">TOTAL</th>
             {% for (var m = 0; m < supplierName.length; m++) { %}
@@ -192,12 +192,12 @@
                 </td>
             {% } %}
         </tr>
-
+        
         <tr>
             <th style="border: 1px solid black;">VAT 18%</th>
             {% for (var m = 0; m < supplierName.length; m++) { %}
             <td colspan="4" style="border: 1px solid black; text-align: right;">
-                {% if (vat_by_supplier[supplierName[m]]){ %}
+                {% if (vat_by_supplier[supplierName[m]]){ %} 
                     {% const vatRate = 0.18 %}
                     {% const vatAmount = total_by_supplier[supplierName[m]] * vatRate %}
                     {% const formattedMoney = vatAmount.toLocaleString('en-TZ', {style: 'currency', currency: 'TZS'}) %}
@@ -207,7 +207,7 @@
     </td>
 {% } %}
         </tr>
-
+        
         <tr>
             <th style="border: 1px solid black;">GRAND TOTAL</th>
             {% for (var m = 0; m < supplierName.length; m++) { %}
@@ -222,7 +222,7 @@
                 </td>
             {% } %}
         </tr>
-
+        
         <tr>
             <th style="border: 1px solid black;">REMARKS</th>
             <td colspan="{{ supplierName.length * 4 }}" style="border: 1px solid black; text-align: left;">
@@ -235,19 +235,19 @@
                 {% } %}
             </td>
         </tr>
-
+        
         <tr>
             <th style="border: 1px solid black;">PREPARED BY</th>
             <th colspan="{{ supplierName.length * 4 }}" style="border: 1px solid black; text-align: center;">CHECKED BY</th>
             <th style="border: 1px solid black; text-align: left;">AUTHORISED BY</th>
         </tr>
-
+        
         <tr>
             <td style="border: 1px solid black; font-weight: bold;">Name:</td>
             <td colspan="{{ supplierName.length * 4 }}" style="border: 1px solid black; text-align: left; font-weight: bold;">Name:</td>
             <td style="border: 1px solid black; text-align: left; font-weight: bold;">Name:</td>
         </tr>
-
+        
         <tr>
             <td style="border: 1px solid black; font-weight: bold;">Signature:</td>
             <td colspan="{{ supplierName.length * 4 }}" style="border: 1px solid black; text-align: left; font-weight: bold;">Signature:</td>

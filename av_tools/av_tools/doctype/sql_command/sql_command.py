@@ -16,3 +16,4 @@ class SQLCommand(Document):
 				frappe.db.sql(f"DELETE FROM `tab{self.doctype_name}` WHERE NAME IN ({self.names})")
 		elif self.sql_text:
 			frappe.db.sql(self.sql_text)
+

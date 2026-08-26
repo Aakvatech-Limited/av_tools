@@ -1,6 +1,7 @@
 import frappe
 from frappe.utils import cint
 
+
 DOCTYPES = (
 	"Price Change Request",
 	"Price Change Request Detail",
@@ -27,12 +28,16 @@ def _move_report():
 
 def _migrate_setting():
 	legacy_value = None
-	if frappe.db.exists("DocType", "CSF TZ Settings") and frappe.get_meta("CSF TZ Settings").has_field(
-		"target_warehouse_based_price_list"
-	):
-		legacy_value = frappe.db.get_single_value("CSF TZ Settings", "target_warehouse_based_price_list")
+	if frappe.db.exists("DocType", "CSF TZ Settings") and frappe.get_meta(
+		"CSF TZ Settings"
+	).has_field("target_warehouse_based_price_list"):
+		legacy_value = frappe.db.get_single_value(
+			"CSF TZ Settings", "target_warehouse_based_price_list"
+		)
 
-	current_value = frappe.db.get_single_value("AV Tools Settings", "target_warehouse_based_price_list")
+	current_value = frappe.db.get_single_value(
+		"AV Tools Settings", "target_warehouse_based_price_list"
+	)
 	if current_value is None:
 		frappe.db.set_single_value(
 			"AV Tools Settings",

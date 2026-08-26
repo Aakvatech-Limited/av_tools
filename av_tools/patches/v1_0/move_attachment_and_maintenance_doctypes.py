@@ -1,5 +1,6 @@
 import frappe
 
+
 DOCTYPES = (
 	"Maintenance Request",
 	"Document Attachment",

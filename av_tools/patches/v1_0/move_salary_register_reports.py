@@ -1,5 +1,6 @@
 import frappe
 
+
 REPORTS = (
 	"Salary Register csf",
 	"Salary Register CTC",

@@ -4,15 +4,11 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import get_datetime, getdate, now_datetime
+from frappe.utils import now_datetime, get_datetime, getdate
 
 
 class TemporaryRoleAccessGrantLog(Document):
-	def validate(self):
-		"""Validate the grant log entry."""
-		if (
-			self.revoked_on
-			and self.granted_on
-			and get_datetime(self.revoked_on) < get_datetime(self.granted_on)
-		):
-			frappe.throw(_("Revoked On cannot be earlier than Granted On"))
+    def validate(self):
+        """Validate the grant log entry."""
+        if self.revoked_on and self.granted_on and get_datetime(self.revoked_on) < get_datetime(self.granted_on):
+            frappe.throw(_("Revoked On cannot be earlier than Granted On"))

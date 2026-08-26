@@ -42,16 +42,14 @@ class TestItemSearch(TestCase):
 				captured["as_dict"] = as_dict
 				return []
 
-		with (
-			patch.object(item_search.frappe, "get_meta", return_value=Meta()),
-			patch.object(item_search.frappe, "db", FakeDB()),
-			patch.object(item_search, "get_filters_cond", return_value=""),
-			patch.object(item_search, "get_match_cond", return_value=""),
-			patch.object(
-				item_search,
-				"nowdate",
-				return_value="2026-05-13",
-			),
+		with patch.object(item_search.frappe, "get_meta", return_value=Meta()), patch.object(
+			item_search.frappe, "db", FakeDB()
+		), patch.object(item_search, "get_filters_cond", return_value=""), patch.object(
+			item_search, "get_match_cond", return_value=""
+		), patch.object(
+			item_search,
+			"nowdate",
+			return_value="2026-05-13",
 		):
 			item_search.item_query.__wrapped__(
 				doctype="Item",

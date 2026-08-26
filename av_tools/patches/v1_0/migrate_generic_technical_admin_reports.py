@@ -1,5 +1,6 @@
 import frappe
 
+
 REPORT_NAMES = (
 	"Schema Details",
 	"Table Indexes",

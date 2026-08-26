@@ -74,15 +74,7 @@
 			}
 
 			if (original_formatter) {
-				return original_formatter.call(
-					this,
-					value,
-					row,
-					column,
-					data,
-					default_formatter,
-					filter
-				);
+				return original_formatter.call(this, value, row, column, data, default_formatter, filter);
 			}
 
 			return default_formatter(value, row, column, data);
@@ -144,10 +136,7 @@
 	}
 
 	function retry_financial_statement_override() {
-		retry_installer(
-			install_financial_statements_override,
-			"financial_statements_retry_interval"
-		);
+		retry_installer(install_financial_statements_override, "financial_statements_retry_interval");
 	}
 
 	function retry_accounts_receivable_summary_override() {

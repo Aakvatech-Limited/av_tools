@@ -4,6 +4,5 @@
 # import frappe
 import unittest
 
-
 class TestReportingGLEntry(unittest.TestCase):
 	pass
