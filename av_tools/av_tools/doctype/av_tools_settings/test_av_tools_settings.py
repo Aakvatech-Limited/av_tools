@@ -8,7 +8,7 @@ from erpnext.accounts.test.accounts_mixin import AccountsTestMixin
 from erpnext.buying.doctype.purchase_order.test_purchase_order import create_purchase_order
 from erpnext.stock.get_item_details import get_item_details as original_get_item_details
 from frappe.core.doctype.user.test_user import test_user
-from frappe.tests.utils import FrappeTestCase
+from frappe.tests import IntegrationTestCase
 
 from av_tools.av_tools.doctype.av_tools_settings.av_tools_settings import AVToolsSettings
 from av_tools.av_tools_hooks.capture import get_capture_settings
@@ -26,7 +26,7 @@ from av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides import (
 )
 
 
-class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
+class TestAVToolsSettings(AccountsTestMixin, IntegrationTestCase):
 	settings_defaults: ClassVar[dict[str, object]] = {
 		"allow_reopen_of_po_based_on_role": 0,
 		"role_to_reopen_po": "",
@@ -175,7 +175,9 @@ class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
 
 	@contextmanager
 	def run_as_test_user(self, *roles):
-		with test_user(roles=["System Manager", *roles]) as user:
+		# v16 update_status/close APIs load the document with check_permission="submit",
+		# so the baseline user needs the plain transactional roles (never the reopen roles).
+		with test_user(roles=["System Manager", "Purchase User", "Stock User", *roles]) as user:
 			frappe.set_user(user.name)
 			try:
 				yield user
@@ -336,7 +338,7 @@ class TestAVToolsSettings(AccountsTestMixin, FrappeTestCase):
 		}
 
 
-class TestAVToolsCaptureSettings(FrappeTestCase):
+class TestAVToolsCaptureSettings(IntegrationTestCase):
 	settings_defaults: ClassVar[dict[str, object]] = {
 		"enable_camera_capture_override": 0,
 		"camera_capture_ideal_width": 1920,
