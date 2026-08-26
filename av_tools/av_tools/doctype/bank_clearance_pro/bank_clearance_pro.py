@@ -24,7 +24,8 @@ class BankClearancePro(Document):
 		if not self.include_reconciled_entries:
 			condition = "and (clearance_date IS NULL or clearance_date='0000-00-00')"
 
-		journal_entries = frappe.db.sql(
+		# condition holds fixed SQL fragments only; user values are bound as parameters
+		journal_entries = frappe.db.sql(  # nosemgrep
 			f"""
             select
                 "Journal Entry" as payment_document, t1.name as payment_entry,
@@ -47,7 +48,7 @@ class BankClearancePro(Document):
 		if self.bank_account:
 			condition += "and bank_account = %(bank_account)s"
 
-		payment_entries = frappe.db.sql(
+		payment_entries = frappe.db.sql(  # nosemgrep
 			f"""
             select
                 "Payment Entry" as payment_document, name as payment_entry,
@@ -171,7 +172,7 @@ class BankClearancePro(Document):
 
 
 @frappe.whitelist()
-def get_balance_on(account, date=None):
+def get_balance_on(account: str, date: str | None = None):
 	"""Whitelisted wrapper: erpnext.accounts.utils.get_balance_on is not callable from the client on v16."""
 	from erpnext.accounts.utils import get_balance_on as erpnext_get_balance_on
 
