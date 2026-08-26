@@ -39,6 +39,10 @@ class ReportOverride(Report):
 			# Execute the script with the same dict for globals AND locals
 			# This ensures all function definitions are in the same namespace
 			# and can call each other (just like a real Python module)
+			# Script Report python needs real imports, so safe_exec is not usable here.
+			# Editing a Report is restricted to System Manager, which is already a
+			# trusted role. Revisit if Report write access is ever widened.
+			# nosemgrep: frappe-semgrep-rules.rules.security.frappe-codeinjection-eval
 			exec(script_python, module_namespace, module_namespace)
 
 			# Now call the execute function like a standard report

@@ -273,6 +273,8 @@ override_whitelisted_methods = {
 }
 
 # Override doctype class to intercept report execution
+# ReportOverride subclasses frappe's own Report; this is the documented hook.
+# nosemgrep: frappe-semgrep-rules.rules.override-doctype-class
 override_doctype_class = {"Report": "av_tools.av_tools_hooks.report_override.ReportOverride"}
 #
 # each overriding function accepts a `data` argument;

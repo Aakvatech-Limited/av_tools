@@ -118,6 +118,9 @@ def get_salary_slip_preview(
 			if d.get("salary_component") in employer_comps:
 				ctc += flt(d.get("amount"))
 
+	# The template path is a hardcoded literal shipped in this app and the template
+	# has no include, import or extends. Only context values vary.
+	# nosemgrep: frappe-semgrep-rules.rules.security.frappe-ssti
 	return frappe.render_template(
 		"av_tools/av_tools/page/salary_calculator/salary_slip_preview.html",
 		{
