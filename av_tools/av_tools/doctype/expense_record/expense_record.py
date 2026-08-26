@@ -71,7 +71,7 @@ class ExpenseRecord(Document):
 		pi.calculate_taxes_and_totals()
 		pi.insert(ignore_permissions=True)
 		pi.save()
-		self.purchase_invoice = pi.name
+		self.db_set("purchase_invoice", pi.name)
 		invoice_url = frappe.utils.get_url_to_form(pi.doctype, pi.name)
 		si_msgprint = f"Purchase Invoice Created <a href='{invoice_url}'>{pi.name}</a>"
 		frappe.msgprint(_(si_msgprint))
@@ -102,7 +102,7 @@ class ExpenseRecord(Document):
 		jv_doc.flags.ignore_permissions = True
 		frappe.flags.ignore_account_permission = True
 		jv_doc.save()
-		self.journal_entry = jv_doc.name
+		self.db_set("journal_entry", jv_doc.name)
 		jv_url = frappe.utils.get_url_to_form(jv_doc.doctype, jv_doc.name)
 		si_msgprint = f"Journal Entry Created <a href='{jv_url}'>{jv_doc.name}</a>"
 		frappe.msgprint(_(si_msgprint))
