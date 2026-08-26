@@ -406,8 +406,8 @@
   },
   {
    "type": "Link",
-   "label": "Auth OTP Settings",
-   "link_to": "Auth OTP Settings",
+   "label": "AuthOTP Settings",
+   "link_to": "AuthOTP Settings",
    "link_type": "DocType",
    "doc_view": "List",
    "is_query_report": false,
@@ -848,5 +848,6 @@
    "type": "DocType"
   }
  ],
- "title": "AV Tools"
+ "title": "AV Tools",
+ "modified": "2026-08-25 15:57:13.915265"
 }
