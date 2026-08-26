@@ -89,15 +89,13 @@ class ExpenseRecord(Document):
 			self.name + " " + self.doctype + " was created at " + self.section + " for " + self.expense_type
 		)
 		jv_doc = frappe.get_doc(
-			dict(
-				doctype="Journal Entry",
-				posting_date=self.date,
-				accounts=account_details,
-				bill_no=self.bill_no,
-				company=company,
-				expense_record=self.name,
-				user_remark=user_remark,
-			)
+			doctype="Journal Entry",
+			posting_date=self.date,
+			accounts=account_details,
+			bill_no=self.bill_no,
+			company=company,
+			expense_record=self.name,
+			user_remark=user_remark,
 		)
 		jv_doc.flags.ignore_permissions = True
 		frappe.flags.ignore_account_permission = True
