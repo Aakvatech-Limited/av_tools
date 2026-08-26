@@ -30,7 +30,7 @@ app_include_js = [
 	"/assets/av_tools/js/financial_statements_override.js",
 	"/assets/av_tools/js/ai_assist.js",
 	"/assets/av_tools/js/parallel_approval.js",
-  "av_tools.bundle.js",
+	"av_tools.bundle.js",
 ]
 app_include_css = "/assets/av_tools/css/theme.css"
 
@@ -106,10 +106,12 @@ doctype_js = {
 # ----------
 
 # add methods and filters to jinja environment
-# jinja = {
-# 	"methods": "av_tools.utils.jinja_methods",
-# 	"filters": "av_tools.utils.jinja_filters"
-# }
+jinja = {
+	"methods": [
+		"av_tools.av_tools_hooks.qr_utils.generate_approver_qr",
+		"av_tools.av_tools_hooks.qr_utils.get_qr_svg",
+	],
+}
 
 # Installation
 # ------------
