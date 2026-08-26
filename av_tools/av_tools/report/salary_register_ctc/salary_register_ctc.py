@@ -124,8 +124,9 @@ def get_columns(salary_slips):
 	for component in frappe.db.sql(
 		"""select distinct sd.salary_component, sc.type
         from `tabSalary Detail` sd, `tabSalary Component` sc
-        where sc.do_not_include_in_total = 0 and sc.name=sd.salary_component and sd.amount != 0 and sd.parent in (%s)"""
-		% (", ".join(["%s"] * len(salary_slips))),
+        where sc.do_not_include_in_total = 0 and sc.name=sd.salary_component and sd.amount != 0 and sd.parent in ({})""".format(
+			", ".join(["%s"] * len(salary_slips))
+		),
 		tuple([d.name for d in salary_slips]),
 		as_dict=1,
 	):
@@ -151,8 +152,7 @@ def get_columns(salary_slips):
         AND sc.type = "Deduction"
         AND sc.name=sd.salary_component
         AND sd.amount != 0
-        AND sd.parent in (%s)"""
-		% (", ".join(["%s"] * len(salary_slips))),
+        AND sd.parent in ({})""".format(", ".join(["%s"] * len(salary_slips))),
 		tuple([d.name for d in salary_slips]),
 		as_dict=1,
 	)
@@ -173,9 +173,8 @@ def get_salary_slips(filters, company_currency):
 	filters.update({"from_date": filters.get("from_date"), "to_date": filters.get("to_date")})
 	conditions, filters = get_conditions(filters, company_currency)
 	salary_slips = frappe.db.sql(
-		"""select * from `tabSalary Slip` where %s
-        order by employee"""
-		% conditions,
+		f"""select * from `tabSalary Slip` where {conditions}
+        order by employee""",
 		filters,
 		as_dict=1,
 	)
@@ -188,7 +187,7 @@ def get_conditions(filters, company_currency):
 	doc_status = {"Draft": 0, "Submitted": 1, "Cancelled": 2}
 
 	if filters.get("docstatus"):
-		conditions += "docstatus = {0}".format(doc_status[filters.get("docstatus")])
+		conditions += "docstatus = {}".format(doc_status[filters.get("docstatus")])
 
 	if filters.get("from_date"):
 		conditions += " and start_date >= %(from_date)s"
@@ -225,8 +224,9 @@ def get_employee_doj_map():
 def get_ss_earning_map(salary_slips, currency, company_currency):
 	ss_earnings = frappe.db.sql(
 		"""select sd.parent, sd.salary_component, sd.amount, ss.exchange_rate, ss.name
-        from `tabSalary Detail` sd, `tabSalary Slip` ss where sd.parent=ss.name and sd.parent in (%s)"""
-		% (", ".join(["%s"] * len(salary_slips))),
+        from `tabSalary Detail` sd, `tabSalary Slip` ss where sd.parent=ss.name and sd.parent in ({})""".format(
+			", ".join(["%s"] * len(salary_slips))
+		),
 		tuple([d.name for d in salary_slips]),
 		as_dict=1,
 	)
@@ -247,8 +247,9 @@ def get_ss_earning_map(salary_slips, currency, company_currency):
 def get_ss_ded_map(salary_slips, currency, company_currency):
 	ss_deductions = frappe.db.sql(
 		"""select sd.parent, sd.salary_component, sd.amount, ss.exchange_rate, ss.name
-        from `tabSalary Detail` sd, `tabSalary Slip` ss where sd.parent=ss.name and sd.parent in (%s)"""
-		% (", ".join(["%s"] * len(salary_slips))),
+        from `tabSalary Detail` sd, `tabSalary Slip` ss where sd.parent=ss.name and sd.parent in ({})""".format(
+			", ".join(["%s"] * len(salary_slips))
+		),
 		tuple([d.name for d in salary_slips]),
 		as_dict=1,
 	)

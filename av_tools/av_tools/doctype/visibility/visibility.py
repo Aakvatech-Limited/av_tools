@@ -132,11 +132,11 @@ def run_visibility(doc, method):
 	"""Run notifications for this method"""
 	if frappe.flags.in_import or frappe.flags.in_patch or frappe.flags.in_install:
 		return
-	if doc.flags.vis_notifications_executed == None:
+	if doc.flags.vis_notifications_executed is None:
 		doc.flags.vis_notifications_executed = []
-	if doc.flags.vis_notifications == None:
+	if doc.flags.vis_notifications is None:
 		alerts = frappe.cache().hget("vis_notifications", doc.doctype)
-		if alerts == None:
+		if alerts is None:
 			alerts = frappe.get_all(
 				"Visibility",
 				fields=["name", "event", "method"],

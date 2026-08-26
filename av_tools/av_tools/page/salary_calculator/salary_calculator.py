@@ -283,7 +283,7 @@ def _fallback_solve(structure, target_field, target_amount, precision, selected,
 		best = r
 		best_diff = abs(flt(r[target_field], precision) - target_amount)
 
-	for _ in range(60):
+	for _iteration in range(60):
 		mid = (lo + hi) / 2
 		r = _fallback_calc(structure, mid, precision, selected, overrides)
 		diff = flt(r[target_field], precision) - target_amount
@@ -320,7 +320,7 @@ def _fallback_calc(structure, base_amount, precision, selected, overrides=None):
 	gross_pay = net_pay = total_ded = 0.0
 	prev = None
 
-	for _ in range(10):
+	for _iteration in range(10):
 		ctx = {
 			"base": flt(base_amount, precision),
 			"gross_pay": gross_pay,

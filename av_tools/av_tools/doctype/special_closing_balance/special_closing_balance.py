@@ -10,8 +10,6 @@ from frappe.model.document import Document
 
 class SpecialClosingBalance(Document):
 	def validate(self):
-		items = []
-		user_remarks = f"Special Closing Balance - {self.name}"
 		for item_row in self.closing_balance_details:
 			if not item_row.quantity:
 				item_row.quantity = 0

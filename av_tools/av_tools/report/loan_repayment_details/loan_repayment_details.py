@@ -78,7 +78,7 @@ def get_columns(filters):
 def get_loans_not_started_to_be_paid(filters, all_repayments):
 	conditions = ""
 	if filters.get("employee"):
-		conditions += " AND l.applicant = '%s' " % filters["employee"]
+		conditions += " AND l.applicant = '{}' ".format(filters["employee"])
 
 	return frappe.db.sql(
 		"""

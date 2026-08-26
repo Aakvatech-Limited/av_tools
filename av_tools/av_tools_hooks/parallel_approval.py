@@ -105,9 +105,7 @@ def _notify_approver_added(user, info, doc):
 
 		subject = _("You have been added as an approver — {0} {1}").format(doc.doctype, doc.name)
 
-		position_line = (
-			f"<p><b>{_('Position')}:</b> {frappe.utils.escape_html(position)}</p>" if position else ""
-		)
+		(f"<p><b>{_('Position')}:</b> {frappe.utils.escape_html(position)}</p>" if position else "")
 
 		message = f"""
 <p>{_("Dear")} {frappe.utils.escape_html(display_name)},</p>

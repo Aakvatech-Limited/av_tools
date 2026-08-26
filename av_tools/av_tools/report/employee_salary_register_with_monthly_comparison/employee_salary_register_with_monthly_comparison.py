@@ -171,10 +171,9 @@ def get_prev_salary_slips(filters, company_currency, prev_first_date, prev_last_
 	custom_filters.update({"prev_first_date": prev_first_date, "prev_last_date": prev_last_date})
 	prev_conditions = get_prev_conditions(custom_filters, company_currency)
 	prev_salary_slips = frappe.db.sql(
-		"""
-		select name, employee, employee_name, department, gross_pay as prev_gross_pay from `tabSalary Slip` where %s
-		order by employee"""
-		% prev_conditions,
+		f"""
+		select name, employee, employee_name, department, gross_pay as prev_gross_pay from `tabSalary Slip` where {prev_conditions}
+		order by employee""",
 		filters,
 		as_dict=1,
 	)
@@ -188,10 +187,9 @@ def get_cur_salary_slips(filters, company_currency):
 	filters.update({"from_date": filters.get("from_date"), "to_date": filters.get("to_date")})
 	conditions, filters = get_cur_conditions(filters, company_currency)
 	salary_slips = frappe.db.sql(
-		"""
-		select name, employee, employee_name, department, gross_pay as cur_gross_pay from `tabSalary Slip` where %s
-        order by employee"""
-		% conditions,
+		f"""
+		select name, employee, employee_name, department, gross_pay as cur_gross_pay from `tabSalary Slip` where {conditions}
+        order by employee""",
 		filters,
 		as_dict=1,
 	)
@@ -247,7 +245,7 @@ def get_cur_conditions(filters, company_currency):
 	doc_status = {"Draft": 0, "Submitted": 1, "Cancelled": 2}
 
 	if filters.get("docstatus"):
-		conditions += "docstatus = {0}".format(doc_status[filters.get("docstatus")])
+		conditions += "docstatus = {}".format(doc_status[filters.get("docstatus")])
 
 	if filters.get("from_date"):
 		conditions += " and start_date >= %(from_date)s"

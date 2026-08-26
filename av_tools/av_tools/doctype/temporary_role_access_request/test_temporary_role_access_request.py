@@ -1,6 +1,8 @@
 # Copyright (c) 2025, Aakvatech and Contributors
 # See license.txt
 
+from typing import ClassVar
+
 import frappe
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import add_to_date, now_datetime
@@ -25,8 +27,8 @@ test_ignore = ["User", "Role"]
 class TestTemporaryRoleAccessRequest(FrappeTestCase):
 	"""Test suite for Temporary Role Access Request feature."""
 
-	test_users = []
-	test_roles_created = []
+	test_users: ClassVar[list] = []
+	test_roles_created: ClassVar[list] = []
 	_workflow_created = False
 
 	@classmethod

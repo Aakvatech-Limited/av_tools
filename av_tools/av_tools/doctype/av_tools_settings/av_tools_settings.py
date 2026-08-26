@@ -74,7 +74,7 @@ class AVToolsSettings(Document):
 				create_approver_qr_print_format(dt)
 			except Exception as e:
 				frappe.log_error(f"Parallel Approval: create fields on '{dt}': {e}", "Parallel Approval")
-				frappe.msgprint(_("Could not create approver fields on {0}: {1}").format(dt, e))
+				frappe.msgprint(_("Could not create approver fields on {0}: {1}").format(dt, str(e)))
 
 		for dt in existing_doctypes - new_doctypes:
 			try:
@@ -82,4 +82,4 @@ class AVToolsSettings(Document):
 				delete_approver_qr_print_format(dt)
 			except Exception as e:
 				frappe.log_error(f"Parallel Approval: delete fields on '{dt}': {e}", "Parallel Approval")
-				frappe.msgprint(_("Could not remove approver fields from {0}: {1}").format(dt, e))
+				frappe.msgprint(_("Could not remove approver fields from {0}: {1}").format(dt, str(e)))

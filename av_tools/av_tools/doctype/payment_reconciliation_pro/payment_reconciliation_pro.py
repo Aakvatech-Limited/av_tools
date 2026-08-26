@@ -57,7 +57,7 @@ class PaymentReconciliationPro(Document):
 			"t2.against_account like %(bank_cash_account)s" if self.bank_cash_account else "1=1"
 		)
 
-		limit_cond = "limit %s" % self.limit if self.limit else ""
+		limit_cond = f"limit {self.limit}" if self.limit else ""
 
 		journal_entries = frappe.db.sql(
 			"""
@@ -92,7 +92,7 @@ class PaymentReconciliationPro(Document):
 				"party_type": self.party_type,
 				"party": self.party,
 				"account": self.receivable_payable_account,
-				"bank_cash_account": "%%%s%%" % self.bank_cash_account,
+				"bank_cash_account": f"%{self.bank_cash_account}%",
 			},
 			as_dict=1,
 		)
@@ -386,13 +386,11 @@ def get_advance_payment_entries(
 	exchange_rate_field = "source_exchange_rate" if payment_type == "Receive" else "target_exchange_rate"
 
 	payment_entries_against_order, unallocated_payment_entries = [], []
-	limit_cond = "limit %s" % limit if limit else ""
+	limit_cond = f"limit {limit}" if limit else ""
 
 	if order_list or against_all_orders:
 		if order_list:
-			reference_condition = " and t2.reference_name in ({0})".format(
-				", ".join(["%s"] * len(order_list))
-			)
+			reference_condition = " and t2.reference_name in ({})".format(", ".join(["%s"] * len(order_list)))
 		else:
 			reference_condition = ""
 			order_list = []
@@ -411,7 +409,7 @@ def get_advance_payment_entries(
 				and t2.reference_doctype = %s {reference_condition}
 			order by t1.posting_date {limit_cond}
 		""",
-			[party_account, payment_type, party_type, party, order_doctype] + order_list,
+			[party_account, payment_type, party_type, party, order_doctype, *order_list],
 			as_dict=1,
 		)
 

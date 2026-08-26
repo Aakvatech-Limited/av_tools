@@ -50,7 +50,6 @@ def get_data(filters=None):
 	total_earnings = 0
 	for earning in ss_earning_map:
 		total_earnings = total_earnings + earning["total"]
-	te_record = {"salary_component": "Total Allowances", "total": total_earnings}
 	# data.append(te_record)
 
 	gross_pay = total_earnings + t_basic
@@ -64,7 +63,6 @@ def get_data(filters=None):
 	for deduction in ss_deduction_map:
 		total_deduction = total_deduction + deduction["total"]
 
-	ded_record = {"salary_component": "Total Deductions", "total": total_deduction}
 	# data.append(ded_record)
 
 	netpay = gross_pay + total_deduction
@@ -77,9 +75,8 @@ def get_salary_slips(filters, company_currency):
 	filters.update({"from_date": filters.get("from_date"), "to_date": filters.get("to_date")})
 	conditions, filters = get_conditions(filters, company_currency)
 	salary_slips = frappe.db.sql(
-		"""select * from `tabSalary Slip` where %s
-        order by employee"""
-		% conditions,
+		f"""select * from `tabSalary Slip` where {conditions}
+        order by employee""",
 		filters,
 		as_dict=1,
 	)
@@ -92,13 +89,12 @@ def get_ss_basic_map(salary_slips, currency, company_currency):
 		"""
         SELECT sd.salary_component, SUM(sd.amount) as total
         FROM `tabSalary Detail` sd, `tabSalary Slip` ss where sd.parent=ss.name
-        AND sd.parent in (%s)
+        AND sd.parent in ({})
         AND do_not_include_in_total = 0
         AND sd.parentfield = 'earnings'
         AND sd.salary_component = 'Basic'
         GROUP BY sd.salary_component
-        ORDER BY sd.salary_component ASC"""
-		% (", ".join(["%s"] * len(salary_slips))),
+        ORDER BY sd.salary_component ASC""".format(", ".join(["%s"] * len(salary_slips))),
 		tuple([d.name for d in salary_slips]),
 		as_dict=1,
 	)
@@ -111,13 +107,12 @@ def get_ss_earning_map(salary_slips, currency, company_currency):
 		"""
         SELECT sd.salary_component, SUM(sd.amount) as total
         FROM `tabSalary Detail` sd, `tabSalary Slip` ss where sd.parent=ss.name
-        AND sd.parent in (%s)
+        AND sd.parent in ({})
         AND do_not_include_in_total = 0
         AND sd.parentfield = 'earnings'
         AND sd.salary_component != 'Basic'
         GROUP BY sd.salary_component
-        ORDER BY sd.salary_component ASC"""
-		% (", ".join(["%s"] * len(salary_slips))),
+        ORDER BY sd.salary_component ASC""".format(", ".join(["%s"] * len(salary_slips))),
 		tuple([d.name for d in salary_slips]),
 		as_dict=1,
 	)
@@ -129,12 +124,11 @@ def get_ss_ded_map(salary_slips, currency, company_currency):
 	ss_deductions = frappe.db.sql(
 		"""
         SELECT sd.salary_component, SUM(sd.amount) * -1 as total
-        FROM `tabSalary Detail` sd, `tabSalary Slip` ss where sd.parent=ss.name AND sd.parent in (%s)
+        FROM `tabSalary Detail` sd, `tabSalary Slip` ss where sd.parent=ss.name AND sd.parent in ({})
         AND do_not_include_in_total = 0
         AND sd.parentfield = 'deductions'
         GROUP BY sd.salary_component
-        ORDER BY sd.salary_component ASC"""
-		% (", ".join(["%s"] * len(salary_slips))),
+        ORDER BY sd.salary_component ASC""".format(", ".join(["%s"] * len(salary_slips))),
 		tuple([d.name for d in salary_slips]),
 		as_dict=1,
 	)
@@ -146,7 +140,7 @@ def get_conditions(filters, company_currency):
 	doc_status = {"Draft": 0, "Submitted": 1, "Cancelled": 2}
 
 	if filters.get("docstatus"):
-		conditions += "docstatus = {0}".format(doc_status[filters.get("docstatus")])
+		conditions += "docstatus = {}".format(doc_status[filters.get("docstatus")])
 
 	if filters.get("from_date"):
 		conditions += " and start_date >= %(from_date)s"

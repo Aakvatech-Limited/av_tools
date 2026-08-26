@@ -138,7 +138,7 @@ def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20)
 
 	conditions = ""
 	params: dict = {"item_code": item_code, "currency": currency, "company": company}
-	if posting_date_range and isinstance(posting_date_range, (list, tuple)) and len(posting_date_range) > 1:
+	if posting_date_range and isinstance(posting_date_range, list | tuple) and len(posting_date_range) > 1:
 		try:
 			conditions += " AND DATE(SI.posting_date) BETWEEN %(from_date)s AND %(to_date)s"
 			params["from_date"] = posting_date_range[1][0]
@@ -201,7 +201,7 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 
 	conditions = ""
 	params: dict = {"item_code": item_code, "currency": currency, "company": company}
-	if posting_date_range and isinstance(posting_date_range, (list, tuple)) and len(posting_date_range) > 1:
+	if posting_date_range and isinstance(posting_date_range, list | tuple) and len(posting_date_range) > 1:
 		try:
 			conditions += " AND DATE(PI.posting_date) BETWEEN %(from_date)s AND %(to_date)s"
 			params["from_date"] = posting_date_range[1][0]

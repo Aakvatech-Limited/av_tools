@@ -85,7 +85,7 @@ def _send_license_notification(lic, new_status, today, users):
 	Pending Renewal or Expired using frappe's built-in notification system.
 	"""
 
-	days_remaining = date_diff(getdate(lic.expiry_date), today)
+	date_diff(getdate(lic.expiry_date), today)
 
 	if new_status == "Expired":
 		subject = _(f"License Expired: {lic.license_name}")

@@ -11,7 +11,7 @@ class EmailSalarySlips(Document):
 
 	def send_salary_slip_email(self):
 		# Employees selected to send mail
-		selected_employees = filter(lambda x: x.send_email == True, self.employees)
+		selected_employees = filter(lambda x: x.send_email, self.employees)
 		selected_employees = list(selected_employees)
 		employees = []
 		for employee in selected_employees:

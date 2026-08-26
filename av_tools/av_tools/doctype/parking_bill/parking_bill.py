@@ -63,7 +63,7 @@ def get_bills(number_plate):
 			res = None
 			try:
 				res = json.loads(response.text)
-			except:
+			except ValueError:
 				res = response.text
 			frappe.log_error(res)
 			return None

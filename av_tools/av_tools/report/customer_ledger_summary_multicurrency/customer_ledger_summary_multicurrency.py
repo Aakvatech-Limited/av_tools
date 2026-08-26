@@ -21,7 +21,7 @@ class PartyLedgerSummaryReport:
 			frappe.throw(_("From Date must be before To Date"))
 
 		self.filters.party_type = args.get("party_type")
-		self.party_naming_by = frappe.db.get_value(args.get("naming_by")[0], None, args.get("naming_by")[1])
+		self.party_naming_by = frappe.db.get_single_value(args.get("naming_by")[0], args.get("naming_by")[1])
 
 		self.get_gl_entries()
 		self.get_return_invoices()
@@ -342,14 +342,14 @@ class PartyLedgerSummaryReport:
 
 			if parties and accounts:
 				if len(parties) == 1:
-					party = list(parties.keys())[0]
+					party = next(iter(parties.keys()))
 					for account, amount in accounts.items():
 						self.party_adjustment_accounts.add(account)
 						self.party_adjustment_details.setdefault(party, {})
 						self.party_adjustment_details[party].setdefault(account, 0)
 						self.party_adjustment_details[party][account] += amount
 				elif len(accounts) == 1 and not has_irrelevant_entry:
-					account = list(accounts.keys())[0]
+					account = next(iter(accounts.keys()))
 					self.party_adjustment_accounts.add(account)
 					for party, amount in parties.items():
 						self.party_adjustment_details.setdefault(party, {})
