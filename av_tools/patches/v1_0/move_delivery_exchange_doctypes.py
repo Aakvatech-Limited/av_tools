@@ -1,6 +1,5 @@
 import frappe
 
-
 DELIVERY_EXCHANGE_DOCTYPES = (
 	"Delivery Exchange Item",
 	"Delivery Exchange Item Details",

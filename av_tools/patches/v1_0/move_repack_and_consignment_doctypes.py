@@ -1,6 +1,5 @@
 import frappe
 
-
 DOCTYPES = (
 	"Repack Template",
 	"Repack Template Detail",

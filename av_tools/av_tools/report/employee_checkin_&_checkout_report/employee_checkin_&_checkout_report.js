@@ -44,7 +44,9 @@
 			$summary.insertBefore($page_form);
 		} else {
 			const $page_body = $wrapper.find(".page-body").first();
-			const $target = $page_body.length ? $page_body : $(report.page.main || report.page.wrapper);
+			const $target = $page_body.length
+				? $page_body
+				: $(report.page.main || report.page.wrapper);
 			$target.prepend($summary);
 		}
 	}
@@ -64,63 +66,63 @@
 	}
 
 	frappe.query_reports[REPORT_NAME] = {
-		"filters": [
+		filters: [
 			{
-				"fieldname": "from_date",
-				"label": __("From Date"),
-				"fieldtype": "Date",
-				"width": "150px",
-				"reqd": 1
+				fieldname: "from_date",
+				label: __("From Date"),
+				fieldtype: "Date",
+				width: "150px",
+				reqd: 1,
 			},
 			{
-				"fieldname": "to_date",
-				"label": __("To Date"),
-				"fieldtype": "Date",
-				"width": "150px",
-				"reqd": 1
+				fieldname: "to_date",
+				label: __("To Date"),
+				fieldtype: "Date",
+				width: "150px",
+				reqd: 1,
 			},
 			{
-				"fieldname": "company",
-				"label": __("Company"),
-				"fieldtype": "Link",
-				"options": "Company",
-				"width": "150px",
-				"reqd": 1
+				fieldname: "company",
+				label: __("Company"),
+				fieldtype: "Link",
+				options: "Company",
+				width: "150px",
+				reqd: 1,
 			},
 			{
-				"fieldname": "department",
-				"label": __("Department"),
-				"fieldtype": "Link",
-				"options": "Department",
-				"default": "",
-				"width": "150px",
-				"reqd": 0,
-				"get_query": function () {
+				fieldname: "department",
+				label: __("Department"),
+				fieldtype: "Link",
+				options: "Department",
+				default: "",
+				width: "150px",
+				reqd: 0,
+				get_query: function () {
 					var company = frappe.query_report.get_filter_value("company");
 					return {
-						"doctype": "Department",
-						"filters": {
-							"company": company,
-						}
+						doctype: "Department",
+						filters: {
+							company: company,
+						},
 					};
-				}
+				},
 			},
 			{
-				"fieldname": "employee",
-				"label": __("Employee"),
-				"fieldtype": "Link",
-				"options": "Employee",
-				"width": "150px",
-				"reqd": 0
-			}
+				fieldname: "employee",
+				label: __("Employee"),
+				fieldtype: "Link",
+				options: "Employee",
+				width: "150px",
+				reqd: 0,
+			},
 		],
-		"onload": function (report) {
+		onload: function (report) {
 			frappe.call({
 				method: "av_tools.av_tools.report.employee_checkin_&_checkout_report.employee_checkin_&_checkout_report.get_employee_checkin_summary",
 				callback: function (r) {
 					render_checkin_summary(report, r.message);
-				}
+				},
 			});
-		}
+		},
 	};
 })();

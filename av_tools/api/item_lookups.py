@@ -1,5 +1,3 @@
-
-
 from __future__ import annotations
 
 import json
@@ -59,9 +57,7 @@ def get_item_info(item_code: Any):
 			expires_in_days = (exp_date - frappe.utils.datetime.date.today()).days
 			qty_dict.expiry_status = expires_in_days if expires_in_days > 0 else 0
 
-		qty_dict.actual_qty = flt(qty_dict.actual_qty, float_precision) + flt(
-			d.actual_qty, float_precision
-		)
+		qty_dict.actual_qty = flt(qty_dict.actual_qty, float_precision) + flt(d.actual_qty, float_precision)
 
 	result = []
 	for item_code_key, warehouses in iwb_map.items():

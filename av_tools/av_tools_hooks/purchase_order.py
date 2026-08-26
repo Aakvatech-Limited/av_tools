@@ -2,16 +2,12 @@ import frappe
 
 
 def target_warehouse_based_price_list(doc, method):
-	if not frappe.db.get_single_value(
-		"AV Tools Settings", "target_warehouse_based_price_list"
-	):
+	if not frappe.db.get_single_value("AV Tools Settings", "target_warehouse_based_price_list"):
 		return
 
 	for item in doc.items:
 		if item.item_code is None or item.warehouse is None:
-			frappe.throw(
-				f"Both Item Code {item.item_code} and Warehouse {item.warehouse} are required."
-			)
+			frappe.throw(f"Both Item Code {item.item_code} and Warehouse {item.warehouse} are required.")
 
 		price_list = frappe.db.get_value(
 			"Dynamic Price List Assignment",
@@ -29,9 +25,7 @@ def target_warehouse_based_price_list(doc, method):
 			"price_list_rate",
 		)
 		if not rate:
-			frappe.throw(
-				f"Price List not found for Item {item.item_code}. Please create one."
-			)
+			frappe.throw(f"Price List not found for Item {item.item_code}. Please create one.")
 
 		item.price_list_rate = rate
 		item.rate = rate
