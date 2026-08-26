@@ -85,7 +85,7 @@ def add_trade_in_control_account():
 	direct_expenses_account = f"Direct Expenses - {company_abbr}"
 
 	# Check if "Stock Expenses - {company_abbr}" exists
-	if not frappe.db.exists("Account", {"account_name": stock_expenses_account, "company": default_company}):
+	if not frappe.db.exists("Account", stock_expenses_account):
 		try:
 			# Create "Stock Expenses" under "Direct Expenses - {company_abbr}"
 			stock_expenses_doc = frappe.get_doc(
@@ -104,9 +104,7 @@ def add_trade_in_control_account():
 			print(f"'Stock Expenses - {company_abbr}' already exists (avoiding duplicate creation).")
 
 	# Check if "Trade In Control - {company_abbr}" exists
-	if not frappe.db.exists(
-		"Account", {"account_name": trade_in_control_account, "company": default_company}
-	):
+	if not frappe.db.exists("Account", trade_in_control_account):
 		try:
 			# Create "Trade In Control" under "Stock Expenses - {company_abbr}"
 			trade_in_control_doc = frappe.get_doc(
@@ -146,7 +144,7 @@ def delete_trade_in_item_and_account():
 	trade_in_item = "Trade In"
 
 	# Delete Trade In Control account if it exists
-	if frappe.db.exists("Account", {"account_name": trade_in_control_account, "company": default_company}):
+	if frappe.db.exists("Account", trade_in_control_account):
 		try:
 			frappe.delete_doc("Account", trade_in_control_account)
 			print(f"{trade_in_control_account} account has been deleted.")
