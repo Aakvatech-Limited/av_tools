@@ -2,17 +2,19 @@
 # See license.txt
 
 import frappe
-from frappe.tests.utils import FrappeTestCase
+from frappe.tests import IntegrationTestCase
 
 from av_tools.av_tools_hooks.query_report import get_script
 from av_tools.patches.v1_0.migrate_report_extension_site_data import (
 	SOURCE_DOCTYPE,
 	TARGET_DOCTYPE,
+)
+from av_tools.patches.v1_0.migrate_report_extension_site_data import (
 	execute as migrate_report_extension_site_data,
 )
 
 
-class TestReportExtension(FrappeTestCase):
+class TestReportExtension(IntegrationTestCase):
 	def setUp(self):
 		self.report_name = self.get_available_query_report()
 

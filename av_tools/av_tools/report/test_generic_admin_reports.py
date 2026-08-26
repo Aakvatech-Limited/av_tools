@@ -1,8 +1,8 @@
 import frappe
-from frappe.tests.utils import FrappeTestCase
+from frappe.tests import IntegrationTestCase
 
 
-class TestGenericAdminReports(FrappeTestCase):
+class TestGenericAdminReports(IntegrationTestCase):
 	def test_reports_are_registered_under_av_tools(self):
 		report_names = (
 			"Schema Details",

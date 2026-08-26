@@ -4,10 +4,10 @@
 from unittest.mock import Mock, patch
 
 import frappe
-from frappe.tests.utils import FrappeTestCase
+from frappe.tests import IntegrationTestCase
 
 
-class TestBackgroundDocumentPosting(FrappeTestCase):
+class TestBackgroundDocumentPosting(IntegrationTestCase):
 	def test_on_submit_queues_requested_action(self):
 		doc = frappe.get_doc(
 			{
