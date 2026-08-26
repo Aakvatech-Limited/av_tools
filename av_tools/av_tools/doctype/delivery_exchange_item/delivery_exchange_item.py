@@ -95,12 +95,13 @@ class DeliveryExchangeItem(Document):
 
 
 @frappe.whitelist(methods=["POST"])
-def get_item_details(doctype, doctype_id, item_code=None):
+def get_item_details(doctype: str, doctype_id: str, item_code: str | None = None):
 	if doctype not in ("Sales Invoice", "Delivery Note", "Sales Order"):
 		frappe.throw(_("Unsupported reference document type: {0}").format(doctype))
 
 	condition = "AND cdt.item_code = %(item_code)s" if item_code else ""
-	return frappe.db.sql(
+	# doctype is whitelisted above; all values are bound as parameters
+	return frappe.db.sql(  # nosemgrep
 		f"""
 		SELECT
 			cdt.item_code, cdt.amount, cdt.warehouse, cdt.qty, cdt.rate, cdt.uom,
