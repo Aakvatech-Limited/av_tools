@@ -8,7 +8,6 @@ from frappe.desk.search import search_link as original_search_link
 from frappe.desk.search import search_widget as original_search_widget
 from frappe.utils import nowdate
 
-
 ERP_ITEM_QUERY = "erpnext.controllers.queries.item_query"
 AV_TOOLS_ITEM_QUERY = "av_tools.av_tools_hooks.item_search.item_query"
 
@@ -40,6 +39,8 @@ def search_link(
 	searchfield=None,
 	reference_doctype=None,
 	ignore_user_permissions=False,
+	*,
+	link_fieldname=None,
 ):
 	return original_search_link(
 		doctype=doctype,
@@ -50,6 +51,7 @@ def search_link(
 		searchfield=searchfield,
 		reference_doctype=reference_doctype,
 		ignore_user_permissions=ignore_user_permissions,
+		link_fieldname=link_fieldname,
 	)
 
 
@@ -66,6 +68,10 @@ def search_widget(
 	as_dict=False,
 	reference_doctype=None,
 	ignore_user_permissions=False,
+	*,
+	link_fieldname=None,
+	for_link_validation=False,
+	query_filters_as_dict=False,
 ):
 	return original_search_widget(
 		doctype=doctype,
@@ -79,6 +85,9 @@ def search_widget(
 		as_dict=as_dict,
 		reference_doctype=reference_doctype,
 		ignore_user_permissions=ignore_user_permissions,
+		link_fieldname=link_fieldname,
+		for_link_validation=for_link_validation,
+		query_filters_as_dict=query_filters_as_dict,
 	)
 
 
