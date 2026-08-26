@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 from frappe.utils import flt
 
 ALLOWED_REFERENCE_DOCTYPES = {
@@ -21,14 +22,14 @@ ALLOWED_TARGETS_BY_SOURCE = {
 def _get_settings():
 	settings = frappe.get_single("Weighbridge Settings")
 	if not settings.enabled:
-		frappe.throw("Weighbridge Settings is disabled.")
+		frappe.throw(_("Weighbridge Settings is disabled."))
 	if not settings.read_weight_url:
-		frappe.throw("Read Weight URL is required in Weighbridge Settings.")
+		frappe.throw(_("Read Weight URL is required in Weighbridge Settings."))
 	return settings
 
 
 @frappe.whitelist()
-def get_uom_conversion_factor(from_uom, to_uom):
+def get_uom_conversion_factor(from_uom: str, to_uom: str):
 	"""Return multiplier to convert qty in from_uom -> to_uom.
 
 	Uses ERPNext UOM Conversion Factor rules (direct, inverse, intermediate).
@@ -36,7 +37,7 @@ def get_uom_conversion_factor(from_uom, to_uom):
 	from_uom = (from_uom or "").strip()
 	to_uom = (to_uom or "").strip()
 	if not from_uom or not to_uom:
-		frappe.throw("From UOM and To UOM are required.")
+		frappe.throw(_("From UOM and To UOM are required."))
 	if from_uom == to_uom:
 		return {"conversion_factor": 1.0}
 
@@ -52,7 +53,7 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
 
 	ticket_items = ticket_doc.get("items") or []
 	if not ticket_items:
-		frappe.throw("Selected Weighbridge Ticket has no items.")
+		frappe.throw(_("Selected Weighbridge Ticket has no items."))
 
 	ticket_by_item_code = {}
 	for row in ticket_items:
@@ -152,7 +153,7 @@ def _apply_ticket_items_to_target(target_doc, ticket_doc):
 
 
 @frappe.whitelist()
-def make_target_from_ticket(source_name):
+def make_target_from_ticket(source_name: str):
 	"""Create a mapped target document from a submitted Weighbridge Ticket.
 
 	Uses standard ERPNext mapper methods to pull all defaults, then overrides only
@@ -162,11 +163,11 @@ def make_target_from_ticket(source_name):
 	args = getattr(frappe.flags, "args", None) or {}
 	target_doctype = (args.get("target_doctype") or "").strip()
 	if not target_doctype:
-		frappe.throw("Target Doctype is required.")
+		frappe.throw(_("Target Doctype is required."))
 
 	ticket = frappe.get_doc("Weighbridge Ticket", source_name)
 	if ticket.docstatus != 1:
-		frappe.throw("Weighbridge Ticket must be submitted.")
+		frappe.throw(_("Weighbridge Ticket must be submitted."))
 
 	source_type = ticket.document_type
 	source_name = ticket.document_reference
@@ -190,7 +191,7 @@ def make_target_from_ticket(source_name):
 
 			target = make_purchase_invoice(source_name)
 		else:
-			frappe.throw(f"Unsupported mapping: {source_type} -> {target_doctype}")
+			frappe.throw(_("Unsupported mapping: {0} -> {1}").format(source_type, target_doctype))
 	else:
 		# Create directly from Weighbridge Ticket without a source document
 		target = frappe.new_doc(target_doctype)
@@ -237,7 +238,7 @@ def make_target_from_ticket(source_name):
 
 
 @frappe.whitelist()
-def read_weight(mode=None):
+def read_weight(mode: str | None = None):
 	settings = _get_settings()
 	return {
 		"read_weight_url": settings.read_weight_url,
@@ -255,18 +256,18 @@ def get_gateway_payload():
 
 
 @frappe.whitelist()
-def get_reference_items(document_type=None, document_reference=None):
+def get_reference_items(document_type: str | None = None, document_reference: str | None = None):
 	if not document_type or not document_reference:
-		frappe.throw("Document Type and Document Reference are required.")
+		frappe.throw(_("Document Type and Document Reference are required."))
 
 	if document_type not in ALLOWED_REFERENCE_DOCTYPES:
-		frappe.throw(f"Unsupported reference doctype: {document_type}")
+		frappe.throw(_("Unsupported reference doctype: {0}").format(document_type))
 
 	doc = frappe.get_doc(document_type, document_reference)
 	doc.check_permission("read")
 
 	if doc.meta.is_submittable and doc.docstatus == 2:
-		frappe.throw(f"{document_type} {document_reference} is Cancelled.")
+		frappe.throw(_("{0} {1} is Cancelled.").format(document_type, document_reference))
 
 	items = []
 	for row in doc.get("items") or []:
@@ -295,13 +296,13 @@ def get_reference_items(document_type=None, document_reference=None):
 
 
 @frappe.whitelist()
-def get_ticket_items(ticket, doctype=None, document_name=None):
+def get_ticket_items(ticket: str, doctype: str | None = None, document_name: str | None = None):
 	if not ticket:
-		frappe.throw("Weighbridge Ticket is required.")
+		frappe.throw(_("Weighbridge Ticket is required."))
 
 	doc = frappe.get_doc("Weighbridge Ticket", ticket)
 	if doc.docstatus != 1:
-		frappe.throw("Weighbridge Ticket must be submitted.")
+		frappe.throw(_("Weighbridge Ticket must be submitted."))
 
 	is_source_request = (
 		doctype and document_name and doc.document_type == doctype and doc.document_reference == document_name
@@ -313,14 +314,14 @@ def get_ticket_items(ticket, doctype=None, document_name=None):
 		)
 
 	if doctype and doc.target_document_type and doc.target_document_type != doctype and not is_source_request:
-		frappe.throw("Weighbridge Ticket target document type does not match.")
+		frappe.throw(_("Weighbridge Ticket target document type does not match."))
 	if (
 		document_name
 		and doc.target_document_reference
 		and doc.target_document_reference != document_name
 		and not is_source_request
 	):
-		frappe.throw("Weighbridge Ticket belongs to another document.")
+		frappe.throw(_("Weighbridge Ticket belongs to another document."))
 
 	if document_name and doctype and frappe.db.exists(doctype, document_name) and not is_source_request:
 		if doc.document_type:
@@ -392,9 +393,9 @@ def get_ticket_items(ticket, doctype=None, document_name=None):
 
 
 @frappe.whitelist()
-def create_weighbridge_ticket(source_name, source_doctype):
+def create_weighbridge_ticket(source_name: str, source_doctype: str):
 	if not source_name or not source_doctype:
-		frappe.throw("Source Name and Doctype are required.")
+		frappe.throw(_("Source Name and Doctype are required."))
 
 	doc = frappe.get_doc(source_doctype, source_name)
 	doc.check_permission("read")
