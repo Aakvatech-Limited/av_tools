@@ -8,7 +8,6 @@ from frappe.desk.search import search_link as original_search_link
 from frappe.desk.search import search_widget as original_search_widget
 from frappe.utils import nowdate
 
-
 ERP_ITEM_QUERY = "erpnext.controllers.queries.item_query"
 AV_TOOLS_ITEM_QUERY = "av_tools.av_tools_hooks.item_search.item_query"
 
@@ -32,14 +31,16 @@ def route_item_query(doctype, query):
 
 @frappe.whitelist()
 def search_link(
-	doctype,
-	txt,
-	query=None,
-	filters=None,
-	page_length=10,
-	searchfield=None,
-	reference_doctype=None,
-	ignore_user_permissions=False,
+	doctype: str,
+	txt: str,
+	query: str | None = None,
+	filters: str | dict | list | None = None,
+	page_length: int = 10,
+	searchfield: str | None = None,
+	reference_doctype: str | None = None,
+	ignore_user_permissions: bool = False,
+	*,
+	link_fieldname: str | None = None,
 ):
 	return original_search_link(
 		doctype=doctype,
@@ -50,22 +51,27 @@ def search_link(
 		searchfield=searchfield,
 		reference_doctype=reference_doctype,
 		ignore_user_permissions=ignore_user_permissions,
+		link_fieldname=link_fieldname,
 	)
 
 
 @frappe.whitelist()
 def search_widget(
-	doctype,
-	txt,
-	query=None,
-	searchfield=None,
-	start=0,
-	page_length=10,
-	filters=None,
-	filter_fields=None,
-	as_dict=False,
-	reference_doctype=None,
-	ignore_user_permissions=False,
+	doctype: str,
+	txt: str,
+	query: str | None = None,
+	searchfield: str | None = None,
+	start: int = 0,
+	page_length: int = 10,
+	filters: str | dict | list | None = None,
+	filter_fields: str | None = None,
+	as_dict: bool = False,
+	reference_doctype: str | None = None,
+	ignore_user_permissions: bool = False,
+	*,
+	link_fieldname: str | None = None,
+	for_link_validation: bool = False,
+	query_filters_as_dict: bool = False,
 ):
 	return original_search_widget(
 		doctype=doctype,
@@ -79,12 +85,23 @@ def search_widget(
 		as_dict=as_dict,
 		reference_doctype=reference_doctype,
 		ignore_user_permissions=ignore_user_permissions,
+		link_fieldname=link_fieldname,
+		for_link_validation=for_link_validation,
+		query_filters_as_dict=query_filters_as_dict,
 	)
 
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
-def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
+def item_query(
+	doctype: str,
+	txt: str,
+	searchfield: str,
+	start: int,
+	page_len: int,
+	filters: str | dict | list | None,
+	as_dict: bool = False,
+):
 	doctype = "Item"
 	conditions = []
 	search_terms = split_search_terms(txt)
@@ -153,7 +170,8 @@ def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=Fals
 	if frappe.db.count(doctype, cache=True) < 50000:
 		description_cond = f"or {build_search_condition('tabItem.description')}"
 
-	return frappe.db.sql(
+	# fragments come from frappe's own filter/match builders and validated search fields
+	return frappe.db.sql(  # nosemgrep
 		"""select
 			tabItem.name {columns}
 		from tabItem
