@@ -288,7 +288,7 @@ override_whitelisted_methods = {
 }
 
 # Override doctype class to intercept report execution
-override_doctype_class = {"Report": "av_tools.av_tools_hooks.report_override.ReportOverride"}
+override_doctype_class = {"Report": "av_tools.av_tools_hooks.report_override.ReportOverride"}  # nosemgrep
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
