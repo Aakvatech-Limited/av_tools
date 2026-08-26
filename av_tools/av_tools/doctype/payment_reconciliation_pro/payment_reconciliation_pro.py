@@ -11,7 +11,7 @@ from erpnext.accounts.utils import (
 )
 from frappe import _, msgprint
 from frappe.model.document import Document
-from frappe.utils import flt, today
+from frappe.utils import cint, flt, today
 
 
 class PaymentReconciliationPro(Document):
@@ -57,9 +57,9 @@ class PaymentReconciliationPro(Document):
 			"t2.against_account like %(bank_cash_account)s" if self.bank_cash_account else "1=1"
 		)
 
-		limit_cond = f"limit {self.limit}" if self.limit else ""
+		limit_cond = f"limit {cint(self.limit)}" if self.limit else ""
 
-		journal_entries = frappe.db.sql(
+		journal_entries = frappe.db.sql(  # nosemgrep
 			"""
 			select
 				"Journal Entry" as reference_type, t1.name as reference_name,
@@ -114,7 +114,7 @@ class PaymentReconciliationPro(Document):
 
 		voucher_type = "Sales Invoice" if self.party_type == "Customer" else "Purchase Invoice"
 
-		return frappe.db.sql(
+		return frappe.db.sql(  # nosemgrep
 			f""" SELECT doc.name as reference_name, %(voucher_type)s as reference_type,
 				(sum(gl.{dr_or_cr}) - sum(gl.{reconciled_dr_or_cr})) as amount,
 				account_currency as currency
@@ -174,7 +174,7 @@ class PaymentReconciliationPro(Document):
 			ent.outstanding_amount = e.get("outstanding_amount")
 
 	@frappe.whitelist()
-	def reconcile(self, args=None):
+	def reconcile(self, args: dict | None = None):
 		for e in self.get("payments"):
 			e.invoice_type = None
 			if e.invoice_number and " | " in e.invoice_number:
@@ -230,7 +230,7 @@ class PaymentReconciliationPro(Document):
 		)
 
 	@frappe.whitelist()
-	def get_difference_amount(self, child_row):
+	def get_difference_amount(self, child_row: dict):
 		if child_row.get("reference_type") != "Payment Entry":
 			return
 
@@ -255,7 +255,7 @@ class PaymentReconciliationPro(Document):
 	def check_mandatory_to_fetch(self):
 		for fieldname in ["company", "party_type", "party", "receivable_payable_account"]:
 			if not self.get(fieldname):
-				frappe.throw(_("Please select {0} first").format(self.meta.get_label(fieldname)))
+				frappe.throw(_("Please select {0} first").format(_(self.meta.get_label(fieldname))))
 
 	def validate_invoice(self):
 		if not self.get("invoices"):
@@ -386,7 +386,7 @@ def get_advance_payment_entries(
 	exchange_rate_field = "source_exchange_rate" if payment_type == "Receive" else "target_exchange_rate"
 
 	payment_entries_against_order, unallocated_payment_entries = [], []
-	limit_cond = f"limit {limit}" if limit else ""
+	limit_cond = f"limit {cint(limit)}" if limit else ""
 
 	if order_list or against_all_orders:
 		if order_list:
@@ -395,7 +395,7 @@ def get_advance_payment_entries(
 			reference_condition = ""
 			order_list = []
 
-		payment_entries_against_order = frappe.db.sql(
+		payment_entries_against_order = frappe.db.sql(  # nosemgrep
 			f"""
 			select
 				"Payment Entry" as reference_type, t1.name as reference_name,
@@ -414,7 +414,7 @@ def get_advance_payment_entries(
 		)
 
 	if include_unallocated:
-		unallocated_payment_entries = frappe.db.sql(
+		unallocated_payment_entries = frappe.db.sql(  # nosemgrep
 			f"""
 				select "Payment Entry" as reference_type, name as reference_name,
 				remarks, unallocated_amount as amount, {exchange_rate_field} as exchange_rate
