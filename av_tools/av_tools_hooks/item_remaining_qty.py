@@ -36,9 +36,8 @@ def get_pending_si_delivery_item_count(item_code, company, warehouse):
 		.where(si.docstatus == 1)
 		.where(si.company == company)
 		.where(sii.warehouse == warehouse)
-		.where(sii.so_detail.isnull())
-		.where(sii.so_detail.isnotnull())
-		.where(sii.delivery_note.isnotnull())
+		.where(sii.so_detail.isnull() | (sii.so_detail == ""))
+		.where(sii.delivery_note.isnull() | (sii.delivery_note == ""))
 		.where(si.update_stock == 0)
 		.where(sii.is_ignored_in_pending_qty != 1)
 		.where(sii.delivered_qty != sii.stock_qty)
@@ -73,16 +72,20 @@ def get_pending_delivery_item_count(item_code, company, warehouse):
 
 
 def get_item_balance(item_code, company, warehouse=None):
-	if company and not warehouse:
-		default_warehouse = frappe.get_all(
-			"Warehouse", filters={"company": company, "lft": 1}, pluck="name"
-		)
-		warehouse = default_warehouse[0] if default_warehouse else None
-
 	bin_table = frappe.qb.DocType("Bin")
-	query = frappe.qb.from_(bin_table).select(Sum(bin_table.actual_qty)).where(bin_table.item_code == item_code)
+	query = (
+		frappe.qb.from_(bin_table).select(Sum(bin_table.actual_qty)).where(bin_table.item_code == item_code)
+	)
 
-	if warehouse:
+	if company and not warehouse:
+		# company balance: every warehouse of the company (warehouse trees are not per company)
+		company_warehouses = frappe.get_all(
+			"Warehouse", filters={"company": company, "is_group": 0}, pluck="name"
+		)
+		if not company_warehouses:
+			return 0
+		query = query.where(bin_table.warehouse.isin(company_warehouses))
+	elif warehouse:
 		lft, rgt, is_group = frappe.db.get_value("Warehouse", warehouse, ["lft", "rgt", "is_group"])
 		if is_group:
 			descendant_warehouses = frappe.get_all(
