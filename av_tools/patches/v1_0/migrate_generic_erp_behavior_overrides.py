@@ -1,6 +1,5 @@
 import frappe
 
-
 SETTINGS_DOCTYPE = "AV Tools Settings"
 SOURCE_SETTINGS_DOCTYPE = "CSF TZ Settings"
 SETTINGS_FIELDS = (

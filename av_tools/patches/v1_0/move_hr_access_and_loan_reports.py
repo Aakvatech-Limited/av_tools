@@ -1,6 +1,5 @@
 import frappe
 
-
 REPORTS = (
 	"Employee Checkin & Checkout Report",
 	"Employee Salary Register with Monthly Comparison",

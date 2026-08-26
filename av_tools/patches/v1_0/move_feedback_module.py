@@ -1,6 +1,5 @@
 import frappe
 
-
 MODULE_NAME = "Feedback"
 APP_NAME = "av_tools"
 
