@@ -34,13 +34,14 @@ class Visibility(Document):
 		path = export_module_json(self, self.is_standard, self.module)
 		if path:
 			# js
+			# path comes from export_module_json (inside this app's module folder), not from user input
 			if not os.path.exists(path + ".md") and not os.path.exists(path + ".html"):
-				with open(path + ".md", "w") as f:
+				with open(path + ".md", "w") as f:  # nosemgrep
 					f.write(self.get("message") or "")
 
 			# py
 			if not os.path.exists(path + ".py"):
-				with open(path + ".py", "w") as f:
+				with open(path + ".py", "w") as f:  # nosemgrep
 					f.write("""from __future__ import unicode_literals
 
 import frappe
@@ -130,7 +131,7 @@ def get_context(context):
 
 
 @frappe.whitelist()
-def run_visibility(doc, method):
+def run_visibility(doc: Document, method: str):
 	"""Run notifications for this method"""
 	if frappe.flags.in_import or frappe.flags.in_patch or frappe.flags.in_install:
 		return
@@ -183,7 +184,7 @@ def run_visibility(doc, method):
 
 
 @frappe.whitelist()
-def get_documents_for_today(notification):
+def get_documents_for_today(notification: str):
 	notification = frappe.get_doc("Visibility", notification)
 	notification.check_permission("read")
 	return [d.name for d in notification.get_documents_for_today()]
@@ -207,7 +208,6 @@ def trigger_notifications(doc, method=None):
 
 			for doc in alert.get_documents_for_today():
 				evaluate_alert(doc, alert, alert.event)
-				frappe.db.commit()
 
 
 def evaluate_alert(doc, alert, event):
@@ -253,7 +253,7 @@ def evaluate_alert(doc, alert, event):
 	except Exception as e:
 		error_log = frappe.log_error(message=frappe.get_traceback(), title=str(e))
 		frappe.throw(
-			_("Error in Notification: {}".format(frappe.utils.get_link_to_form("Error Log", error_log.name)))
+			_("Error in Notification: {0}").format(frappe.utils.get_link_to_form("Error Log", error_log.name))
 		)
 
 
