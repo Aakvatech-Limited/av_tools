@@ -1,15 +1,15 @@
 import frappe
-from frappe import _
-
 from erpnext.buying.doctype.purchase_order.purchase_order import (
 	close_or_unclose_purchase_orders as original_close_or_unclose_purchase_orders,
+)
+from erpnext.buying.doctype.purchase_order.purchase_order import (
 	update_status as original_update_purchase_order_status,
 )
 from erpnext.stock.doctype.material_request.material_request import (
 	update_status as original_update_material_request_status,
 )
 from erpnext.stock.get_item_details import get_item_details as original_get_item_details
-
+from frappe import _
 
 SETTINGS_DOCTYPE = "AV Tools Settings"
 

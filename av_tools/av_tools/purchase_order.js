@@ -1,6 +1,4 @@
-frappe.require([
-	"/assets/av_tools/js/po_shortcuts.js",
-]);
+frappe.require(["/assets/av_tools/js/po_shortcuts.js"]);
 
 frappe.ui.keys.add_shortcut({
 	shortcut: "ctrl+i",
@@ -33,11 +31,7 @@ frappe.ui.form.on("Purchase Order Item", {
 
 async function set_dynamic_price_list_rate(frm, cdt, cdn) {
 	const item = locals[cdt][cdn];
-	const price_list_rate = await get_dynamic_price_list_rate(
-		frm,
-		item.item_code,
-		item.warehouse,
-	);
+	const price_list_rate = await get_dynamic_price_list_rate(frm, item.item_code, item.warehouse);
 
 	if (price_list_rate == null) {
 		return;
@@ -51,7 +45,7 @@ async function set_dynamic_price_list_rate(frm, cdt, cdn) {
 async function get_dynamic_price_list_rate(frm, item_code, warehouse) {
 	const enabled = await frappe.db.get_single_value(
 		"AV Tools Settings",
-		"target_warehouse_based_price_list",
+		"target_warehouse_based_price_list"
 	);
 
 	if (!enabled) {
@@ -65,20 +59,22 @@ async function get_dynamic_price_list_rate(frm, item_code, warehouse) {
 	const price_list = await frappe.db.get_value(
 		"Dynamic Price List Assignment",
 		{ supplier: frm.doc.supplier, warehouse: warehouse },
-		"price_list",
+		"price_list"
 	);
 
 	if (!price_list.message.price_list) {
 		frappe.throw(
-			"Price List not found. Please create one in Dynamic Price List Assignment for "
-			+ frm.doc.supplier + " and " + warehouse,
+			"Price List not found. Please create one in Dynamic Price List Assignment for " +
+				frm.doc.supplier +
+				" and " +
+				warehouse
 		);
 	}
 
 	const price_list_rate = await frappe.db.get_value(
 		"Item Price",
 		{ item_code: item_code, price_list: price_list.message.price_list },
-		"price_list_rate",
+		"price_list_rate"
 	);
 
 	if (!price_list_rate.message.price_list_rate) {

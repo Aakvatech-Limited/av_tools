@@ -74,13 +74,13 @@ def get_pending_delivery_item_count(item_code, company, warehouse):
 
 def get_item_balance(item_code, company, warehouse=None):
 	if company and not warehouse:
-		default_warehouse = frappe.get_all(
-			"Warehouse", filters={"company": company, "lft": 1}, pluck="name"
-		)
+		default_warehouse = frappe.get_all("Warehouse", filters={"company": company, "lft": 1}, pluck="name")
 		warehouse = default_warehouse[0] if default_warehouse else None
 
 	bin_table = frappe.qb.DocType("Bin")
-	query = frappe.qb.from_(bin_table).select(Sum(bin_table.actual_qty)).where(bin_table.item_code == item_code)
+	query = (
+		frappe.qb.from_(bin_table).select(Sum(bin_table.actual_qty)).where(bin_table.item_code == item_code)
+	)
 
 	if warehouse:
 		lft, rgt, is_group = frappe.db.get_value("Warehouse", warehouse, ["lft", "rgt", "is_group"])
