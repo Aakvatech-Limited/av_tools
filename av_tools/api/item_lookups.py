@@ -1,5 +1,3 @@
-
-
 from __future__ import annotations
 
 import json
@@ -59,9 +57,7 @@ def get_item_info(item_code: Any):
 			expires_in_days = (exp_date - frappe.utils.datetime.date.today()).days
 			qty_dict.expiry_status = expires_in_days if expires_in_days > 0 else 0
 
-		qty_dict.actual_qty = flt(qty_dict.actual_qty, float_precision) + flt(
-			d.actual_qty, float_precision
-		)
+		qty_dict.actual_qty = flt(qty_dict.actual_qty, float_precision) + flt(d.actual_qty, float_precision)
 
 	result = []
 	for item_code_key, warehouses in iwb_map.items():
@@ -76,7 +72,7 @@ def get_item_info(item_code: Any):
 def _collect_prices(rows: list[dict], rate_field: str, mapper, max_records: int) -> list[dict]:
 	prices: list[dict] = []
 	for row in rows:
-		if row.get(rate_field) and len(prices) <= max_records:
+		if row.get(rate_field) and len(prices) < max_records:
 			prices.append(mapper(row))
 	return prices
 
@@ -90,7 +86,8 @@ def get_item_prices(item_code: Any, currency: Any, customer: Any = None, company
 		conditions = " AND SI.customer = %(customer)s"
 		params["customer"] = customer
 
-	rows = frappe.db.sql(
+	# conditions holds fixed fragments with %(name)s placeholders; values are bound in params
+	rows = frappe.db.sql(  # nosemgrep
 		f"""
 		SELECT SI.name, SI.posting_date, SI.customer, SIT.item_code, SIT.qty, SIT.rate
 		FROM `tabSales Invoice` AS SI
@@ -142,7 +139,7 @@ def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20)
 
 	conditions = ""
 	params: dict = {"item_code": item_code, "currency": currency, "company": company}
-	if posting_date_range and isinstance(posting_date_range, (list, tuple)) and len(posting_date_range) > 1:
+	if posting_date_range and isinstance(posting_date_range, list | tuple) and len(posting_date_range) > 1:
 		try:
 			conditions += " AND DATE(SI.posting_date) BETWEEN %(from_date)s AND %(to_date)s"
 			params["from_date"] = posting_date_range[1][0]
@@ -153,7 +150,8 @@ def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20)
 		conditions += " AND SI.customer = %(customer)s"
 		params["customer"] = customer
 
-	rows = frappe.db.sql(
+	# conditions holds fixed fragments with %(name)s placeholders; values are bound in params
+	rows = frappe.db.sql(  # nosemgrep
 		f"""
 		SELECT SI.name, SI.posting_date, SI.customer, SIT.item_code, SIT.qty, SIT.rate
 		FROM `tabSales Invoice` AS SI
@@ -205,7 +203,7 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 
 	conditions = ""
 	params: dict = {"item_code": item_code, "currency": currency, "company": company}
-	if posting_date_range and isinstance(posting_date_range, (list, tuple)) and len(posting_date_range) > 1:
+	if posting_date_range and isinstance(posting_date_range, list | tuple) and len(posting_date_range) > 1:
 		try:
 			conditions += " AND DATE(PI.posting_date) BETWEEN %(from_date)s AND %(to_date)s"
 			params["from_date"] = posting_date_range[1][0]
@@ -216,7 +214,8 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 		conditions += " AND PI.supplier = %(supplier)s"
 		params["supplier"] = supplier
 
-	rows = frappe.db.sql(
+	# conditions holds fixed fragments with %(name)s placeholders; values are bound in params
+	rows = frappe.db.sql(  # nosemgrep
 		f"""
 		SELECT PI.name, PI.posting_date, PI.supplier, PIT.item_code, PIT.qty, PIT.rate
 		FROM `tabPurchase Invoice` AS PI
@@ -258,7 +257,8 @@ def get_item_prices_po(item_code: Any, currency: Any, customer: Any = None, comp
 		conditions = " AND PI.supplier = %(supplier)s"
 		params["supplier"] = customer
 
-	rows = frappe.db.sql(
+	# conditions holds fixed fragments with %(name)s placeholders; values are bound in params
+	rows = frappe.db.sql(  # nosemgrep
 		f"""
 		SELECT PI.name, PI.posting_date, PI.supplier, PIT.item_code, PIT.qty, PIT.rate
 		FROM `tabPurchase Invoice` AS PI

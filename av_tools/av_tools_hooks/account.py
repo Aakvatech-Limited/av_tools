@@ -3,9 +3,7 @@ from frappe import _
 
 
 def _is_feature_enabled():
-	return bool(
-		frappe.db.get_single_value("AV Tools Settings", "enable_indirect_expense_item_creation")
-	)
+	return bool(frappe.db.get_single_value("AV Tools Settings", "enable_indirect_expense_item_creation"))
 
 
 def create_indirect_expense_item(doc, method=None):
@@ -30,10 +28,8 @@ def create_indirect_expense_item(doc, method=None):
 	item_group_name = "Indirect Income" if is_income else "Indirect Expenses"
 	if not frappe.db.exists("Item Group", item_group_name):
 		ig = frappe.get_doc(
-			dict(
-				doctype="Item Group",
-				item_group_name=item_group_name,
-			)
+			doctype="Item Group",
+			item_group_name=item_group_name,
 		)
 		ig.flags.ignore_permissions = True
 		frappe.flags.ignore_account_permission = True
@@ -43,12 +39,12 @@ def create_indirect_expense_item(doc, method=None):
 	if item:
 		item = frappe.get_doc("Item", doc.account_name)
 		doc.item = item.name
-		
+
 		if is_income:
 			item.is_sales_item = 1
 		elif is_expense:
 			item.is_purchase_item = 1
-			
+
 		company_list = []
 		for i in item.item_defaults:
 			if doc.company not in company_list:
@@ -57,8 +53,8 @@ def create_indirect_expense_item(doc, method=None):
 					if is_expense and i.expense_account != doc.name:
 						i.expense_account = doc.name
 						item.save()
-					elif is_income and i.default_income_account != doc.name:
-						i.default_income_account = doc.name
+					elif is_income and i.income_account != doc.name:
+						i.income_account = doc.name
 						item.save()
 		if doc.company not in company_list:
 			row = item.append("item_defaults", {})
@@ -66,40 +62,36 @@ def create_indirect_expense_item(doc, method=None):
 			if is_expense:
 				row.expense_account = doc.name
 			elif is_income:
-				row.default_income_account = doc.name
+				row.income_account = doc.name
 			item.save()
 			company_list.append(doc.company)
 			doc.db_update()
 		return item.name
 
 	new_item = frappe.get_doc(
-		dict(
-			doctype="Item",
-			item_code=doc.account_name,
-			item_group=item_group_name,
-			is_stock_item=0,
-			is_sales_item=1 if is_income else 0,
-			is_purchase_item=1 if is_expense else 0,
-			stock_uom="Nos",
-			include_item_in_manufacturing=0,
-			item_defaults=[
-				{
-					"company": doc.company,
-					"expense_account": doc.name if is_expense else "",
-					"default_income_account": doc.name if is_income else "",
-					"default_warehouse": "",
-				}
-			],
-		)
+		doctype="Item",
+		item_code=doc.account_name,
+		item_group=item_group_name,
+		is_stock_item=0,
+		is_sales_item=1 if is_income else 0,
+		is_purchase_item=1 if is_expense else 0,
+		stock_uom="Nos",
+		include_item_in_manufacturing=0,
+		item_defaults=[
+			{
+				"company": doc.company,
+				"expense_account": doc.name if is_expense else "",
+				"income_account": doc.name if is_income else "",
+				"default_warehouse": "",
+			}
+		],
 	)
 	new_item.flags.ignore_permissions = True
 	frappe.flags.ignore_account_permission = True
 	new_item.save()
 	if new_item.name:
 		url = frappe.utils.get_url_to_form(new_item.doctype, new_item.name)
-		msgprint = "New Item is Created <a href='{0}'>{1}</a>".format(
-			url, new_item.name
-		)
+		msgprint = f"New Item is Created <a href='{url}'>{new_item.name}</a>"
 		frappe.msgprint(_(msgprint))
 		doc.item = new_item.name
 	doc.db_update()
@@ -120,7 +112,7 @@ def check_expenses_in_parent_accounts(account_name):
 
 
 @frappe.whitelist()
-def add_indirect_expense_item(account_name):
+def add_indirect_expense_item(account_name: str):
 	if not _is_feature_enabled():
 		frappe.throw(
 			_("Indirect Expense/Income Item auto-creation is disabled. Enable it in AV Tools Settings.")

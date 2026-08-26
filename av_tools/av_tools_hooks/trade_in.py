@@ -39,7 +39,9 @@ def validate_trade_in_serial_no_and_batch(doc, method):
 						)
 					)
 				else:
-					serial_numbers = [s.strip() for s in row.custom_trade_in_serial_no.split("\n") if s.strip()]
+					serial_numbers = [
+						s.strip() for s in row.custom_trade_in_serial_no.split("\n") if s.strip()
+					]
 					if len(serial_numbers) != row.custom_trade_in_qty:
 						error_messages.append(
 							_(
@@ -204,6 +206,7 @@ def create_trade_in_stock_entry(doc, method):
 			stock_entry = frappe.get_doc(
 				{
 					"doctype": "Stock Entry",
+					"company": doc.company,
 					"stock_entry_type": "Material Receipt",
 					"items": items_list,  # Use the populated list here
 					"custom_sales_invoice": doc.name,  # Link to the parent Sales Invoice
