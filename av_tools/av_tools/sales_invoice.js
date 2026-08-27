@@ -160,3 +160,92 @@ function set_trade_in_fields_readonly(frm, row) {
 	// Refresh the row to reflect the changes
 	frm.refresh_field("items");
 }
+
+const sales_invoice_payment_total = (frm) => flt(frm.doc.rounded_total || frm.doc.grand_total);
+const sales_invoice_payments = (frm) => frm.doc.payments || [];
+const sales_invoice_payment_sum = (frm) =>
+	sales_invoice_payments(frm).reduce((sum, row) => sum + flt(row.amount), 0);
+
+const refresh_sales_invoice_payments = (frm) => {
+	frm.cscript?.calculate_paid_amount?.();
+	frm.refresh_field("payments");
+	frm.dirty();
+};
+
+const set_sales_invoice_payment_amount = (frm, row, amount) => {
+	row.amount = flt(Math.max(amount, 0), precision("amount", row));
+	row.base_amount = flt(row.amount * flt(frm.doc.conversion_rate || 1), precision("base_amount", row));
+};
+
+const balance_sales_invoice_payments = (frm, cdt, cdn) => {
+	if (frm._setting_sales_invoice_payments) return;
+
+	const row = frappe.get_doc(cdt, cdn);
+	const rows = sales_invoice_payments(frm);
+	const total = sales_invoice_payment_total(frm);
+	if (!row || total <= 0) return;
+
+	const amount_precision = precision("amount", row);
+	let overflow = flt(sales_invoice_payment_sum(frm) - total, amount_precision);
+	if (overflow <= 0) return refresh_sales_invoice_payments(frm);
+
+	frm._setting_sales_invoice_payments = true;
+	rows
+		.filter((payment) => payment.name !== cdn)
+		.sort((a, b) => (a.idx > row.idx) - (b.idx > row.idx) || a.idx - b.idx)
+		.some((payment) => {
+			const amount = flt(payment.amount, amount_precision);
+			const deduction = Math.min(amount, overflow);
+			if (deduction) {
+				set_sales_invoice_payment_amount(frm, payment, amount - deduction);
+				overflow = flt(overflow - deduction, amount_precision);
+			}
+			return !overflow;
+		});
+
+	if (overflow > 0) {
+		frappe.msgprint(__("Total payment allocation cannot exceed invoice total."));
+		set_sales_invoice_payment_amount(frm, row, flt(row.amount) - overflow);
+	}
+
+	refresh_sales_invoice_payments(frm);
+	frm._setting_sales_invoice_payments = false;
+};
+
+const restore_removed_sales_invoice_payment = (frm) => {
+	const rows = sales_invoice_payments(frm);
+	const removed_payment = frm._removed_sales_invoice_payment || {};
+	const target_row =
+		rows.filter((row) => row.idx < removed_payment.idx).slice(-1)[0] || rows[0];
+	delete frm._removed_sales_invoice_payment;
+	if (!target_row || !flt(removed_payment.amount)) return refresh_sales_invoice_payments(frm);
+
+	frm._setting_sales_invoice_payments = true;
+	set_sales_invoice_payment_amount(frm, target_row, flt(target_row.amount) + flt(removed_payment.amount));
+	refresh_sales_invoice_payments(frm);
+	frm._setting_sales_invoice_payments = false;
+};
+
+frappe.ui.form.on("Sales Invoice Payment", {
+	before_payments_remove(frm, cdt, cdn) {
+		const row = frappe.get_doc(cdt, cdn);
+		frm._removed_sales_invoice_payment = {
+			amount: flt(row.amount),
+			idx: row.idx,
+		};
+	},
+	payments_remove(frm) {
+		return restore_removed_sales_invoice_payment(frm);
+	},
+	mode_of_payment(frm, cdt, cdn) {
+		const row = frappe.get_doc(cdt, cdn);
+		const has_payment = sales_invoice_payments(frm).some((payment) => payment.name !== cdn && flt(payment.amount));
+		if (!flt(row.amount) && !has_payment) {
+			set_sales_invoice_payment_amount(frm, row, sales_invoice_payment_total(frm));
+		}
+		balance_sales_invoice_payments(frm, cdt, cdn);
+	},
+	amount(frm, cdt, cdn) {
+		balance_sales_invoice_payments(frm, cdt, cdn);
+	},
+});
