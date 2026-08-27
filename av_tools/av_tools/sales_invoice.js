@@ -1,3 +1,5 @@
+/* global ctrlQ, ctrlI, ctrlU */
+
 // Trade In feature for Sales Invoice (moved from csf_tz)
 
 frappe.require(["/assets/av_tools/js/shortcuts.js"]);
@@ -171,7 +173,10 @@ const refresh_sales_invoice_payments = (frm) => {
 
 const set_sales_invoice_payment_amount = (frm, row, amount) => {
 	row.amount = flt(Math.max(amount, 0), precision("amount", row));
-	row.base_amount = flt(row.amount * flt(frm.doc.conversion_rate || 1), precision("base_amount", row));
+	row.base_amount = flt(
+		row.amount * flt(frm.doc.conversion_rate || 1),
+		precision("base_amount", row)
+	);
 };
 
 const balance_sales_invoice_payments = (frm, cdt, cdn) => {
@@ -187,8 +192,7 @@ const balance_sales_invoice_payments = (frm, cdt, cdn) => {
 	if (overflow <= 0) return refresh_sales_invoice_payments(frm);
 
 	frm._setting_sales_invoice_payments = true;
-	rows
-		.filter((payment) => payment.name !== cdn)
+	rows.filter((payment) => payment.name !== cdn)
 		.sort((a, b) => (a.idx > row.idx) - (b.idx > row.idx) || a.idx - b.idx)
 		.some((payment) => {
 			const amount = flt(payment.amount, amount_precision);
@@ -212,13 +216,16 @@ const balance_sales_invoice_payments = (frm, cdt, cdn) => {
 const restore_removed_sales_invoice_payment = (frm) => {
 	const rows = sales_invoice_payments(frm);
 	const removed_payment = frm._removed_sales_invoice_payment || {};
-	const target_row =
-		rows.filter((row) => row.idx < removed_payment.idx).slice(-1)[0] || rows[0];
+	const target_row = rows.filter((row) => row.idx < removed_payment.idx).slice(-1)[0] || rows[0];
 	delete frm._removed_sales_invoice_payment;
 	if (!target_row || !flt(removed_payment.amount)) return refresh_sales_invoice_payments(frm);
 
 	frm._setting_sales_invoice_payments = true;
-	set_sales_invoice_payment_amount(frm, target_row, flt(target_row.amount) + flt(removed_payment.amount));
+	set_sales_invoice_payment_amount(
+		frm,
+		target_row,
+		flt(target_row.amount) + flt(removed_payment.amount)
+	);
 	refresh_sales_invoice_payments(frm);
 	frm._setting_sales_invoice_payments = false;
 };
@@ -236,7 +243,9 @@ frappe.ui.form.on("Sales Invoice Payment", {
 	},
 	mode_of_payment(frm, cdt, cdn) {
 		const row = frappe.get_doc(cdt, cdn);
-		const has_payment = sales_invoice_payments(frm).some((payment) => payment.name !== cdn && flt(payment.amount));
+		const has_payment = sales_invoice_payments(frm).some(
+			(payment) => payment.name !== cdn && flt(payment.amount)
+		);
 		if (!flt(row.amount) && !has_payment) {
 			set_sales_invoice_payment_amount(frm, row, sales_invoice_payment_total(frm));
 		}
