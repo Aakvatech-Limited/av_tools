@@ -195,6 +195,7 @@ doc_events = {
 			"av_tools.av_tools_hooks.trade_in.validate_trade_in_serial_no_and_batch",
 			"av_tools.av_tools_hooks.trade_in.validate_trade_in_sales_percentage",
 			"av_tools.av_tools_hooks.item_remaining_qty.validate_items_remaining_qty",
+			"av_tools.av_tools_hooks.sales_invoice_payment.validate_payment_allocation",
 		],
 		"before_submit": "av_tools.authotp.api.sales_invoice.before_submit",
 		"on_submit": "av_tools.av_tools_hooks.trade_in.create_trade_in_stock_entry",
