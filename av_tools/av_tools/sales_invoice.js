@@ -37,10 +37,15 @@ frappe.ui.keys.add_shortcut({
 frappe.ui.form.on("Sales Invoice", {
 	refresh: function (frm) {
 		frm.trigger("set_trade_in_field_visibility");
+		set_sales_invoice_remaining_balance(frm);
 	},
 	onload: function (frm) {
 		frm.trigger("set_trade_in_field_visibility");
+		set_sales_invoice_remaining_balance(frm);
 	},
+	grand_total: (frm) => set_sales_invoice_remaining_balance(frm),
+	paid_amount: (frm) => set_sales_invoice_remaining_balance(frm),
+	rounded_total: (frm) => set_sales_invoice_remaining_balance(frm),
 
 	set_trade_in_field_visibility: function (frm) {
 		// Fetch the Enable Trade In setting from AV Tools Settings
@@ -162,11 +167,31 @@ function set_trade_in_fields_readonly(frm, row) {
 
 const sales_invoice_payment_total = (frm) => flt(frm.doc.rounded_total || frm.doc.grand_total);
 const sales_invoice_payments = (frm) => frm.doc.payments || [];
-const sales_invoice_payment_sum = (frm) =>
-	sales_invoice_payments(frm).reduce((sum, row) => sum + flt(row.amount), 0);
+const sales_invoice_payment_sum = (frm, ignored_payment) =>
+	sales_invoice_payments(frm).reduce(
+		(sum, row) =>
+			sum + (ignored_payment && row.name === ignored_payment ? 0 : flt(row.amount)),
+		0
+	);
+const sales_invoice_remaining_balance = (frm, ignored_payment) =>
+	Math.max(
+		sales_invoice_payment_total(frm) - sales_invoice_payment_sum(frm, ignored_payment),
+		0
+	);
+
+const set_sales_invoice_remaining_balance = (frm) => {
+	if (!frm.fields_dict.custom_remaining_balance) return;
+
+	frm.doc.custom_remaining_balance = flt(
+		sales_invoice_remaining_balance(frm),
+		precision("custom_remaining_balance", frm.doc)
+	);
+	frm.refresh_field("custom_remaining_balance");
+};
 
 const refresh_sales_invoice_payments = (frm) => {
 	frm.cscript?.calculate_paid_amount?.();
+	set_sales_invoice_remaining_balance(frm);
 	frm.refresh_field("payments");
 	frm.dirty();
 };
@@ -213,41 +238,14 @@ const balance_sales_invoice_payments = (frm, cdt, cdn) => {
 	frm._setting_sales_invoice_payments = false;
 };
 
-const restore_removed_sales_invoice_payment = (frm) => {
-	const rows = sales_invoice_payments(frm);
-	const removed_payment = frm._removed_sales_invoice_payment || {};
-	const target_row = rows.filter((row) => row.idx < removed_payment.idx).slice(-1)[0] || rows[0];
-	delete frm._removed_sales_invoice_payment;
-	if (!target_row || !flt(removed_payment.amount)) return refresh_sales_invoice_payments(frm);
-
-	frm._setting_sales_invoice_payments = true;
-	set_sales_invoice_payment_amount(
-		frm,
-		target_row,
-		flt(target_row.amount) + flt(removed_payment.amount)
-	);
-	refresh_sales_invoice_payments(frm);
-	frm._setting_sales_invoice_payments = false;
-};
-
 frappe.ui.form.on("Sales Invoice Payment", {
-	before_payments_remove(frm, cdt, cdn) {
-		const row = frappe.get_doc(cdt, cdn);
-		frm._removed_sales_invoice_payment = {
-			amount: flt(row.amount),
-			idx: row.idx,
-		};
-	},
 	payments_remove(frm) {
-		return restore_removed_sales_invoice_payment(frm);
+		refresh_sales_invoice_payments(frm);
 	},
 	mode_of_payment(frm, cdt, cdn) {
 		const row = frappe.get_doc(cdt, cdn);
-		const has_payment = sales_invoice_payments(frm).some(
-			(payment) => payment.name !== cdn && flt(payment.amount)
-		);
-		if (!flt(row.amount) && !has_payment) {
-			set_sales_invoice_payment_amount(frm, row, sales_invoice_payment_total(frm));
+		if (!flt(row.amount)) {
+			set_sales_invoice_payment_amount(frm, row, sales_invoice_remaining_balance(frm, cdn));
 		}
 		balance_sales_invoice_payments(frm, cdt, cdn);
 	},
