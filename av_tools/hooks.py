@@ -30,7 +30,7 @@ app_include_js = [
 	"/assets/av_tools/js/financial_statements_override.js",
 	"/assets/av_tools/js/ai_assist.js",
 	"/assets/av_tools/js/parallel_approval.js",
-  	"av_tools.bundle.js",
+	"av_tools.bundle.js",
 ]
 app_include_css = "/assets/av_tools/css/theme.css"
 
@@ -117,13 +117,10 @@ doctype_js = {
 # before_install = "av_tools.install.before_install"
 before_install = "av_tools.install.before_install"
 after_install = [
-	"av_tools.weigh_bridge.custom_fields.setup_custom_fields",
-	"av_tools.patches.custom_fields.auth_otp_custom_fields.execute",
 	"av_tools.utils.create_custom_fields.execute",
 	"av_tools.utils.create_property_setter.execute",
 ]
 after_migrate = [
-	"av_tools.weigh_bridge.custom_fields.setup_custom_fields",
 	"av_tools.utils.create_custom_fields.execute",
 	"av_tools.utils.create_property_setter.execute",
 	"av_tools.patches.v1_0.migrate_ai_integration_site_data.execute",
