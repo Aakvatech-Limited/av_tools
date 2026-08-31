@@ -8,5 +8,77 @@
         "fieldtype": "Float",
         "label": "Default Tare Weight",
         "insert_after": "license_plate"
+    },
+    {
+        "name": "Sales Invoice Item-weighbridge_ticket",
+        "module": "Av Tools",
+        "doctype": "Custom Field",
+        "dt": "Sales Invoice Item",
+        "fieldname": "weighbridge_ticket",
+        "fieldtype": "Link",
+        "options": "Weighbridge Ticket",
+        "label": "Weighbridge Ticket",
+        "insert_after": "item_code",
+        "read_only": 1
+    },
+    {
+        "name": "Delivery Note Item-weighbridge_ticket",
+        "module": "Av Tools",
+        "doctype": "Custom Field",
+        "dt": "Delivery Note Item",
+        "fieldname": "weighbridge_ticket",
+        "fieldtype": "Link",
+        "options": "Weighbridge Ticket",
+        "label": "Weighbridge Ticket",
+        "insert_after": "item_code",
+        "read_only": 1
+    },
+    {
+        "name": "Sales Order Item-weighbridge_ticket",
+        "module": "Av Tools",
+        "doctype": "Custom Field",
+        "dt": "Sales Order Item",
+        "fieldname": "weighbridge_ticket",
+        "fieldtype": "Link",
+        "options": "Weighbridge Ticket",
+        "label": "Weighbridge Ticket",
+        "insert_after": "item_code",
+        "read_only": 1
+    },
+    {
+        "name": "Purchase Order Item-weighbridge_ticket",
+        "module": "Av Tools",
+        "doctype": "Custom Field",
+        "dt": "Purchase Order Item",
+        "fieldname": "weighbridge_ticket",
+        "fieldtype": "Link",
+        "options": "Weighbridge Ticket",
+        "label": "Weighbridge Ticket",
+        "insert_after": "item_code",
+        "read_only": 1
+    },
+    {
+        "name": "Purchase Invoice Item-weighbridge_ticket",
+        "module": "Av Tools",
+        "doctype": "Custom Field",
+        "dt": "Purchase Invoice Item",
+        "fieldname": "weighbridge_ticket",
+        "fieldtype": "Link",
+        "options": "Weighbridge Ticket",
+        "label": "Weighbridge Ticket",
+        "insert_after": "item_code",
+        "read_only": 1
+    },
+    {
+        "name": "Purchase Receipt Item-weighbridge_ticket",
+        "module": "Av Tools",
+        "doctype": "Custom Field",
+        "dt": "Purchase Receipt Item",
+        "fieldname": "weighbridge_ticket",
+        "fieldtype": "Link",
+        "options": "Weighbridge Ticket",
+        "label": "Weighbridge Ticket",
+        "insert_after": "item_code",
+        "read_only": 1
     }
 ]
