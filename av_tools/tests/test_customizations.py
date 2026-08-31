@@ -36,11 +36,9 @@ class TestCustomizations(IntegrationTestCase):
 		self.assertGreater(checked, 10)
 
 	def test_weighbridge_and_otp_custom_fields_exist(self):
-		from av_tools.patches.custom_fields.auth_otp_custom_fields import execute as otp_fields
-		from av_tools.weigh_bridge.custom_fields import setup_custom_fields
+		from av_tools.utils.create_custom_fields import execute as sync_custom_fields
 
-		setup_custom_fields()
-		otp_fields()
+		sync_custom_fields()
 		self.assertTrue(
 			frappe.db.exists("Custom Field", {"dt": "Vehicle", "fieldname": "default_tare_weight"})
 		)

@@ -119,13 +119,10 @@ jinja = {
 # before_install = "av_tools.install.before_install"
 before_install = "av_tools.install.before_install"
 after_install = [
-	"av_tools.weigh_bridge.custom_fields.setup_custom_fields",
-	"av_tools.patches.custom_fields.auth_otp_custom_fields.execute",
 	"av_tools.utils.create_custom_fields.execute",
 	"av_tools.utils.create_property_setter.execute",
 ]
 after_migrate = [
-	"av_tools.weigh_bridge.custom_fields.setup_custom_fields",
 	"av_tools.utils.create_custom_fields.execute",
 	"av_tools.utils.create_property_setter.execute",
 	"av_tools.patches.v1_0.migrate_ai_integration_site_data.execute",
