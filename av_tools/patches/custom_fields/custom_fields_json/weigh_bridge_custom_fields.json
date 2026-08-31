@@ -1,0 +1,12 @@
+[
+    {
+        "name": "Vehicle-default_tare_weight",
+        "module": "Av Tools",
+        "doctype": "Custom Field",
+        "dt": "Vehicle",
+        "fieldname": "default_tare_weight",
+        "fieldtype": "Float",
+        "label": "Default Tare Weight",
+        "insert_after": "license_plate"
+    }
+]
