@@ -3,10 +3,10 @@
 
 import frappe
 from frappe import _
-from frappe.model.document import Document
-from frappe.utils import getdate, nowdate, date_diff, formatdate
-from frappe.utils.user import get_users_with_role
 from frappe.desk.doctype.notification_log.notification_log import enqueue_create_notification
+from frappe.model.document import Document
+from frappe.utils import date_diff, formatdate, getdate, nowdate
+from frappe.utils.user import get_users_with_role
 
 
 class LicenseRegister(Document):
@@ -50,8 +50,14 @@ def update_license_statuses():
 		"License Register",
 		filters={"status": ("in", ["Active", "Pending Renewal"])},
 		fields=[
-			"name", "license_name", "license_number", "license_type",
-			"expiry_date", "reminder_days_before", "status", "notify_role",
+			"name",
+			"license_name",
+			"license_number",
+			"license_type",
+			"expiry_date",
+			"reminder_days_before",
+			"status",
+			"notify_role",
 		],
 	)
 
@@ -79,7 +85,7 @@ def _send_license_notification(lic, new_status, today, users):
 	Pending Renewal or Expired using frappe's built-in notification system.
 	"""
 
-	days_remaining = date_diff(getdate(lic.expiry_date), today)
+	date_diff(getdate(lic.expiry_date), today)
 
 	if new_status == "Expired":
 		subject = _(f"License Expired: {lic.license_name}")
@@ -95,13 +101,14 @@ def _send_license_notification(lic, new_status, today, users):
 			"<br><br>Please initiate the renewal process."
 		)
 
-	enqueue_create_notification(users, {
-		"type": "Alert",
-		"document_type": "License Register",
-		"document_name": lic.name,
-		"subject": subject,
-		"email_content": message,
-		"from_user": frappe.session.user,
-	})
-
-
+	enqueue_create_notification(
+		users,
+		{
+			"type": "Alert",
+			"document_type": "License Register",
+			"document_name": lic.name,
+			"subject": subject,
+			"email_content": message,
+			"from_user": frappe.session.user,
+		},
+	)

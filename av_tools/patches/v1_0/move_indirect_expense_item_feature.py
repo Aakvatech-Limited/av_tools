@@ -1,6 +1,5 @@
 import frappe
 
-
 CUSTOM_FIELDS = ("Account-item",)
 
 

@@ -1,8 +1,8 @@
+/* global ctrlQ, ctrlI, ctrlU */
+
 // Trade In feature for Sales Invoice (moved from csf_tz)
 
-frappe.require([
-	"/assets/av_tools/js/shortcuts.js",
-]);
+frappe.require(["/assets/av_tools/js/shortcuts.js"]);
 
 frappe.ui.keys.add_shortcut({
 	shortcut: "ctrl+q",
@@ -34,14 +34,18 @@ frappe.ui.keys.add_shortcut({
 	ignore_inputs: true,
 });
 
-
 frappe.ui.form.on("Sales Invoice", {
 	refresh: function (frm) {
 		frm.trigger("set_trade_in_field_visibility");
+		set_sales_invoice_remaining_balance(frm);
 	},
 	onload: function (frm) {
 		frm.trigger("set_trade_in_field_visibility");
+		set_sales_invoice_remaining_balance(frm);
 	},
+	grand_total: (frm) => set_sales_invoice_remaining_balance(frm),
+	paid_amount: (frm) => set_sales_invoice_remaining_balance(frm),
+	rounded_total: (frm) => set_sales_invoice_remaining_balance(frm),
 
 	set_trade_in_field_visibility: function (frm) {
 		// Fetch the Enable Trade In setting from AV Tools Settings
@@ -160,3 +164,92 @@ function set_trade_in_fields_readonly(frm, row) {
 	// Refresh the row to reflect the changes
 	frm.refresh_field("items");
 }
+
+const sales_invoice_payment_total = (frm) => flt(frm.doc.rounded_total || frm.doc.grand_total);
+const sales_invoice_payments = (frm) => frm.doc.payments || [];
+const sales_invoice_payment_sum = (frm, ignored_payment) =>
+	sales_invoice_payments(frm).reduce(
+		(sum, row) =>
+			sum + (ignored_payment && row.name === ignored_payment ? 0 : flt(row.amount)),
+		0
+	);
+const sales_invoice_remaining_balance = (frm, ignored_payment) =>
+	Math.max(
+		sales_invoice_payment_total(frm) - sales_invoice_payment_sum(frm, ignored_payment),
+		0
+	);
+
+const set_sales_invoice_remaining_balance = (frm) => {
+	if (!frm.fields_dict.custom_remaining_balance) return;
+
+	frm.doc.custom_remaining_balance = flt(
+		sales_invoice_remaining_balance(frm),
+		precision("custom_remaining_balance", frm.doc)
+	);
+	frm.refresh_field("custom_remaining_balance");
+};
+
+const refresh_sales_invoice_payments = (frm) => {
+	frm.cscript?.calculate_paid_amount?.();
+	set_sales_invoice_remaining_balance(frm);
+	frm.refresh_field("payments");
+	frm.dirty();
+};
+
+const set_sales_invoice_payment_amount = (frm, row, amount) => {
+	row.amount = flt(Math.max(amount, 0), precision("amount", row));
+	row.base_amount = flt(
+		row.amount * flt(frm.doc.conversion_rate || 1),
+		precision("base_amount", row)
+	);
+};
+
+const balance_sales_invoice_payments = (frm, cdt, cdn) => {
+	if (frm._setting_sales_invoice_payments) return;
+
+	const row = frappe.get_doc(cdt, cdn);
+	const rows = sales_invoice_payments(frm);
+	const total = sales_invoice_payment_total(frm);
+	if (!row || total <= 0) return;
+
+	const amount_precision = precision("amount", row);
+	let overflow = flt(sales_invoice_payment_sum(frm) - total, amount_precision);
+	if (overflow <= 0) return refresh_sales_invoice_payments(frm);
+
+	frm._setting_sales_invoice_payments = true;
+	rows.filter((payment) => payment.name !== cdn)
+		.sort((a, b) => (a.idx > row.idx) - (b.idx > row.idx) || a.idx - b.idx)
+		.some((payment) => {
+			const amount = flt(payment.amount, amount_precision);
+			const deduction = Math.min(amount, overflow);
+			if (deduction) {
+				set_sales_invoice_payment_amount(frm, payment, amount - deduction);
+				overflow = flt(overflow - deduction, amount_precision);
+			}
+			return !overflow;
+		});
+
+	if (overflow > 0) {
+		frappe.msgprint(__("Total payment allocation cannot exceed invoice total."));
+		set_sales_invoice_payment_amount(frm, row, flt(row.amount) - overflow);
+	}
+
+	refresh_sales_invoice_payments(frm);
+	frm._setting_sales_invoice_payments = false;
+};
+
+frappe.ui.form.on("Sales Invoice Payment", {
+	payments_remove(frm) {
+		refresh_sales_invoice_payments(frm);
+	},
+	mode_of_payment(frm, cdt, cdn) {
+		const row = frappe.get_doc(cdt, cdn);
+		if (!flt(row.amount)) {
+			set_sales_invoice_payment_amount(frm, row, sales_invoice_remaining_balance(frm, cdn));
+		}
+		balance_sales_invoice_payments(frm, cdt, cdn);
+	},
+	amount(frm, cdt, cdn) {
+		balance_sales_invoice_payments(frm, cdt, cdn);
+	},
+});
