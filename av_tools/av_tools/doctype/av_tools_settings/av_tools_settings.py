@@ -52,14 +52,11 @@ class AVToolsSettings(Document):
 				# Log the error and notify the user
 				frappe.log_error(f"Error disabling Trade In feature: {e!s}")
 				frappe.msgprint(_("Failed to disable Trade In feature: {0}").format(str(e)))
+
 	def manage_parallel_approval_functionality(self):
 		clear_approval_cache()
 
-		new_doctypes = {
-			row.doctype_name
-			for row in (self.approval_doctype or [])
-			if row.doctype_name
-		}
+		new_doctypes = {row.doctype_name for row in (self.approval_doctype or []) if row.doctype_name}
 
 		existing_doctypes = set(
 			frappe.get_all(
@@ -77,7 +74,7 @@ class AVToolsSettings(Document):
 				create_approver_qr_print_format(dt)
 			except Exception as e:
 				frappe.log_error(f"Parallel Approval: create fields on '{dt}': {e}", "Parallel Approval")
-				frappe.msgprint(_("Could not create approver fields on {0}: {1}").format(dt, e))
+				frappe.msgprint(_("Could not create approver fields on {0}: {1}").format(dt, str(e)))
 
 		for dt in existing_doctypes - new_doctypes:
 			try:
@@ -85,4 +82,4 @@ class AVToolsSettings(Document):
 				delete_approver_qr_print_format(dt)
 			except Exception as e:
 				frappe.log_error(f"Parallel Approval: delete fields on '{dt}': {e}", "Parallel Approval")
-				frappe.msgprint(_("Could not remove approver fields from {0}: {1}").format(dt, e))
+				frappe.msgprint(_("Could not remove approver fields from {0}: {1}").format(dt, str(e)))

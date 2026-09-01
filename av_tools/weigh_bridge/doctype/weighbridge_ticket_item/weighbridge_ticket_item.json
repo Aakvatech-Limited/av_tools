@@ -57,8 +57,7 @@
    "fetch_from": "item_code.stock_uom",
    "in_list_view": 1,
    "label": "UOM",
-   "options": "UOM",
-   "read_only": 1
+   "options": "UOM"
   },
   {
    "fieldname": "column_break_xlxw",
@@ -75,7 +74,7 @@
  "owner": "Administrator",
  "permissions": [],
  "row_format": "Dynamic",
- "sort_field": "modified",
+ "sort_field": "creation",
  "sort_order": "DESC",
  "states": []
 }

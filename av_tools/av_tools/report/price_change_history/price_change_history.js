@@ -3,60 +3,59 @@
 /* eslint-disable */
 
 frappe.query_reports["Price Change History"] = {
-	"filters": [
+	filters: [
 		{
-			"fieldname": "company",
-			"fieldtype": "Link",
-			"options": "Company",
-			"label": __("Company"),
-			"default": frappe.defaults.get_user_default("company"),
-			"reqd": 1,
-			"width": "100px"
+			fieldname: "company",
+			fieldtype: "Link",
+			options: "Company",
+			label: __("Company"),
+			default: frappe.defaults.get_user_default("company"),
+			reqd: 1,
+			width: "100px",
 		},
 		{
-			"fieldname": "item",
-			"fieldtype": "Link",
-			"options": "Item",
-			"label": __("Item"),
-			"reqd": 0,
-			"width": "100px",
-			"get_query": () => {
+			fieldname: "item",
+			fieldtype: "Link",
+			options: "Item",
+			label: __("Item"),
+			reqd: 0,
+			width: "100px",
+			get_query: () => {
 				return {
 					filters: {
-						"disabled": 0
-					}
-				}
-			}
+						disabled: 0,
+					},
+				};
+			},
 		},
 		{
-			"fieldname": "price_list",
-			"fieldtype": "Link",
-			"options": "Price List",
-			"label": __("Price List"),
-			"reqd": 0,
-			"width": "100px",
-			"get_query": () => {
+			fieldname: "price_list",
+			fieldtype: "Link",
+			options: "Price List",
+			label: __("Price List"),
+			reqd: 0,
+			width: "100px",
+			get_query: () => {
 				return {
 					filters: {
-						"enabled": 1
-					}
-				}
-			}
+						enabled: 1,
+					},
+				};
+			},
 		},
 		{
-			"fieldname": "from_date",
-			"fieldtype": "Date",
-			"label": __("From Date"),
-			"reqd": 0,
-			"width": "100px"
+			fieldname: "from_date",
+			fieldtype: "Date",
+			label: __("From Date"),
+			reqd: 0,
+			width: "100px",
 		},
 		{
-			"fieldname": "to_date",
-			"fieldtype": "Date",
-			"label": __("To Date"),
-			"reqd": 0,
-			"width": "100px"
-		}
-
-	]
+			fieldname: "to_date",
+			fieldtype: "Date",
+			label: __("To Date"),
+			reqd: 0,
+			width: "100px",
+		},
+	],
 };

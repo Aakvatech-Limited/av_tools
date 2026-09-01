@@ -66,6 +66,8 @@ function ensure_sections(frm) {
 
 function get_snapshot_section_options() {
 	return frappe
-		.call("av_tools.av_tools.doctype.implementation_handover_snapshot.implementation_handover_snapshot.get_snapshot_section_options")
+		.call(
+			"av_tools.av_tools.doctype.implementation_handover_snapshot.implementation_handover_snapshot.get_snapshot_section_options"
+		)
 		.then((r) => r.message || []);
 }

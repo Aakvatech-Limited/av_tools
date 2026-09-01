@@ -175,8 +175,6 @@ after_migrate = [
 # 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
 
-boot_session = "av_tools.av_tools_hooks.parallel_approval.boot_session"
-
 # Document Events
 # ---------------
 # Hook on document methods and events
@@ -195,6 +193,7 @@ doc_events = {
 			"av_tools.av_tools_hooks.trade_in.validate_trade_in_serial_no_and_batch",
 			"av_tools.av_tools_hooks.trade_in.validate_trade_in_sales_percentage",
 			"av_tools.av_tools_hooks.item_remaining_qty.validate_items_remaining_qty",
+			"av_tools.av_tools_hooks.sales_invoice_payment.validate_payment_allocation",
 		],
 		"before_submit": "av_tools.authotp.api.sales_invoice.before_submit",
 		"on_submit": "av_tools.av_tools_hooks.trade_in.create_trade_in_stock_entry",
@@ -221,23 +220,14 @@ doc_events = {
 		"validate": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"onload": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_insert": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
-		"after_insert": [
-			"av_tools.av_tools.doctype.visibility.visibility.run_visibility",
-			"av_tools.av_tools_hooks.parallel_approval.sync_approver_shares",
-		],
+		"after_insert": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_naming": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_change": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_update_after_submit": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_validate": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"before_save": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
-		"on_update": [
-			"av_tools.av_tools.doctype.visibility.visibility.run_visibility",
-			"av_tools.av_tools_hooks.parallel_approval.sync_approver_shares",
-		],
-		"before_submit": [
-			"av_tools.av_tools.doctype.visibility.visibility.run_visibility",
-			"av_tools.av_tools_hooks.parallel_approval.block_submit_if_not_approved",
-		],
+		"on_update": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
+		"before_submit": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"autoname": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"on_cancel": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"on_trash": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
@@ -281,6 +271,8 @@ override_whitelisted_methods = {
 }
 
 # Override doctype class to intercept report execution
+# ReportOverride subclasses frappe's own Report; this is the documented hook.
+# nosemgrep: frappe-semgrep-rules.rules.override-doctype-class
 override_doctype_class = {"Report": "av_tools.av_tools_hooks.report_override.ReportOverride"}
 #
 # each overriding function accepts a `data` argument;

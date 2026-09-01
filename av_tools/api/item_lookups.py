@@ -1,5 +1,3 @@
-
-
 from __future__ import annotations
 
 import json
@@ -59,9 +57,7 @@ def get_item_info(item_code: Any):
 			expires_in_days = (exp_date - frappe.utils.datetime.date.today()).days
 			qty_dict.expiry_status = expires_in_days if expires_in_days > 0 else 0
 
-		qty_dict.actual_qty = flt(qty_dict.actual_qty, float_precision) + flt(
-			d.actual_qty, float_precision
-		)
+		qty_dict.actual_qty = flt(qty_dict.actual_qty, float_precision) + flt(d.actual_qty, float_precision)
 
 	result = []
 	for item_code_key, warehouses in iwb_map.items():
@@ -142,7 +138,7 @@ def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20)
 
 	conditions = ""
 	params: dict = {"item_code": item_code, "currency": currency, "company": company}
-	if posting_date_range and isinstance(posting_date_range, (list, tuple)) and len(posting_date_range) > 1:
+	if posting_date_range and isinstance(posting_date_range, list | tuple) and len(posting_date_range) > 1:
 		try:
 			conditions += " AND DATE(SI.posting_date) BETWEEN %(from_date)s AND %(to_date)s"
 			params["from_date"] = posting_date_range[1][0]
@@ -205,7 +201,7 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 
 	conditions = ""
 	params: dict = {"item_code": item_code, "currency": currency, "company": company}
-	if posting_date_range and isinstance(posting_date_range, (list, tuple)) and len(posting_date_range) > 1:
+	if posting_date_range and isinstance(posting_date_range, list | tuple) and len(posting_date_range) > 1:
 		try:
 			conditions += " AND DATE(PI.posting_date) BETWEEN %(from_date)s AND %(to_date)s"
 			params["from_date"] = posting_date_range[1][0]
