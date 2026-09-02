@@ -1,0 +1,43 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "notification_log",
+  "user",
+  "status",
+  "attempts",
+  "mode",
+  "section_delivery",
+  "conversation",
+  "space_name",
+  "thread_name",
+  "google_message_name",
+  "sent_on",
+  "error"
+ ],
+ "fields": [
+  {"fieldname": "notification_log", "fieldtype": "Link", "in_list_view": 1, "label": "Notification Log", "options": "Notification Log", "reqd": 1, "unique": 1},
+  {"fieldname": "user", "fieldtype": "Link", "in_list_view": 1, "label": "User", "options": "User", "reqd": 1},
+  {"fieldname": "status", "fieldtype": "Select", "in_list_view": 1, "label": "Status", "options": "Queued\nSent\nFailed\nSkipped", "reqd": 1},
+  {"default": "0", "fieldname": "attempts", "fieldtype": "Int", "label": "Attempts", "read_only": 1},
+  {"fieldname": "mode", "fieldtype": "Data", "label": "Delivery Mode", "read_only": 1},
+  {"fieldname": "section_delivery", "fieldtype": "Section Break", "label": "Delivery Details"},
+  {"fieldname": "conversation", "fieldtype": "Link", "label": "Conversation", "options": "Google Chat Conversation", "read_only": 1},
+  {"fieldname": "space_name", "fieldtype": "Data", "label": "Space Name", "read_only": 1},
+  {"fieldname": "thread_name", "fieldtype": "Data", "label": "Thread Name", "read_only": 1},
+  {"fieldname": "google_message_name", "fieldtype": "Data", "label": "Google Message Name", "read_only": 1},
+  {"fieldname": "sent_on", "fieldtype": "Datetime", "in_list_view": 1, "label": "Sent On", "read_only": 1},
+  {"fieldname": "error", "fieldtype": "Long Text", "label": "Error", "read_only": 1}
+ ],
+ "links": [],
+ "module": "Google Chat Conversations",
+ "name": "Google Chat Delivery Log",
+ "permissions": [
+  {"export": 1, "read": 1, "report": 1, "role": "System Manager"}
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
