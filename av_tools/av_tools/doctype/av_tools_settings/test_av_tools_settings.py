@@ -19,11 +19,9 @@ from av_tools.av_tools_hooks.generic_erp_behavior_overrides import (
 	update_purchase_order_status,
 )
 from av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides import (
-	SETTINGS_DOCTYPE,
-)
-from av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides import (
 	execute as migrate_generic_settings,
 )
+from av_tools.utils.legacy_settings import SOURCE_DOCTYPE, TARGET_DOCTYPE, get_legacy_value
 
 
 class TestAVToolsSettings(AccountsTestMixin, IntegrationTestCase):
@@ -146,6 +144,7 @@ class TestAVToolsSettings(AccountsTestMixin, IntegrationTestCase):
 		self.assertEqual(details.get("price_list_rate"), original_details.get("price_list_rate"))
 
 	def test_patch_migrates_settings_idempotently(self):
+		"""The values live in Singles under CSF TZ Settings; csf_tz no longer declares the fields."""
 		expected_values = {
 			"allow_reopen_of_po_based_on_role": 1,
 			"role_to_reopen_po": "Purchase Manager",
@@ -154,24 +153,19 @@ class TestAVToolsSettings(AccountsTestMixin, IntegrationTestCase):
 			"override_sales_invoice_qty": 1,
 		}
 
-		with (
-			patch(
-				"av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides.source_settings_doctype_exists",
-				return_value=True,
-			),
-			patch(
-				"av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides.get_source_values",
-				return_value=expected_values,
-			),
-		):
-			migrate_generic_settings()
-			migrate_generic_settings()
+		for fieldname, value in expected_values.items():
+			frappe.db.set_single_value(TARGET_DOCTYPE, fieldname, None)
+			frappe.db.set_single_value(SOURCE_DOCTYPE, fieldname, value)
 
-		settings = frappe.get_single(SETTINGS_DOCTYPE)
+		migrate_generic_settings()
+		migrate_generic_settings()
+
+		settings = frappe.get_single(TARGET_DOCTYPE)
 		self.assertIsInstance(settings, AVToolsSettings)
 
 		for fieldname, value in expected_values.items():
 			self.assertEqual(getattr(settings, fieldname), value)
+			self.assertIsNone(get_legacy_value(fieldname))
 
 	@contextmanager
 	def run_as_test_user(self, *roles):
@@ -187,7 +181,7 @@ class TestAVToolsSettings(AccountsTestMixin, IntegrationTestCase):
 	def set_settings(self, **overrides):
 		values = {**self.settings_defaults, **overrides}
 		for fieldname, value in values.items():
-			frappe.db.set_single_value(SETTINGS_DOCTYPE, fieldname, value)
+			frappe.db.set_single_value(TARGET_DOCTYPE, fieldname, value)
 
 	def ensure_test_data(self):
 		self.set_company_context()
@@ -358,7 +352,7 @@ class TestAVToolsCaptureSettings(IntegrationTestCase):
 	def set_settings(self, **overrides):
 		values = {**self.settings_defaults, **overrides}
 		for fieldname, value in values.items():
-			frappe.db.set_single_value(SETTINGS_DOCTYPE, fieldname, value)
+			frappe.db.set_single_value(TARGET_DOCTYPE, fieldname, value)
 
 	def test_get_capture_settings_uses_single_doctype_values(self):
 		self.set_settings(

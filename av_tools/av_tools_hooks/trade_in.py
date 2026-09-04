@@ -240,5 +240,3 @@ def cancel_trade_in_stock_entry(doc, method=None):
 		se_doc = frappe.get_doc("Stock Entry", se_name)
 		se_doc.flags.ignore_permissions = True
 		se_doc.cancel()
-
-

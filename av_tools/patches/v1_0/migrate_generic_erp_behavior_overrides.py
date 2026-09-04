@@ -1,31 +1,21 @@
-import frappe
+from av_tools.utils.legacy_settings import adopt_legacy_value
 
-SETTINGS_DOCTYPE = "AV Tools Settings"
-SOURCE_SETTINGS_DOCTYPE = "CSF TZ Settings"
-SETTINGS_FIELDS = (
+CHECK_FIELDS = (
 	"allow_reopen_of_po_based_on_role",
-	"role_to_reopen_po",
 	"allow_reopen_of_material_request_based_on_role",
-	"role_to_reopen_material_request",
 	"override_sales_invoice_qty",
 	"is_manufacture",
 )
-
-
-def source_settings_doctype_exists():
-	return bool(frappe.db.exists("DocType", SOURCE_SETTINGS_DOCTYPE))
-
-
-def get_source_values():
-	return {
-		fieldname: frappe.db.get_single_value(SOURCE_SETTINGS_DOCTYPE, fieldname)
-		for fieldname in SETTINGS_FIELDS
-	}
+LINK_FIELDS = (
+	"role_to_reopen_po",
+	"role_to_reopen_material_request",
+)
 
 
 def execute():
-	if not source_settings_doctype_exists():
-		return
+	"""Carry the generic ERP behaviour flags over from CSF TZ Settings."""
+	for fieldname in CHECK_FIELDS:
+		adopt_legacy_value(fieldname, default=0, as_int=True)
 
-	for fieldname, value in get_source_values().items():
-		frappe.db.set_single_value(SETTINGS_DOCTYPE, fieldname, value)
+	for fieldname in LINK_FIELDS:
+		adopt_legacy_value(fieldname)
