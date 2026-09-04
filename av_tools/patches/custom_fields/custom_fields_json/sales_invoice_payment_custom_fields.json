@@ -1,10 +1,10 @@
 [
     {
-        "name": "Sales Invoice-custom_remaining_balance",
+        "name": "Sales Invoice-remaining_balance",
         "module": "Av Tools",
         "doctype": "Custom Field",
         "dt": "Sales Invoice",
-        "fieldname": "custom_remaining_balance",
+        "fieldname": "remaining_balance",
         "fieldtype": "Currency",
         "label": "Remaining Balance",
         "options": "currency",
