@@ -12,7 +12,12 @@ from av_tools.utils.legacy_settings import (
 	adopt_legacy_value,
 	get_legacy_value,
 )
-from av_tools.utils.module_ownership import execute, get_declared_modules, get_stale_records
+from av_tools.utils.module_ownership import (
+	execute,
+	get_declared_modules,
+	get_records_shipped_by_other_apps,
+	get_stale_records,
+)
 
 APP = "av_tools"
 
@@ -33,8 +38,23 @@ class TestModuleOwnership(IntegrationTestCase):
 		execute()
 		self.assertEqual(get_stale_records(), [])
 
+	def test_a_record_another_app_also_ships_is_left_alone(self):
+		"""csf_tz keeps its own copy of several salary and permission reports."""
+		shared = get_records_shipped_by_other_apps() & set(get_declared_modules())
+		self.assertTrue(shared, "no shipped record overlaps another installed app")
+
+		doctype, name = sorted(shared)[0]
+		frappe.db.set_value(doctype, name, "module", "CSF TZ", update_modified=False)
+		self.addCleanup(frappe.db.rollback)
+
+		execute()
+
+		self.assertEqual(frappe.db.get_value(doctype, name, "module"), "CSF TZ")
+
 	def test_execute_rehomes_a_record_pointed_at_the_wrong_module(self):
-		doctype, name = next(iter(get_declared_modules()))
+		exclusive = sorted(set(get_declared_modules()) - get_records_shipped_by_other_apps())
+		self.assertTrue(exclusive, "av_tools ships no record exclusively")
+		doctype, name = exclusive[0]
 		original = frappe.db.get_value(doctype, name, "module")
 
 		frappe.db.set_value(doctype, name, "module", "CSF TZ", update_modified=False)
