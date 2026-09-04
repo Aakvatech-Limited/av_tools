@@ -1,5 +1,3 @@
-import frappe
-
 from av_tools.utils.legacy_settings import adopt_legacy_value
 
 CHECK_FIELDS = (
@@ -21,5 +19,3 @@ def execute():
 
 	for fieldname in LINK_FIELDS:
 		adopt_legacy_value(fieldname)
-
-	frappe.db.commit()
