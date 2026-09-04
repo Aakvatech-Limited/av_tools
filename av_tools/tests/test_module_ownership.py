@@ -5,7 +5,7 @@ import frappe
 from frappe.modules.patch_handler import get_patches_from_app
 from frappe.tests import IntegrationTestCase
 
-from av_tools.install import MIGRATION_PATCH_PREFIX
+from av_tools.install import DESTRUCTIVE_PATCHES, MIGRATION_PATCH_PREFIX
 from av_tools.utils.legacy_settings import (
 	SOURCE_DOCTYPE,
 	TARGET_DOCTYPE,
@@ -74,6 +74,15 @@ class TestMigrationPatchRecovery(IntegrationTestCase):
 		for patch in v1_0_patches:
 			with self.subTest(patch=patch):
 				self.assertTrue(patch.startswith(MIGRATION_PATCH_PREFIX))
+
+	def test_destructive_patches_are_real_and_excluded(self):
+		"""Recovering a patch that deletes site data would remove records on first install."""
+		listed = set(get_patches_from_app(APP))
+		self.assertTrue(DESTRUCTIVE_PATCHES)
+
+		for patch in DESTRUCTIVE_PATCHES:
+			with self.subTest(patch=patch):
+				self.assertIn(patch, listed)
 
 
 class TestLegacySettings(IntegrationTestCase):

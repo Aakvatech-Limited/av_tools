@@ -3,6 +3,16 @@ import frappe
 APP_NAME = "av_tools"
 MIGRATION_PATCH_PREFIX = "av_tools.patches.v1_0."
 
+# Patches that delete site data are not recovered. install_app() has always marked them
+# complete without running them, so they have never executed anywhere; running one for the
+# first time during an install would remove records nobody asked to lose. Run these by hand,
+# per site, after deciding the removal is wanted.
+DESTRUCTIVE_PATCHES = frozenset(
+	{
+		"av_tools.patches.v1_0.remove_core_doctype_custom_docperm",
+	}
+)
+
 
 def before_install():
 	"""
@@ -40,11 +50,13 @@ def run_migration_patches():
 	hooks, so on a site that already runs csf_tz every migration patch is recorded as done without
 	ever executing. Settings, report ownership and AV Report Extension rows would then never be
 	carried over. Clear those log entries and run the patches for real.
+
+	Patches listed in DESTRUCTIVE_PATCHES are deliberately left as they are.
 	"""
 	from frappe.modules.patch_handler import get_patches_from_app, run_single
 
 	for patch in get_patches_from_app(APP_NAME):
-		if not patch.startswith(MIGRATION_PATCH_PREFIX):
+		if not patch.startswith(MIGRATION_PATCH_PREFIX) or patch in DESTRUCTIVE_PATCHES:
 			continue
 
 		frappe.db.delete("Patch Log", {"patch": patch})
