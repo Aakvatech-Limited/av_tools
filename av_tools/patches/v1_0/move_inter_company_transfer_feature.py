@@ -1,6 +1,7 @@
 import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
-from frappe.utils import cint
+
+from av_tools.utils.legacy_settings import adopt_legacy_value
 
 INTER_COMPANY_DOCTYPES = (
 	"Inter Company Material Request",
@@ -53,29 +54,7 @@ def _delete_legacy_custom_fields():
 
 
 def _migrate_setting_value():
-	legacy_value = None
-	if frappe.db.exists("DocType", "CSF TZ Settings") and frappe.get_meta("CSF TZ Settings").has_field(
-		"allow_inter_company_stock_transfer"
-	):
-		legacy_value = frappe.db.get_single_value("CSF TZ Settings", "allow_inter_company_stock_transfer")
-
-	current_value = frappe.db.get_single_value("AV Tools Settings", "allow_inter_company_stock_transfer")
-	if current_value is None:
-		frappe.db.set_single_value(
-			"AV Tools Settings",
-			"allow_inter_company_stock_transfer",
-			cint(legacy_value) if legacy_value is not None else 0,
-		)
-	elif legacy_value is not None:
-		frappe.db.set_single_value(
-			"AV Tools Settings", "allow_inter_company_stock_transfer", cint(legacy_value)
-		)
-
-	if legacy_value is not None:
-		frappe.db.delete(
-			"Singles",
-			{"doctype": "CSF TZ Settings", "field": "allow_inter_company_stock_transfer"},
-		)
+	adopt_legacy_value("allow_inter_company_stock_transfer", default=0, as_int=True)
 	frappe.db.delete(
 		"Singles",
 		{"doctype": "Stock Settings", "field": "allow_inter_company_stock_transfer"},
