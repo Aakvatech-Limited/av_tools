@@ -37,15 +37,10 @@ frappe.ui.keys.add_shortcut({
 frappe.ui.form.on("Sales Invoice", {
 	refresh: function (frm) {
 		frm.trigger("set_trade_in_field_visibility");
-		set_sales_invoice_remaining_balance(frm);
 	},
 	onload: function (frm) {
 		frm.trigger("set_trade_in_field_visibility");
-		set_sales_invoice_remaining_balance(frm);
 	},
-	grand_total: (frm) => set_sales_invoice_remaining_balance(frm),
-	paid_amount: (frm) => set_sales_invoice_remaining_balance(frm),
-	rounded_total: (frm) => set_sales_invoice_remaining_balance(frm),
 
 	set_trade_in_field_visibility: function (frm) {
 		// Fetch the Enable Trade In setting from AV Tools Settings
@@ -179,19 +174,10 @@ const sales_invoice_remaining_balance = (frm, ignored_payment) =>
 		0
 	);
 
-const set_sales_invoice_remaining_balance = (frm) => {
-	if (!frm.fields_dict.custom_remaining_balance) return;
-
-	frm.doc.custom_remaining_balance = flt(
-		sales_invoice_remaining_balance(frm),
-		precision("custom_remaining_balance", frm.doc)
-	);
-	frm.refresh_field("custom_remaining_balance");
-};
+const can_balance_payments = (frm) => frm.doc.docstatus === 0 && flt(frm.doc.is_pos);
 
 const refresh_sales_invoice_payments = (frm) => {
 	frm.cscript?.calculate_paid_amount?.();
-	set_sales_invoice_remaining_balance(frm);
 	frm.refresh_field("payments");
 	frm.dirty();
 };
@@ -206,6 +192,7 @@ const set_sales_invoice_payment_amount = (frm, row, amount) => {
 
 const balance_sales_invoice_payments = (frm, cdt, cdn) => {
 	if (frm._setting_sales_invoice_payments) return;
+	if (!can_balance_payments(frm)) return;
 
 	const row = frappe.get_doc(cdt, cdn);
 	const rows = sales_invoice_payments(frm);
@@ -240,9 +227,12 @@ const balance_sales_invoice_payments = (frm, cdt, cdn) => {
 
 frappe.ui.form.on("Sales Invoice Payment", {
 	payments_remove(frm) {
+		if (!can_balance_payments(frm)) return;
 		refresh_sales_invoice_payments(frm);
 	},
 	mode_of_payment(frm, cdt, cdn) {
+		if (!can_balance_payments(frm)) return;
+
 		const row = frappe.get_doc(cdt, cdn);
 		if (!flt(row.amount)) {
 			set_sales_invoice_payment_amount(frm, row, sales_invoice_remaining_balance(frm, cdn));
