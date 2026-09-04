@@ -4,6 +4,9 @@ from frappe.utils import flt
 
 
 def validate_payment_allocation(doc, method=None):
+	if not doc.is_pos:
+		return
+
 	invoice_total = flt(doc.rounded_total or doc.grand_total, doc.precision("grand_total"))
 	if invoice_total <= 0:
 		return
@@ -13,4 +16,4 @@ def validate_payment_allocation(doc, method=None):
 	if remaining < 0:
 		frappe.throw(_("Total payment allocation cannot exceed invoice total."))
 
-	doc.custom_remaining_balance = remaining
+	doc.remaining_balance = remaining
