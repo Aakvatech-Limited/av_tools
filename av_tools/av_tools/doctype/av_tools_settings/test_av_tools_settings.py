@@ -21,13 +21,7 @@ from av_tools.av_tools_hooks.generic_erp_behavior_overrides import (
 from av_tools.patches.v1_0.migrate_generic_erp_behavior_overrides import (
 	execute as migrate_generic_settings,
 )
-from av_tools.utils.legacy_settings import (
-	SOURCE_DOCTYPE,
-	get_legacy_value,
-)
-from av_tools.utils.legacy_settings import (
-	TARGET_DOCTYPE as SETTINGS_DOCTYPE,
-)
+from av_tools.utils.legacy_settings import SOURCE_DOCTYPE, TARGET_DOCTYPE, get_legacy_value
 
 
 class TestAVToolsSettings(AccountsTestMixin, IntegrationTestCase):
@@ -160,13 +154,13 @@ class TestAVToolsSettings(AccountsTestMixin, IntegrationTestCase):
 		}
 
 		for fieldname, value in expected_values.items():
-			frappe.db.set_single_value(SETTINGS_DOCTYPE, fieldname, None)
+			frappe.db.set_single_value(TARGET_DOCTYPE, fieldname, None)
 			frappe.db.set_single_value(SOURCE_DOCTYPE, fieldname, value)
 
 		migrate_generic_settings()
 		migrate_generic_settings()
 
-		settings = frappe.get_single(SETTINGS_DOCTYPE)
+		settings = frappe.get_single(TARGET_DOCTYPE)
 		self.assertIsInstance(settings, AVToolsSettings)
 
 		for fieldname, value in expected_values.items():
@@ -187,7 +181,7 @@ class TestAVToolsSettings(AccountsTestMixin, IntegrationTestCase):
 	def set_settings(self, **overrides):
 		values = {**self.settings_defaults, **overrides}
 		for fieldname, value in values.items():
-			frappe.db.set_single_value(SETTINGS_DOCTYPE, fieldname, value)
+			frappe.db.set_single_value(TARGET_DOCTYPE, fieldname, value)
 
 	def ensure_test_data(self):
 		self.set_company_context()
@@ -358,7 +352,7 @@ class TestAVToolsCaptureSettings(IntegrationTestCase):
 	def set_settings(self, **overrides):
 		values = {**self.settings_defaults, **overrides}
 		for fieldname, value in values.items():
-			frappe.db.set_single_value(SETTINGS_DOCTYPE, fieldname, value)
+			frappe.db.set_single_value(TARGET_DOCTYPE, fieldname, value)
 
 	def test_get_capture_settings_uses_single_doctype_values(self):
 		self.set_settings(
