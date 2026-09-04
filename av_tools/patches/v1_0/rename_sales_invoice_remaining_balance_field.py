@@ -1,6 +1,5 @@
 import frappe
 
-
 OLD = "Sales Invoice-custom_remaining_balance"
 NEW = "Sales Invoice-remaining_balance"
 OLD_FIELD = "custom_remaining_balance"
