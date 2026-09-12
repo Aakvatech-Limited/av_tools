@@ -43,6 +43,12 @@ def _should_process(doc) -> bool:
 
 
 def sync_approver_shares(doc, method=None):
+	# DefaultValue is used by Frappe for global settings such as installed_apps.
+	# Never run approval-share logic for it, because failures here can recurse
+	# through frappe.log_error() while system defaults are being updated.
+	if doc.doctype == "DefaultValue":
+		return
+
 	if doc.doctype not in _get_approval_doctypes():
 		return
 
