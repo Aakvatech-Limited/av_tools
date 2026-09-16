@@ -12,7 +12,7 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: tag-and-promote
+  group: tag-and-promote-${{ github.repository }}
   cancel-in-progress: false
 
 jobs:
@@ -69,6 +69,23 @@ jobs:
           ref: ${{ steps.target.outputs.target_branch }}
           fetch-depth: 0
 
+      - name: Detect Frappe app package
+        if: steps.target.outputs.should_release == 'true'
+        id: app
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t hooks < <(find . -mindepth 2 -maxdepth 3 -type f -name hooks.py -not -path './.git/*' -print)
+          if [ "${#hooks[@]}" -ne 1 ]; then
+            echo "Expected exactly one Frappe hooks.py, found ${#hooks[@]}" >&2
+            printf '%s\n' "${hooks[@]}" >&2
+            exit 1
+          fi
+          app_dir="$(dirname "${hooks[0]}")"
+          init_file="$app_dir/__init__.py"
+          test -f "$init_file" || { echo "Missing $init_file" >&2; exit 1; }
+          echo "init_file=${init_file#./}" >> "$GITHUB_OUTPUT"
+
       - name: Check for an existing release
         if: steps.target.outputs.should_release == 'true'
         id: existing
@@ -88,12 +105,9 @@ jobs:
               echo "tag=$tag" >> "$GITHUB_OUTPUT"
               echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
               echo "commit=$commit" >> "$GITHUB_OUTPUT"
-              echo "PR #$PR_NUMBER already created $tag on $TARGET_BRANCH."
               exit 0
             fi
-          done < <(
-            git log "origin/$TARGET_BRANCH" --format='%H%x09%s%x09%b' --grep='chore(release):'
-          )
+          done < <(git log "origin/$TARGET_BRANCH" --format='%H%x09%s%x09%b' --grep='chore(release):')
 
           echo "existing=false" >> "$GITHUB_OUTPUT"
 
@@ -114,13 +128,7 @@ jobs:
             const featureCommit = commits.find(({ commit }) =>
               /^feat(?:\([^)]+\))?!?:/i.test(commit.message.split("\n", 1)[0])
             );
-
             core.setOutput("kind", featureCommit ? "minor" : "patch");
-            core.info(
-              featureCommit
-                ? "Using a minor bump because " + featureCommit.sha.slice(0, 7) + " is a feat commit."
-                : "Using a patch bump because this PR has no feat commit."
-            );
 
       - name: Calculate release version
         if: >
@@ -130,6 +138,7 @@ jobs:
         env:
           EXPECTED_MAJOR: ${{ steps.target.outputs.expected_major }}
           INCREMENT: ${{ steps.increment.outputs.kind }}
+          APP_INIT: ${{ steps.app.outputs.init_file }}
         shell: bash
         run: |
           set -euo pipefail
@@ -141,23 +150,21 @@ jobs:
 
           version_pattern = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
           init_pattern = re.compile(r'(?m)^__version__\s*=\s*["\'](\d+)\.(\d+)\.(\d+)["\']$')
-          init_file = Path("av_tools/__init__.py")
+          init_file = Path(os.environ["APP_INIT"])
           content = init_file.read_text(encoding="utf-8")
           match = init_pattern.search(content)
           if not match:
-              raise SystemExit("Could not read a semantic __version__ from av_tools/__init__.py")
+              raise SystemExit(f"Could not read a semantic __version__ from {init_file}")
 
           expected_major = int(os.environ["EXPECTED_MAJOR"])
           declared_version = tuple(map(int, match.groups()))
           if declared_version[0] != expected_major:
               raise SystemExit(
-                  f"Target branch expects major {expected_major}, but av_tools.__version__ is "
-                  f"{'.'.join(map(str, declared_version))}. Align the app version before releasing."
+                  f"Target branch expects major {expected_major}, but declared version is "
+                  f"{'.'.join(map(str, declared_version))}."
               )
 
-          tags = subprocess.check_output(
-              ("git", "tag", "--list", "v*"), text=True
-          ).splitlines()
+          tags = subprocess.check_output(("git", "tag", "--list", "v*"), text=True).splitlines()
           versions = []
           for tag in tags:
               parsed = version_pattern.fullmatch(tag)
@@ -174,7 +181,6 @@ jobs:
           with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
               output.write(f"version={version}\n")
               output.write(f"tag=v{version}\n")
-          print(f"Using v{version} ({os.environ['INCREMENT']}).")
           PY
 
       - name: Create release commit
@@ -186,6 +192,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           TARGET_BRANCH: ${{ steps.target.outputs.target_branch }}
           VERSION: ${{ steps.release.outputs.version }}
+          APP_INIT: ${{ steps.app.outputs.init_file }}
         shell: bash
         run: |
           set -euo pipefail
@@ -199,7 +206,7 @@ jobs:
           import re
           from pathlib import Path
 
-          init_file = Path("av_tools/__init__.py")
+          init_file = Path(os.environ["APP_INIT"])
           content = init_file.read_text(encoding="utf-8")
           updated, count = re.subn(
               r'(?m)^__version__\s*=\s*["\'][^"\'\r\n]+["\']$',
@@ -213,9 +220,8 @@ jobs:
           PY
 
           git diff --check
-          git add av_tools/__init__.py
-          git commit -m "chore(release): Bumped to Version $VERSION" \
-            -m "Promoted-PR: #$PR_NUMBER"
+          git add "$APP_INIT"
+          git commit -m "chore(release): Bumped to Version $VERSION" -m "Promoted-PR: #$PR_NUMBER"
           git push origin "HEAD:$TARGET_BRANCH"
           echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
@@ -230,16 +236,11 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --tags --force
-
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             tag_commit="$(git rev-list -n 1 "$TAG")"
-            [ "$tag_commit" = "$RELEASE_COMMIT" ] || {
-              echo "$TAG points to $tag_commit, not $RELEASE_COMMIT."
-              exit 1
-            }
+            [ "$tag_commit" = "$RELEASE_COMMIT" ] || exit 1
             exit 0
           fi
-
           git tag -a "$TAG" "$RELEASE_COMMIT" -m "Release $TAG"
           git push origin "$TAG"
 
@@ -278,9 +279,7 @@ jobs:
                 : type === "fix" ? 2
                 : type === "perf" ? 3
                 : excluded.has(type) ? null : 4;
-              if (category !== null) categories[category][1].push(
-                "- " + summary + " (" + sha.slice(0, 7) + ")"
-              );
+              if (category !== null) categories[category][1].push("- " + summary + " (" + sha.slice(0, 7) + ")");
             }
 
             const sections = categories
@@ -290,33 +289,14 @@ jobs:
               "Changes from pull request #" + context.payload.pull_request.number + ".",
               sections.length ? sections.join("\n\n") : "No user-facing changes.",
             ].join("\n\n");
-            const releaseData = {
-              name: "Release " + tagName,
-              body,
-              draft: false,
-              prerelease: false,
-            };
+            const releaseData = { name: "Release " + tagName, body, draft: false, prerelease: false };
 
             try {
-              const { data: release } = await github.rest.repos.getReleaseByTag({
-                owner,
-                repo,
-                tag: tagName,
-              });
-              await github.rest.repos.updateRelease({
-                owner,
-                repo,
-                release_id: release.id,
-                ...releaseData,
-              });
+              const { data: release } = await github.rest.repos.getReleaseByTag({ owner, repo, tag: tagName });
+              await github.rest.repos.updateRelease({ owner, repo, release_id: release.id, ...releaseData });
             } catch (error) {
               if (error.status !== 404) throw error;
-              await github.rest.repos.createRelease({
-                owner,
-                repo,
-                tag_name: tagName,
-                ...releaseData,
-              });
+              await github.rest.repos.createRelease({ owner, repo, tag_name: tagName, ...releaseData });
             }
 
       - name: Comment on the reviewed backport PR
