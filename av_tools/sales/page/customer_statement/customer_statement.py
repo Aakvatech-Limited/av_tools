@@ -56,7 +56,9 @@ def _build_statement_doc(customer, from_date, to_date):
     statement.report = "General Ledger"
     statement.from_date = from_date
     statement.to_date = to_date
-    statement.include_ageing = 0
+    statement.include_ageing = 1
+    statement.ageing_based_on = "Posting Date"
+    statement.posting_date = to_date
     statement.show_remarks = 1
     statement.orientation = "Landscape"
 
