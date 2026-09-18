@@ -1,7 +1,7 @@
 import frappe
 from frappe import _
 from frappe.utils import getdate
-from frappe.utils.validate_email_address import validate_email_address
+from frappe.utils import validate_email_address
 
 from erpnext.accounts.doctype.process_statement_of_accounts.process_statement_of_accounts import (
     get_report_pdf,
