@@ -121,16 +121,16 @@ def _get_custom_print_format_pdf(statement, print_format_name):
 
     body = frappe.render_template(print_format.html or "", context)
 
-    css = get_print_style()
-    if print_format.css:
-        css += "\n" + print_format.css
+    css = get_print_style(print_format=print_format)
 
     html = frappe.render_template(
         "frappe/www/printview.html",
         {
             "body": body,
-            "css": css,
+            "print_style": css,
             "title": "Statement For " + statement.customers[0].customer,
+            "lang": frappe.local.lang,
+            "layout_direction": "rtl" if frappe.local.lang in ("ar", "he", "fa", "ur") else "ltr",
         },
     )
 
