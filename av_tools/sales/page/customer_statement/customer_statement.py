@@ -150,10 +150,16 @@ def send_statement_email(
         frappe.throw(_("Please enter at least one email recipient."))
 
     customer_name = frappe.db.get_value("Customer", customer, "customer_name") or customer
-    subject = subject or _("Statement of Account - {0}").format(customer_name)
-    message = message or _(
-        "Please find attached your Statement of Account for the period {0} to {1}."
-    ).format(from_date, to_date)
+
+    if not subject or not message:
+        email_defaults = get_email_defaults(
+            company=_get_company(),
+            customer=customer,
+            from_date=from_date,
+            to_date=to_date,
+        )
+        subject = subject or email_defaults["subject"]
+        message = message or email_defaults["message"]
 
     pdf = _get_pdf(customer, from_date, to_date)
     filename = _get_filename(customer, from_date, to_date)
