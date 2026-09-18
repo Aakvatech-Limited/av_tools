@@ -73,10 +73,7 @@ doctype_js = {
 	"Purchase Invoice": "weigh_bridge/doctype/purchase_invoice_weighbridge_ticket.js",
 	"Purchase Receipt": "weigh_bridge/doctype/purchase_receipt_weighbridge_ticket.js",
 	"Material Request": "av_tools/material_request.js",
-	"Customer": [
-		"authotp/api/customer.js",
-		"sales/customer.js",
-	],
+	"Customer": "authotp/api/customer.js",
 	"Account": "av_tools/account.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
