@@ -129,8 +129,12 @@ def _get_custom_print_format_pdf(statement, print_format_name):
             "body": body,
             "print_style": css,
             "title": "Statement For " + statement.customers[0].customer,
-            "lang": frappe.local.lang,
-            "layout_direction": "rtl" if frappe.local.lang in ("ar", "he", "fa", "ur") else "ltr",
+            "lang": getattr(frappe.local, "lang", None) or "en",
+            "layout_direction": (
+                "rtl"
+                if (getattr(frappe.local, "lang", None) or "en") in ("ar", "he", "fa", "ur")
+                else "ltr"
+            ),
         },
     )
 
