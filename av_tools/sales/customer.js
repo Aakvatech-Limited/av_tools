@@ -5,11 +5,11 @@ frappe.ui.form.on("Customer", {
 		}
 
 		frm.add_custom_button(__("Customer Statement"), function () {
-			frappe.route_options = {
-				customer: frm.doc.name,
-			};
+			const url = frappe.urllib.get_full_url(
+				"/app/customer-statement?customer=" + encodeURIComponent(frm.doc.name)
+			);
 
-			frappe.set_route("customer-statement");
+			window.location.href = url;
 		});
 	},
 });
