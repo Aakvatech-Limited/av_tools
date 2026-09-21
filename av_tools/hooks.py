@@ -229,6 +229,9 @@ doc_events = {
 		"on_update": "av_tools.av_tools_hooks.account.create_indirect_expense_item",
 		"after_insert": "av_tools.av_tools_hooks.account.create_indirect_expense_item",
 	},
+	"Notification Log": {
+		"after_insert": "av_tools.google_chat_conversations.notification.enqueue_notification_log",
+	},
 	"*": {
 		"validate": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
 		"onload": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],

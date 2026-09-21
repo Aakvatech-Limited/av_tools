@@ -1,0 +1,36 @@
+{
+ "actions": [],
+ "autoname": "field:user",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "enabled",
+  "google_email",
+  "google_chat_user_id",
+  "section_spaces",
+  "personal_space_name",
+  "personal_space_display_name",
+  "direct_message_space_name"
+ ],
+ "fields": [
+  {"fieldname": "user", "fieldtype": "Link", "label": "User", "options": "User", "reqd": 1, "unique": 1},
+  {"default": "1", "fieldname": "enabled", "fieldtype": "Check", "label": "Enabled"},
+  {"description": "Defaults to the ERPNext user's email and is used when adding the user to a personal threaded space.", "fieldname": "google_email", "fieldtype": "Data", "label": "Google Email", "options": "Email", "reqd": 1},
+  {"description": "People API or Directory API user ID. Required only for Direct Message mode when using app authentication.", "fieldname": "google_chat_user_id", "fieldtype": "Data", "label": "Google Chat User ID"},
+  {"fieldname": "section_spaces", "fieldtype": "Section Break", "label": "Google Chat Spaces"},
+  {"fieldname": "personal_space_name", "fieldtype": "Data", "label": "Personal Threaded Space", "read_only": 1},
+  {"fieldname": "personal_space_display_name", "fieldtype": "Data", "label": "Personal Space Display Name"},
+  {"fieldname": "direct_message_space_name", "fieldtype": "Data", "label": "Direct Message Space", "read_only": 1}
+ ],
+ "links": [],
+ "module": "Google Chat Conversations",
+ "name": "Google Chat User",
+ "permissions": [
+  {"create": 1, "delete": 1, "export": 1, "read": 1, "report": 1, "role": "System Manager", "write": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
