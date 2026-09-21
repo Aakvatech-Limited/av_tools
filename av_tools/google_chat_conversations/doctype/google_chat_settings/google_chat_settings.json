@@ -1,0 +1,38 @@
+{
+ "actions": [],
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "delivery_mode",
+  "include_document_link",
+  "section_credentials",
+  "service_account_json",
+  "workspace_customer",
+  "section_space",
+  "personal_space_prefix",
+  "request_timeout"
+ ],
+ "fields": [
+  {"default": "0", "fieldname": "enabled", "fieldtype": "Check", "label": "Enabled"},
+  {"default": "Personal Threaded Space", "description": "Direct Message is private but Google Chat app DMs are flat. Personal Threaded Space creates one private named space per ERPNext user and supports a thread per ERPNext document.", "fieldname": "delivery_mode", "fieldtype": "Select", "label": "Delivery Mode", "options": "Personal Threaded Space\nDirect Message", "reqd": 1},
+  {"default": "1", "fieldname": "include_document_link", "fieldtype": "Check", "label": "Include ERPNext Document Link"},
+  {"fieldname": "section_credentials", "fieldtype": "Section Break", "label": "Google Chat App Credentials"},
+  {"description": "Encrypted service-account credential JSON for the Google Chat app. The Chat API must be enabled and the app scopes must receive Workspace administrator approval.", "fieldname": "service_account_json", "fieldtype": "Password", "label": "Service Account JSON"},
+  {"default": "customers/my_customer", "description": "Workspace customer resource used when the Chat app creates personal named spaces.", "fieldname": "workspace_customer", "fieldtype": "Data", "label": "Workspace Customer"},
+  {"fieldname": "section_space", "fieldtype": "Section Break", "label": "Delivery"},
+  {"default": "ERPNext Notifications", "fieldname": "personal_space_prefix", "fieldtype": "Data", "label": "Personal Space Prefix"},
+  {"default": "15", "fieldname": "request_timeout", "fieldtype": "Int", "label": "Request Timeout (Seconds)"}
+ ],
+ "issingle": 1,
+ "links": [],
+ "module": "Google Chat Conversations",
+ "name": "Google Chat Settings",
+ "permissions": [
+  {"create": 1, "read": 1, "role": "System Manager", "write": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
