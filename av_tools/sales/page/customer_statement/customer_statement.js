@@ -274,6 +274,8 @@ class CustomerStatementPage {
                 "av_tools.sales.page.customer_statement.customer_statement.get_customer_details",
             args: {
                 customer: filters.customer,
+                from_date: filters.from_date,
+                to_date: filters.to_date,
             },
             callback: (r) => {
                 if (!r.message) {
@@ -285,16 +287,17 @@ class CustomerStatementPage {
                 this.primary_email_field.set_value(r.message.email_id || "");
                 this.additional_emails_field.set_value("");
                 this.subject_field.set_value(
-                    __("Statement of Account - {0}", [customer_name])
+                    r.message.subject || __("Statement of Account - {0}", [customer_name])
                 );
                 this.message_field.set_value(
-                    __(
-                        "Please find attached your Statement of Account for the period {0} to {1}.",
-                        [
-                            frappe.datetime.str_to_user(filters.from_date),
-                            frappe.datetime.str_to_user(filters.to_date),
-                        ]
-                    )
+                    r.message.message ||
+                        __(
+                            "Please find attached your Statement of Account for the period {0} to {1}.",
+                            [
+                                frappe.datetime.str_to_user(filters.from_date),
+                                frappe.datetime.str_to_user(filters.to_date),
+                            ]
+                        )
                 );
             },
         });

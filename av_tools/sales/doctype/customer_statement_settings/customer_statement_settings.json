@@ -1,0 +1,142 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:company",
+ "creation": "2026-09-18 18:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "customer_statement_print_format",
+  "disabled",
+  "section_statement",
+  "use_company_letter_head",
+  "default_orientation",
+  "column_break_statement",
+  "include_ageing",
+  "ageing_based_on",
+  "section_email",
+  "default_email_subject",
+  "default_email_message"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "description": "Optional custom Jinja Print Format used for customer statements for this company. Leave blank to use ERPNext's standard Process Statement of Accounts layout.",
+   "fieldname": "customer_statement_print_format",
+   "fieldtype": "Link",
+   "label": "Customer Statement Print Format",
+   "options": "Print Format"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Disabled"
+  },
+  {
+   "fieldname": "section_statement",
+   "fieldtype": "Section Break",
+   "label": "Statement Defaults"
+  },
+  {
+   "default": "1",
+   "fieldname": "use_company_letter_head",
+   "fieldtype": "Check",
+   "label": "Use Company Letter Head"
+  },
+  {
+   "default": "Landscape",
+   "fieldname": "default_orientation",
+   "fieldtype": "Select",
+   "label": "Default Orientation",
+   "options": "Landscape\nPortrait",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_statement",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "include_ageing",
+   "fieldtype": "Check",
+   "label": "Include Ageing"
+  },
+  {
+   "default": "Posting Date",
+   "depends_on": "include_ageing",
+   "fieldname": "ageing_based_on",
+   "fieldtype": "Select",
+   "label": "Ageing Based On",
+   "options": "Posting Date\nDue Date"
+  },
+  {
+   "fieldname": "section_email",
+   "fieldtype": "Section Break",
+   "label": "Email Defaults"
+  },
+  {
+   "description": "Supports Jinja using customer, company, from_date and to_date.",
+   "fieldname": "default_email_subject",
+   "fieldtype": "Data",
+   "label": "Default Email Subject"
+  },
+  {
+   "description": "Supports Jinja using customer, company, from_date and to_date.",
+   "fieldname": "default_email_message",
+   "fieldtype": "Text Editor",
+   "label": "Default Email Message"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-09-18 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Sales",
+ "name": "Customer Statement Settings",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Accounts User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

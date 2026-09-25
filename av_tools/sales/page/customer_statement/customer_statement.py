@@ -2,8 +2,10 @@ import frappe
 from frappe import _
 from frappe.utils import getdate, validate_email_address
 
-from erpnext.accounts.doctype.process_statement_of_accounts.process_statement_of_accounts import (
-    get_report_pdf,
+from av_tools.sales.customer_statement_renderer import (
+    apply_statement_settings,
+    get_customer_statement_pdf,
+    get_email_defaults,
 )
 
 
@@ -56,13 +58,8 @@ def _build_statement_doc(customer, from_date, to_date):
     statement.report = "General Ledger"
     statement.from_date = from_date
     statement.to_date = to_date
-    statement.include_ageing = 1
-    statement.ageing_based_on = "Posting Date"
-    statement.posting_date = to_date
     statement.show_remarks = 1
-    statement.orientation = "Landscape"
-
-    statement.letter_head = frappe.db.get_value("Company", company, "default_letter_head")
+    apply_statement_settings(statement)
 
     statement.append(
         "customers",
@@ -78,7 +75,7 @@ def _build_statement_doc(customer, from_date, to_date):
 
 def _get_pdf(customer, from_date, to_date):
     statement = _build_statement_doc(customer, from_date, to_date)
-    pdf = get_report_pdf(statement)
+    pdf = get_customer_statement_pdf(statement)
 
     if not pdf:
         frappe.throw(
@@ -98,15 +95,31 @@ def _get_filename(customer, from_date, to_date):
 
 
 @frappe.whitelist()
-def get_customer_details(customer):
+def get_customer_details(customer, from_date=None, to_date=None):
     frappe.has_permission("Customer", "read", customer, throw=True)
 
-    return frappe.db.get_value(
+    customer_details = frappe.db.get_value(
         "Customer",
         customer,
         ["name", "customer_name", "email_id"],
         as_dict=True,
     )
+
+    if not customer_details:
+        frappe.throw(_("Customer {0} does not exist.").format(customer))
+
+    if from_date and to_date:
+        company = _get_company()
+        customer_details.update(
+            get_email_defaults(
+                company=company,
+                customer=customer,
+                from_date=from_date,
+                to_date=to_date,
+            )
+        )
+
+    return customer_details
 
 
 @frappe.whitelist()
@@ -137,10 +150,16 @@ def send_statement_email(
         frappe.throw(_("Please enter at least one email recipient."))
 
     customer_name = frappe.db.get_value("Customer", customer, "customer_name") or customer
-    subject = subject or _("Statement of Account - {0}").format(customer_name)
-    message = message or _(
-        "Please find attached your Statement of Account for the period {0} to {1}."
-    ).format(from_date, to_date)
+
+    if not subject or not message:
+        email_defaults = get_email_defaults(
+            company=_get_company(),
+            customer=customer,
+            from_date=from_date,
+            to_date=to_date,
+        )
+        subject = subject or email_defaults["subject"]
+        message = message or email_defaults["message"]
 
     pdf = _get_pdf(customer, from_date, to_date)
     filename = _get_filename(customer, from_date, to_date)
