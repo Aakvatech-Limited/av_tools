@@ -11,6 +11,10 @@ dependencies = [
     # "frappe~=15.0.0" # Installed and managed by bench.
     "openai>=1.0.0,<2.0.0",
     "cryptography>=41.0.0",
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
 ]
 
 [project.optional-dependencies]
