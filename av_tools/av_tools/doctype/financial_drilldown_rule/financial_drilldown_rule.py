@@ -101,10 +101,12 @@ def resolve_filter_template(template, report_context, row_context):
 	return route_options
 
 
-def _get_account_details(row_context):
-	account = row_context.get("account")
+def _get_account_details(row_context, report_context=None):
+	account = row_context.get("account") or (report_context or {}).get("account")
 	if not account:
 		return
+
+	row_context.setdefault("account", account)
 
 	if row_context.get("account_type") and row_context.get("root_type"):
 		return
@@ -143,7 +145,7 @@ def _specificity(rule):
 
 
 def get_matching_rule(report_context, row_context, source_report=None):
-	_get_account_details(row_context)
+	_get_account_details(row_context, report_context)
 
 	rules = frappe.get_all(
 		"Financial Drilldown Rule",
