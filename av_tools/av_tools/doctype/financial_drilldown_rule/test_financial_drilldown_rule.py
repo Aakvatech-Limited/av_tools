@@ -37,3 +37,25 @@ class TestFinancialDrilldownRule(FrappeTestCase):
 		)
 
 		self.assertEqual(resolved["to_date"], "2026-06-30")
+
+	def test_inherit_context_keeps_dimensions_and_allows_overrides(self):
+		template = {
+			"$inherit_context": True,
+			"account": "{row.account}",
+			"to_date": "{row.to_date}",
+		}
+		resolved = resolve_filter_template(
+			template,
+			{
+				"company": "Test Company",
+				"cost_center": ["Main - TC"],
+				"business_unit": ["Consulting"],
+				"to_date": "2026-12-31",
+			},
+			{"account": "Debtors - TC", "to_date": "2026-06-30"},
+		)
+
+		self.assertEqual(resolved["business_unit"], ["Consulting"])
+		self.assertEqual(resolved["cost_center"], ["Main - TC"])
+		self.assertEqual(resolved["account"], "Debtors - TC")
+		self.assertEqual(resolved["to_date"], "2026-06-30")
