@@ -11,6 +11,11 @@ from erpnext.accounts.report.accounts_receivable_summary.accounts_receivable_sum
 	execute as execute_receivable_summary,
 )
 
+from av_tools.av_tools.report.financial_master_summary.providers import (
+	get_master_summary,
+	get_provider,
+)
+
 
 def execute(filters=None):
 	filters = frappe._dict(filters or {})
@@ -27,6 +32,10 @@ def execute(filters=None):
 		return execute_receivable_summary(filters)
 	if account_type == "Payable":
 		return execute_payable_summary(filters)
+
+	if get_provider(account_type):
+		columns, data, report_summary = get_master_summary(filters, account_type)
+		return columns, data, None, None, report_summary
 
 	frappe.throw(
 		_("No master summary provider is configured yet for account type {0}.").format(
