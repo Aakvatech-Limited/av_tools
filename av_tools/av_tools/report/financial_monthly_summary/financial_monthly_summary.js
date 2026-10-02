@@ -138,7 +138,7 @@ frappe.query_reports["Financial Monthly Summary"] = {
 		}
 		if (data && column.fieldname === "month" && data.from_date && data.to_date) {
 			column.link_onclick =
-				"av_tools.financial_statements.route_drilldown(" + JSON.stringify(data) + ")";
+				"av_tools.financial_drilldown.route(" + JSON.stringify(data) + ")";
 		}
 		return default_formatter(value, row, column, data);
 	},
