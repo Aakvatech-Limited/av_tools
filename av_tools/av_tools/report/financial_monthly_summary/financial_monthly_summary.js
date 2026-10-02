@@ -1,7 +1,7 @@
 // Copyright (c) 2026, Aakvatech and contributors
 // For license information, please see license.txt
 
-frappe.query_reports["Financial Master Summary"] = {
+frappe.query_reports["Financial Monthly Summary"] = {
 	filters: [
 		{
 			fieldname: "company",
@@ -23,6 +23,20 @@ frappe.query_reports["Financial Master Summary"] = {
 					is_group: 0,
 				},
 			}),
+		},
+		{
+			fieldname: "party_type",
+			label: __("Party Type"),
+			fieldtype: "Autocomplete",
+			options: Object.keys(frappe.boot.party_account_types),
+			reqd: 1,
+		},
+		{
+			fieldname: "party",
+			label: __("Party"),
+			fieldtype: "Dynamic Link",
+			options: "party_type",
+			reqd: 1,
 		},
 		{
 			fieldname: "from_date",
@@ -63,41 +77,23 @@ frappe.query_reports["Financial Master Summary"] = {
 				}),
 		},
 		{
-			fieldname: "ageing_based_on",
-			label: __("Ageing Based On"),
+			fieldname: "presentation_currency",
+			label: __("Currency"),
 			fieldtype: "Select",
-			options: "Posting Date\nDue Date",
-			default: "Posting Date",
+			options: erpnext.get_presentation_currency_list(),
 		},
 		{
-			fieldname: "age_as_on",
-			label: __("Age as on"),
-			fieldtype: "Select",
-			options: "Report Date\nToday",
-			default: "Report Date",
-		},
-		{
-			fieldname: "range",
-			label: __("Ageing Range"),
-			fieldtype: "Data",
-			default: "30, 60, 90, 120",
-		},
-		{
-			fieldname: "show_future_payments",
-			label: __("Show Future Payments"),
+			fieldname: "include_default_book_entries",
+			label: __("Include Default FB Entries"),
 			fieldtype: "Check",
-		},
-		{
-			fieldname: "show_gl_balance",
-			label: __("Show GL Balance"),
-			fieldtype: "Check",
+			default: 1,
 		},
 	],
 	formatter: function (value, row, column, data, default_formatter) {
-		if (column.fieldname === "party") {
+		if (column.fieldname === "month") {
 			delete column.link_onclick;
 		}
-		if (data && column.fieldname === "party" && data.party_type && data.party) {
+		if (data && column.fieldname === "month" && data.from_date && data.to_date) {
 			column.link_onclick =
 				"av_tools.financial_statements.route_drilldown(" + JSON.stringify(data) + ")";
 		}
@@ -105,4 +101,4 @@ frappe.query_reports["Financial Master Summary"] = {
 	},
 };
 
-erpnext.utils.add_dimensions("Financial Master Summary", 7);
+erpnext.utils.add_dimensions("Financial Monthly Summary", 9);
