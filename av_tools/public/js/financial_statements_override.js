@@ -4,9 +4,27 @@
 	const ACCOUNTS_RECEIVABLE_SUMMARY = "Accounts Receivable Summary";
 	const GENERAL_LEDGER = "General Ledger";
 	const VOUCHER_CONSOLIDATED = "Categorize by Voucher (Consolidated)";
+	const DRILLDOWN_ROUTE_METHOD =
+		"av_tools.av_tools.doctype.financial_drilldown_rule.financial_drilldown_rule.get_drilldown_route";
 
 	function get_report_filter_value(fieldname) {
 		return frappe.query_report ? frappe.query_report.get_filter_value(fieldname, false) : null;
+	}
+
+	function get_report_context() {
+		const context = {};
+		if (!frappe.query_report || !frappe.query_report.filters) return context;
+
+		frappe.query_report.filters.forEach(function (filter) {
+			if (!filter.df || !filter.df.fieldname) return;
+			context[filter.df.fieldname] = filter.get_value();
+		});
+		return context;
+	}
+
+	function get_source_report() {
+		const route = frappe.get_route();
+		return route && route[0] === "query-report" ? route[1] : null;
 	}
 
 	function get_year_start(date_value) {
@@ -102,43 +120,36 @@
 
 		const original_open_general_ledger = erpnext.financial_statements.open_general_ledger;
 
-		erpnext.financial_statements.open_general_ledger = function (data) {
-			if (!data.account && !data.accounts) return;
+		av_tools.financial_statements.route_drilldown = function (data) {
+			if (!data || (!data.account && !data.accounts)) return;
 
-			function navigate_based_on_type(account_type) {
-				if (account_type === "Receivable") {
-					frappe.route_options = {
-						company: frappe.query_report.get_filter_value("company"),
-						report_date: data.to_date || data.year_end_date,
-						ageing_based_on: "Posting Date",
-					};
-					frappe.set_route("query-report", ACCOUNTS_RECEIVABLE_SUMMARY);
-				} else if (account_type === "Payable") {
-					frappe.route_options = {
-						company: frappe.query_report.get_filter_value("company"),
-						report_date: data.to_date || data.year_end_date,
-						ageing_based_on: "Posting Date",
-					};
-					frappe.set_route("query-report", "Accounts Payable Summary");
-				} else {
-					original_open_general_ledger(data);
-				}
-			}
+			const fallback = function () {
+				original_open_general_ledger(data);
+			};
 
-			if (data.account_type) {
-				navigate_based_on_type(data.account_type);
-			} else {
-				const account_name = data.account || data.accounts;
-				frappe.db.get_value("Account", account_name, "account_type", function (r) {
-					if (r && r.account_type) {
-						navigate_based_on_type(r.account_type);
-					} else {
-						original_open_general_ledger(data);
+			frappe.call({
+				method: DRILLDOWN_ROUTE_METHOD,
+				args: {
+					row_context: JSON.stringify(data),
+					report_context: JSON.stringify(get_report_context()),
+					source_report: get_source_report(),
+				},
+				callback: function (response) {
+					const route = response && response.message;
+					if (!route || !route.matched || !route.target_report) {
+						fallback();
+						return;
 					}
-				});
-			}
+
+					frappe.route_options = route.route_options || {};
+					frappe.set_route("query-report", route.target_report);
+				},
+				error: fallback,
+			});
 		};
 
+		erpnext.financial_statements.open_general_ledger =
+			av_tools.financial_statements.route_drilldown;
 		erpnext.financial_statements.__av_tools_override_installed = true;
 		return true;
 	}
