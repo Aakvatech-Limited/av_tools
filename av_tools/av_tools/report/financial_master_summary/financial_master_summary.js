@@ -124,6 +124,9 @@ frappe.query_reports["Financial Master Summary"] = {
 		},
 	],
 	formatter: function (value, row, column, data, default_formatter) {
+		if (column.fieldname === "party") {
+			delete column.link_onclick;
+		}
 		if (data && column.fieldname === "party" && data.party_type && data.party) {
 			column.link_onclick =
 				"av_tools.financial_master_summary.open_party_ledger(" +
