@@ -135,11 +135,11 @@ def _matches(rule, report_context, row_context, source_report):
 
 def _specificity(rule):
 	return (
+		1 if rule.source_report else 0,
 		1 if rule.account else 0,
 		1 if rule.account_type else 0,
 		1 if rule.root_type else 0,
 		1 if rule.company else 0,
-		1 if rule.source_report else 0,
 		rule.priority or 0,
 	)
 
