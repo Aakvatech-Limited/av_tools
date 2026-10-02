@@ -3,8 +3,10 @@ from frappe.tests.utils import FrappeTestCase
 
 from av_tools.av_tools.doctype.financial_drilldown_rule.financial_drilldown_rule import (
 	_get_account_details,
+	get_matching_rule,
 	resolve_filter_template,
 )
+from av_tools.patches.v1_0.seed_financial_drilldown_rules import DEFAULT_RULES
 
 
 class TestFinancialDrilldownRule(FrappeTestCase):
@@ -78,3 +80,55 @@ class TestFinancialDrilldownRule(FrappeTestCase):
 		self.assertEqual(row_context["account"], "Debtors - TC")
 		self.assertEqual(row_context["account_type"], "Receivable")
 		self.assertEqual(row_context["root_type"], "Asset")
+
+	def test_receivable_rule_chain_prefers_source_scoped_next_step(self):
+		rules = [frappe._dict(rule) for rule in DEFAULT_RULES]
+		original_get_all = frappe.get_all
+		original_get_cached_value = frappe.get_cached_value
+
+		def fake_get_all(doctype, *args, **kwargs):
+			if doctype == "Financial Drilldown Rule":
+				return rules
+			return original_get_all(doctype, *args, **kwargs)
+
+		try:
+			frappe.get_all = fake_get_all
+			frappe.get_cached_value = lambda *args, **kwargs: frappe._dict(
+				account_type="Receivable", root_type="Asset"
+			)
+
+			account_rule = get_matching_rule(
+				{"company": "Test Company"},
+				{"account": "Debtors - TC"},
+				"Trial Balance",
+			)
+			self.assertEqual(account_rule.target_report, "Financial Account Summary")
+
+			master_rule = get_matching_rule(
+				{"company": "Test Company", "account": "Debtors - TC"},
+				{"account": "Debtors - TC"},
+				"Financial Account Summary",
+			)
+			self.assertEqual(master_rule.target_report, "Financial Master Summary")
+
+			monthly_rule = get_matching_rule(
+				{"company": "Test Company", "account": "Debtors - TC"},
+				{"party_type": "Customer", "party": "CUST-0001"},
+				"Financial Master Summary",
+			)
+			self.assertEqual(monthly_rule.target_report, "Financial Monthly Summary")
+
+			ledger_rule = get_matching_rule(
+				{
+					"company": "Test Company",
+					"account": "Debtors - TC",
+					"party_type": "Customer",
+					"party": "CUST-0001",
+				},
+				{"from_date": "2026-04-01", "to_date": "2026-04-30"},
+				"Financial Monthly Summary",
+			)
+			self.assertEqual(ledger_rule.target_report, "Financial Drilldown Ledger")
+		finally:
+			frappe.get_all = original_get_all
+			frappe.get_cached_value = original_get_cached_value
