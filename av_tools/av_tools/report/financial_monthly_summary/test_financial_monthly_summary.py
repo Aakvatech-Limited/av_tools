@@ -4,8 +4,10 @@ from frappe.tests.utils import FrappeTestCase
 from erpnext.accounts.report.general_ledger import general_ledger
 
 from av_tools.av_tools.report.financial_monthly_summary.financial_monthly_summary import (
+	_get_columns,
 	_get_general_ledger_filters,
 	_get_month_row,
+	_get_provider_columns,
 )
 
 
@@ -46,3 +48,7 @@ class TestFinancialMonthlySummary(FrappeTestCase):
 		self.assertEqual(row.debit, 40)
 		self.assertEqual(row.credit, 10)
 		self.assertEqual(row.closing_debit, 130)
+
+	def test_month_columns_use_link_formatter_for_drilldown(self):
+		self.assertEqual(_get_columns()[0]["fieldtype"], "Link")
+		self.assertEqual(_get_provider_columns()[0]["fieldtype"], "Link")
