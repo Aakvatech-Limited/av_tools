@@ -29,14 +29,12 @@ frappe.query_reports["Financial Monthly Summary"] = {
 			label: __("Party Type"),
 			fieldtype: "Autocomplete",
 			options: Object.keys(frappe.boot.party_account_types),
-			reqd: 1,
 		},
 		{
 			fieldname: "party",
 			label: __("Party"),
 			fieldtype: "Dynamic Link",
 			options: "party_type",
-			reqd: 1,
 		},
 		{
 			fieldname: "from_date",
