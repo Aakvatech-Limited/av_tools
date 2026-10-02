@@ -39,8 +39,9 @@ class TestFinancialMonthlySummary(FrappeTestCase):
 			_dict(account=labels["closing"], debit=130, credit=0),
 		]
 
-		row = _get_month_row(period, gl_data)
+		row = _get_month_row(period, gl_data, "TZS")
 
+		self.assertEqual(row.currency, "TZS")
 		self.assertEqual(row.opening_debit, 100)
 		self.assertEqual(row.debit, 40)
 		self.assertEqual(row.credit, 10)
