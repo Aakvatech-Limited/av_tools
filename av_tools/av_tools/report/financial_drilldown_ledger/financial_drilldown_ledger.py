@@ -24,12 +24,18 @@ def _validate_filters(filters):
 	if getdate(filters.from_date) > getdate(filters.to_date):
 		frappe.throw(_("From Date cannot be greater than To Date."))
 
-	account = filters.account[0] if isinstance(filters.account, list) else filters.account
+	accounts = filters.account if isinstance(filters.account, list) else [filters.account]
+	if len(accounts) != 1:
+		frappe.throw(_("Financial Drilldown Ledger requires exactly one ledger account."))
+
+	account = accounts[0]
 	account_doc = frappe.get_cached_value("Account", account, ["company", "is_group"], as_dict=True)
 	if not account_doc:
 		frappe.throw(_("Account {0} does not exist.").format(account))
 	if account_doc.company != filters.company:
 		frappe.throw(_("Account {0} does not belong to company {1}.").format(account, filters.company))
+	if account_doc.is_group:
+		frappe.throw(_("Financial Drilldown Ledger requires a leaf account."))
 
 
 def _get_general_ledger_filters(filters):
