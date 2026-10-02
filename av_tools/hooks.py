@@ -128,6 +128,7 @@ after_migrate = [
 	"av_tools.utils.create_property_setter.execute",
 	"av_tools.patches.v1_0.migrate_ai_integration_site_data.execute",
 	"av_tools.patches.v1_0.migrate_report_extension_site_data.execute",
+	"av_tools.patches.v1_0.seed_financial_drilldown_rules.execute",
 ]
 
 # Uninstallation
