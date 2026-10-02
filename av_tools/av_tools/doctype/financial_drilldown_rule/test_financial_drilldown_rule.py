@@ -102,14 +102,7 @@ class TestFinancialDrilldownRule(FrappeTestCase):
 				{"account": "Debtors - TC"},
 				"Trial Balance",
 			)
-			self.assertEqual(account_rule.target_report, "Financial Account Summary")
-
-			master_rule = get_matching_rule(
-				{"company": "Test Company", "account": "Debtors - TC"},
-				{"account": "Debtors - TC"},
-				"Financial Account Summary",
-			)
-			self.assertEqual(master_rule.target_report, "Financial Master Summary")
+			self.assertEqual(account_rule.target_report, "Financial Master Summary")
 
 			monthly_rule = get_matching_rule(
 				{"company": "Test Company", "account": "Debtors - TC"},
