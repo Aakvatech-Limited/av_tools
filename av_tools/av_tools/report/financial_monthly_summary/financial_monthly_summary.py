@@ -24,13 +24,14 @@ def execute(filters=None):
 		ignore_fiscal_year=True,
 	)
 
+	currency = _get_currency(filters)
 	rows = []
 	for period in periods:
 		gl_filters = _get_general_ledger_filters(filters, period)
 		_, gl_data = general_ledger.execute(gl_filters)
-		rows.append(_get_month_row(period, gl_data or []))
+		rows.append(_get_month_row(period, gl_data or [], currency))
 
-	return _get_columns(filters), rows
+	return _get_columns(), rows
 
 
 def _validate_filters(filters):
@@ -67,7 +68,7 @@ def _get_general_ledger_filters(filters, period):
 	return gl_filters
 
 
-def _get_month_row(period, gl_data):
+def _get_month_row(period, gl_data, currency):
 	labels = general_ledger.get_translated_labels_for_totals()
 	rows_by_label = {
 		row.get("account"): row
@@ -83,6 +84,7 @@ def _get_month_row(period, gl_data):
 			"month": period.label,
 			"from_date": period.from_date,
 			"to_date": period.to_date,
+			"currency": currency,
 			"opening_debit": flt(opening.get("debit")),
 			"opening_credit": flt(opening.get("credit")),
 			"debit": flt(total.get("debit")),
@@ -93,13 +95,15 @@ def _get_month_row(period, gl_data):
 	)
 
 
-def _get_columns(filters):
-	currency = (
+def _get_currency(filters):
+	return (
 		filters.get("presentation_currency")
 		or frappe.get_cached_value("Account", filters.account, "account_currency")
 		or frappe.get_cached_value("Company", filters.company, "default_currency")
 	)
 
+
+def _get_columns():
 	return [
 		{
 			"fieldname": "month",
@@ -125,7 +129,6 @@ def _get_columns(filters):
 			"fieldtype": "Link",
 			"options": "Currency",
 			"hidden": 1,
-			"default": currency,
 		},
 		{
 			"fieldname": "opening_debit",
