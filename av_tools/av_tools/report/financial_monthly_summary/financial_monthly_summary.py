@@ -8,6 +8,11 @@ from frappe.utils import flt, getdate
 from erpnext.accounts.report.financial_statements import get_period_list
 from erpnext.accounts.report.general_ledger import general_ledger
 
+from av_tools.av_tools.report.financial_master_summary.providers import (
+	get_asset_month_values,
+	get_stock_month_values,
+)
+
 
 def execute(filters=None):
 	filters = frappe._dict(filters or {})
@@ -25,6 +30,19 @@ def execute(filters=None):
 	)
 
 	currency = _get_currency(filters)
+	provider = filters.get("provider")
+
+	if provider in ("Stock", "Asset"):
+		account_type = frappe.get_cached_value("Account", filters.account, "account_type")
+		rows = []
+		for period in periods:
+			if provider == "Stock":
+				values = get_stock_month_values(filters, period)
+			else:
+				values = get_asset_month_values(filters, period, account_type)
+			rows.append(_get_provider_month_row(period, values, currency))
+		return _get_provider_columns(), rows
+
 	rows = []
 	for period in periods:
 		gl_filters = _get_general_ledger_filters(filters, period)
@@ -35,7 +53,7 @@ def execute(filters=None):
 
 
 def _validate_filters(filters):
-	for fieldname in ("company", "account", "party_type", "party", "from_date", "to_date"):
+	for fieldname in ("company", "account", "from_date", "to_date"):
 		if not filters.get(fieldname):
 			frappe.throw(_("{0} is required").format(frappe.unscrub(fieldname)))
 
@@ -52,8 +70,12 @@ def _validate_filters(filters):
 	if account.is_group:
 		frappe.throw(_("Financial Monthly Summary requires a ledger account."))
 
-	if not frappe.db.exists(filters.party_type, filters.party):
-		frappe.throw(_("Invalid {0}: {1}").format(filters.party_type, filters.party))
+	if filters.get("provider") not in ("Stock", "Asset"):
+		for fieldname in ("party_type", "party"):
+			if not filters.get(fieldname):
+				frappe.throw(_("{0} is required").format(frappe.unscrub(fieldname)))
+		if not frappe.db.exists(filters.party_type, filters.party):
+			frappe.throw(_("Invalid {0}: {1}").format(filters.party_type, filters.party))
 
 
 def _get_general_ledger_filters(filters, period):
@@ -93,6 +115,63 @@ def _get_month_row(period, gl_data, currency):
 			"closing_credit": flt(closing.get("credit")),
 		}
 	)
+
+
+
+def _get_provider_month_row(period, values, currency):
+	return frappe._dict(
+		month=period.label,
+		from_date=period.from_date,
+		to_date=period.to_date,
+		currency=currency,
+		opening_value=flt(values.get("opening_value")),
+		increase_value=flt(values.get("increase_value")),
+		decrease_value=flt(values.get("decrease_value")),
+		closing_value=flt(values.get("closing_value")),
+	)
+
+
+def _get_provider_columns():
+	return [
+		{"fieldname": "month", "label": _("Month"), "fieldtype": "Data", "width": 120},
+		{"fieldname": "from_date", "label": _("From Date"), "fieldtype": "Date", "hidden": 1},
+		{"fieldname": "to_date", "label": _("To Date"), "fieldtype": "Date", "hidden": 1},
+		{
+			"fieldname": "currency",
+			"label": _("Currency"),
+			"fieldtype": "Link",
+			"options": "Currency",
+			"hidden": 1,
+		},
+		{
+			"fieldname": "opening_value",
+			"label": _("Opening Value"),
+			"fieldtype": "Currency",
+			"options": "currency",
+			"width": 140,
+		},
+		{
+			"fieldname": "increase_value",
+			"label": _("Increase"),
+			"fieldtype": "Currency",
+			"options": "currency",
+			"width": 140,
+		},
+		{
+			"fieldname": "decrease_value",
+			"label": _("Decrease"),
+			"fieldtype": "Currency",
+			"options": "currency",
+			"width": 140,
+		},
+		{
+			"fieldname": "closing_value",
+			"label": _("Closing Value"),
+			"fieldtype": "Currency",
+			"options": "currency",
+			"width": 140,
+		},
+	]
 
 
 def _get_currency(filters):
