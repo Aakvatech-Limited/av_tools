@@ -261,7 +261,8 @@ def get_asset_month_values(filters, period, account_type):
 
 
 def get_stock_voucher_scope(filters):
-	warehouses = get_warehouses_based_on_account(filters.account, filters.company)
+	account = _single_account(filters.account)
+	warehouses = get_warehouses_based_on_account(account, filters.company)
 	if filters.get("warehouse"):
 		warehouses = [warehouse for warehouse in warehouses if warehouse == filters.warehouse]
 
@@ -291,6 +292,7 @@ def get_stock_voucher_scope(filters):
 
 
 def get_asset_voucher_scope(filters):
+	account = _single_account(filters.account)
 	asset_filters = {"company": filters.company, "docstatus": 1}
 	if filters.get("asset"):
 		asset_filters["name"] = filters.asset
@@ -318,7 +320,7 @@ def get_asset_voucher_scope(filters):
 			"GL Entry",
 			filters={
 				"company": filters.company,
-				"account": filters.account,
+				"account": account,
 				"is_cancelled": 0,
 				"posting_date": ("between", [filters.from_date, filters.to_date]),
 				"against_voucher": ("in", list(asset_names)),
@@ -471,7 +473,10 @@ def _get_asset_reconciliation(filters, rows, account_type):
 
 def _get_gl_value(filters, balance=True):
 	gl_filters = frappe._dict(filters.copy())
-	gl_filters.account = [filters.account]
+	gl_filters.account = [_single_account(filters.account)]
+	gl_filters.presentation_currency = frappe.get_cached_value(
+		"Company", filters.company, "default_currency"
+	)
 	gl_filters.categorize_by = ""
 	gl_filters.setdefault("include_default_book_entries", 1)
 	_, rows = general_ledger.execute(gl_filters)
@@ -479,6 +484,14 @@ def _get_gl_value(filters, balance=True):
 	target = labels["closing"] if balance else labels["total"]
 	row = next((row for row in rows if row.get("account") == target), frappe._dict())
 	return flt(row.get("debit")) - flt(row.get("credit"))
+
+
+def _single_account(account):
+	if isinstance(account, list):
+		if len(account) != 1:
+			frappe.throw(_("Exactly one account is required for provider drill-down."))
+		return account[0]
+	return account
 
 
 def _reconciliation_summary(provider_value, gl_value, provider_label, gl_label):
