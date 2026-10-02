@@ -1,0 +1,129 @@
+{
+ "autoname": "field:rule_name",
+ "creation": "2026-10-02 05:53:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "rule_name",
+  "enabled",
+  "priority",
+  "scope_section",
+  "company",
+  "source_report",
+  "account",
+  "account_type",
+  "root_type",
+  "target_section",
+  "target_report",
+  "base_filter_template",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "rule_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Rule Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "default": "100",
+   "fieldname": "priority",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Priority"
+  },
+  {
+   "fieldname": "scope_section",
+   "fieldtype": "Section Break",
+   "label": "Match Criteria"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "source_report",
+   "fieldtype": "Link",
+   "label": "Source Report",
+   "options": "Report"
+  },
+  {
+   "fieldname": "account",
+   "fieldtype": "Link",
+   "label": "Account",
+   "options": "Account"
+  },
+  {
+   "description": "Matches Account.account_type. Kept as Data so custom account types remain supported.",
+   "fieldname": "account_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Account Type"
+  },
+  {
+   "fieldname": "root_type",
+   "fieldtype": "Select",
+   "label": "Root Type",
+   "options": "\nAsset\nLiability\nIncome\nExpense\nEquity"
+  },
+  {
+   "fieldname": "target_section",
+   "fieldtype": "Section Break",
+   "label": "Drill-down Target"
+  },
+  {
+   "fieldname": "target_report",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Target Report",
+   "options": "Report",
+   "reqd": 1
+  },
+  {
+   "description": "JSON object. Use {ctx.field}, {row.field}, optional placeholders such as {ctx.project?}, and $coalesce.",
+   "fieldname": "base_filter_template",
+   "fieldtype": "Code",
+   "label": "Base Filter Template",
+   "options": "JSON",
+   "reqd": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "modified": "2026-10-02 05:53:00.000000",
+ "modified_by": "Administrator",
+ "module": "Av Tools",
+ "name": "Financial Drilldown Rule",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "priority",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
