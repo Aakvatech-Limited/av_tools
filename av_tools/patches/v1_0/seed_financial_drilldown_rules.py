@@ -7,7 +7,7 @@ DEFAULT_RULES = (
 	{
 		"rule_name": "Receivable Account Summary",
 		"account_type": "Receivable",
-		"target_report": "Financial Account Summary",
+		"target_report": "Financial Master Summary",
 		"priority": 100,
 		"base_filter_template": {
 			"$inherit_context": True,
@@ -34,7 +34,7 @@ DEFAULT_RULES = (
 	{
 		"rule_name": "Payable Account Summary",
 		"account_type": "Payable",
-		"target_report": "Financial Account Summary",
+		"target_report": "Financial Master Summary",
 		"priority": 100,
 		"base_filter_template": {
 			"$inherit_context": True,
