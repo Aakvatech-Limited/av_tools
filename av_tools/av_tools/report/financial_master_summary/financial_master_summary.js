@@ -100,12 +100,12 @@ frappe.query_reports["Financial Master Summary"] = {
 
 		if (data && column.fieldname === "party" && data.party_type && data.party) {
 			column.link_onclick =
-				"av_tools.financial_statements.route_drilldown(" + JSON.stringify(data) + ")";
+				"av_tools.financial_drilldown.route(" + JSON.stringify(data) + ")";
 		}
 
 		if (data && column.fieldname === "master" && data.provider && data.master_value) {
 			column.link_onclick =
-				"av_tools.financial_statements.route_drilldown(" + JSON.stringify(data) + ")";
+				"av_tools.financial_drilldown.route(" + JSON.stringify(data) + ")";
 			column.is_tree = true;
 		}
 
