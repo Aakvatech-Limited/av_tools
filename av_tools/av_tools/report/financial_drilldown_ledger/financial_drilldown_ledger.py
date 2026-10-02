@@ -7,10 +7,21 @@ from frappe.utils import getdate
 
 from erpnext.accounts.report.general_ledger import general_ledger
 
+from av_tools.av_tools.report.financial_master_summary.providers import (
+	filter_general_ledger_by_vouchers,
+	get_asset_voucher_scope,
+	get_stock_voucher_scope,
+)
+
 
 def execute(filters=None):
 	filters = frappe._dict(filters or {})
 	_validate_filters(filters)
+
+	if filters.get("provider") == "Stock":
+		return filter_general_ledger_by_vouchers(filters, get_stock_voucher_scope(filters))
+	if filters.get("provider") == "Asset":
+		return filter_general_ledger_by_vouchers(filters, get_asset_voucher_scope(filters))
 
 	gl_filters = _get_general_ledger_filters(filters)
 	return general_ledger.execute(gl_filters)
