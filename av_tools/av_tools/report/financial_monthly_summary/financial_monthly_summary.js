@@ -88,6 +88,51 @@ frappe.query_reports["Financial Monthly Summary"] = {
 			fieldtype: "Check",
 			default: 1,
 		},
+		{
+			fieldname: "provider",
+			fieldtype: "Data",
+			hidden: 1,
+		},
+		{
+			fieldname: "master_type",
+			fieldtype: "Data",
+			hidden: 1,
+		},
+		{
+			fieldname: "master_value",
+			fieldtype: "Data",
+			hidden: 1,
+		},
+		{
+			fieldname: "warehouse",
+			fieldtype: "Link",
+			options: "Warehouse",
+			hidden: 1,
+		},
+		{
+			fieldname: "item_group",
+			fieldtype: "Link",
+			options: "Item Group",
+			hidden: 1,
+		},
+		{
+			fieldname: "item",
+			fieldtype: "Link",
+			options: "Item",
+			hidden: 1,
+		},
+		{
+			fieldname: "asset_category",
+			fieldtype: "Link",
+			options: "Asset Category",
+			hidden: 1,
+		},
+		{
+			fieldname: "asset",
+			fieldtype: "Link",
+			options: "Asset",
+			hidden: 1,
+		},
 	],
 	formatter: function (value, row, column, data, default_formatter) {
 		if (column.fieldname === "month") {
