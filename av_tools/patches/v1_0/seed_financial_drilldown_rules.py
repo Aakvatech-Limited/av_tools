@@ -330,7 +330,7 @@ DEFAULT_RULES = (
 		"base_filter_template": {
 			"$inherit_context": True,
 			"company": "{ctx.company}",
-			"account": ["{ctx.account}"],
+			"account": "{ctx.account}",
 			"from_date": "{row.from_date}",
 			"to_date": "{row.to_date}",
 			"categorize_by": "Categorize by Voucher (Consolidated)",
