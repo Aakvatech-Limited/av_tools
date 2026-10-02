@@ -1,6 +1,8 @@
+import frappe
 from frappe.tests.utils import FrappeTestCase
 
 from av_tools.av_tools.doctype.financial_drilldown_rule.financial_drilldown_rule import (
+	_get_account_details,
 	resolve_filter_template,
 )
 
@@ -59,3 +61,20 @@ class TestFinancialDrilldownRule(FrappeTestCase):
 		self.assertEqual(resolved["cost_center"], ["Main - TC"])
 		self.assertEqual(resolved["account"], "Debtors - TC")
 		self.assertEqual(resolved["to_date"], "2026-06-30")
+
+	def test_account_context_is_promoted_for_downstream_rows(self):
+		row_context = {}
+		report_context = {"account": "Debtors - TC"}
+
+		original_get_cached_value = frappe.get_cached_value
+		try:
+			frappe.get_cached_value = lambda *args, **kwargs: frappe._dict(
+				account_type="Receivable", root_type="Asset"
+			)
+			_get_account_details(row_context, report_context)
+		finally:
+			frappe.get_cached_value = original_get_cached_value
+
+		self.assertEqual(row_context["account"], "Debtors - TC")
+		self.assertEqual(row_context["account_type"], "Receivable")
+		self.assertEqual(row_context["root_type"], "Asset")
