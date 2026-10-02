@@ -1,4 +1,5 @@
 (function () {
+	frappe.provide("av_tools.financial_drilldown");
 	frappe.provide("av_tools.financial_statements");
 
 	const ACCOUNTS_RECEIVABLE_SUMMARY = "Accounts Receivable Summary";
@@ -32,18 +33,69 @@
 		return `${date.slice(0, 4)}-01-01`;
 	}
 
-	function retry_installer(installer, interval_key) {
-		if (installer() || av_tools.financial_statements[interval_key]) return;
+	av_tools.financial_drilldown.route = function (data) {
+		if (!data) return;
 
-		let attempts = 0;
-		av_tools.financial_statements[interval_key] = setInterval(function () {
-			attempts++;
-
-			if (installer() || attempts > 50) {
-				clearInterval(av_tools.financial_statements[interval_key]);
-				av_tools.financial_statements[interval_key] = null;
+		const native_fallback = av_tools.financial_drilldown.original_open_general_ledger;
+		const has_account = Boolean(data.account || data.accounts);
+		const fallback = function () {
+			if (has_account && native_fallback) {
+				native_fallback(data);
 			}
-		}, 200);
+		};
+
+		frappe.call({
+			method: DRILLDOWN_ROUTE_METHOD,
+			args: {
+				row_context: JSON.stringify(data),
+				report_context: JSON.stringify(get_report_context()),
+				source_report: get_source_report(),
+			},
+			callback: function (response) {
+				const route = response && response.message;
+				if (!route || !route.matched || !route.target_report) {
+					fallback();
+					return;
+				}
+
+				frappe.route_options = route.route_options || {};
+				frappe.set_route("query-report", route.target_report);
+			},
+			error: fallback,
+		});
+	};
+
+	function install_financial_statements_override() {
+		if (typeof erpnext === "undefined" || !erpnext.financial_statements) {
+			return false;
+		}
+
+		const current_handler = erpnext.financial_statements.open_general_ledger;
+		if (current_handler === av_tools.financial_drilldown.route) {
+			return true;
+		}
+
+		if (current_handler) {
+			av_tools.financial_drilldown.original_open_general_ledger = current_handler;
+		}
+
+		erpnext.financial_statements.open_general_ledger = av_tools.financial_drilldown.route;
+		return true;
+	}
+
+	function retry_financial_statement_override() {
+		let attempts = 0;
+
+		const install = function () {
+			attempts++;
+			if (install_financial_statements_override() || attempts >= 100) {
+				clearInterval(interval);
+			}
+		};
+
+		if (install_financial_statements_override()) return;
+
+		const interval = setInterval(install, 200);
 	}
 
 	av_tools.financial_statements.open_customer_general_ledger = function (data) {
@@ -110,65 +162,19 @@
 		return true;
 	}
 
-	function install_financial_statements_override() {
-		if (typeof erpnext === "undefined" || !erpnext.financial_statements) {
-			return false;
-		}
-		if (erpnext.financial_statements.__av_tools_override_installed) {
-			return true;
-		}
+	function retry_accounts_receivable_summary_override() {
+		let attempts = 0;
 
-		const original_open_general_ledger = erpnext.financial_statements.open_general_ledger;
-
-		av_tools.financial_statements.route_drilldown = function (data) {
-			if (!data) return;
-
-			const has_account = Boolean(data.account || data.accounts);
-			const fallback = function () {
-				if (has_account) {
-					original_open_general_ledger(data);
-				}
-			};
-
-			frappe.call({
-				method: DRILLDOWN_ROUTE_METHOD,
-				args: {
-					row_context: JSON.stringify(data),
-					report_context: JSON.stringify(get_report_context()),
-					source_report: get_source_report(),
-				},
-				callback: function (response) {
-					const route = response && response.message;
-					if (!route || !route.matched || !route.target_report) {
-						fallback();
-						return;
-					}
-
-					frappe.route_options = route.route_options || {};
-					frappe.set_route("query-report", route.target_report);
-				},
-				error: fallback,
-			});
+		const install = function () {
+			attempts++;
+			if (install_accounts_receivable_summary_override() || attempts >= 100) {
+				clearInterval(interval);
+			}
 		};
 
-		erpnext.financial_statements.open_general_ledger =
-			av_tools.financial_statements.route_drilldown;
-		erpnext.financial_statements.__av_tools_override_installed = true;
-		return true;
-	}
+		if (install_accounts_receivable_summary_override()) return;
 
-	function retry_financial_statement_override() {
-		retry_installer(
-			install_financial_statements_override,
-			"financial_statements_retry_interval"
-		);
-	}
-
-	function retry_accounts_receivable_summary_override() {
-		retry_installer(
-			install_accounts_receivable_summary_override,
-			"accounts_receivable_summary_retry_interval"
-		);
+		const interval = setInterval(install, 200);
 	}
 
 	function is_accounts_receivable_summary_route() {
@@ -179,6 +185,8 @@
 	$(document).on("app_ready startup", retry_financial_statement_override);
 
 	frappe.router.on("change", function () {
+		retry_financial_statement_override();
+
 		if (is_accounts_receivable_summary_route()) {
 			retry_accounts_receivable_summary_override();
 		}
