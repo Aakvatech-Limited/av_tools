@@ -65,6 +65,9 @@
 		});
 	};
 
+	// Backward-compatible alias for cached report scripts and external callers.
+	av_tools.financial_statements.route_drilldown = av_tools.financial_drilldown.route;
+
 	function install_financial_statements_override() {
 		if (typeof erpnext === "undefined" || !erpnext.financial_statements) {
 			return false;
