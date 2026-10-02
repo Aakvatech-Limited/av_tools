@@ -330,6 +330,48 @@ def get_asset_voucher_scope(filters):
 			if row.voucher_type and row.voucher_no:
 				vouchers.add((row.voucher_type, row.voucher_no))
 
+		for row in frappe.get_all(
+			"Asset Repair",
+			filters={
+				"company": filters.company,
+				"asset": ("in", list(asset_names)),
+				"docstatus": 1,
+				"completion_date": ("between", [filters.from_date, filters.to_date]),
+			},
+			fields=["name"],
+		):
+			vouchers.add(("Asset Repair", row.name))
+
+		for row in frappe.get_all(
+			"Asset Capitalization",
+			filters={
+				"company": filters.company,
+				"target_asset": ("in", list(asset_names)),
+				"docstatus": 1,
+				"posting_date": ("between", [filters.from_date, filters.to_date]),
+			},
+			fields=["name"],
+		):
+			vouchers.add(("Asset Capitalization", row.name))
+
+		sales_invoice_parents = frappe.get_all(
+			"Sales Invoice Item",
+			filters={"asset": ("in", list(asset_names)), "docstatus": 1},
+			pluck="parent",
+		)
+		if sales_invoice_parents:
+			for row in frappe.get_all(
+				"Sales Invoice",
+				filters={
+					"name": ("in", sales_invoice_parents),
+					"company": filters.company,
+					"docstatus": 1,
+					"posting_date": ("between", [filters.from_date, filters.to_date]),
+				},
+				fields=["name"],
+			):
+				vouchers.add(("Sales Invoice", row.name))
+
 	return vouchers
 
 
