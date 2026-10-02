@@ -121,10 +121,13 @@
 		const original_open_general_ledger = erpnext.financial_statements.open_general_ledger;
 
 		av_tools.financial_statements.route_drilldown = function (data) {
-			if (!data || (!data.account && !data.accounts)) return;
+			if (!data) return;
 
+			const has_account = Boolean(data.account || data.accounts);
 			const fallback = function () {
-				original_open_general_ledger(data);
+				if (has_account) {
+					original_open_general_ledger(data);
+				}
 			};
 
 			frappe.call({
