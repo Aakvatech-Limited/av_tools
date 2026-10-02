@@ -1,36 +1,6 @@
 // Copyright (c) 2026, Aakvatech and contributors
 // For license information, please see license.txt
 
-frappe.provide("av_tools.financial_master_summary");
-
-av_tools.financial_master_summary.open_party_ledger = function (data) {
-	if (!data || !data.party_type || !data.party) return;
-
-	const get = (fieldname) => frappe.query_report.get_filter_value(fieldname, false);
-	frappe.route_options = {
-		company: get("company"),
-		from_date: get("from_date"),
-		to_date: get("to_date"),
-		account: get("account"),
-		party_type: data.party_type,
-		party: data.party,
-		categorize_by: "Categorize by Voucher (Consolidated)",
-	};
-
-	frappe.query_report.filters.forEach(function (filter) {
-		if (!filter.df || !filter.df.fieldname) return;
-		const fieldname = filter.df.fieldname;
-		if (fieldname in frappe.route_options) return;
-
-		const value = filter.get_value();
-		if (value !== undefined && value !== null && value !== "" && !(Array.isArray(value) && !value.length)) {
-			frappe.route_options[fieldname] = value;
-		}
-	});
-
-	frappe.set_route("query-report", "General Ledger");
-};
-
 frappe.query_reports["Financial Master Summary"] = {
 	filters: [
 		{
@@ -129,9 +99,7 @@ frappe.query_reports["Financial Master Summary"] = {
 		}
 		if (data && column.fieldname === "party" && data.party_type && data.party) {
 			column.link_onclick =
-				"av_tools.financial_master_summary.open_party_ledger(" +
-				JSON.stringify({ party_type: data.party_type, party: data.party }) +
-				")";
+				"av_tools.financial_statements.route_drilldown(" + JSON.stringify(data) + ")";
 		}
 		return default_formatter(value, row, column, data);
 	},
