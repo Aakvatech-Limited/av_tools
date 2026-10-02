@@ -36,8 +36,29 @@ def get_master_summary(filters, account_type):
 	frappe.throw(_("No non-party drill-down provider is configured for account type {0}.").format(account_type))
 
 
+
+def _get_account_warehouses(account, company):
+	warehouses = get_warehouses_based_on_account(account, company)
+	if not warehouses:
+		return []
+
+	allowed = set(
+		frappe.get_all(
+			"Warehouse",
+			filters={
+				"name": ("in", warehouses),
+				"company": company,
+				"disabled": 0,
+				"is_group": 0,
+			},
+			pluck="name",
+		)
+	)
+	return [warehouse for warehouse in warehouses if warehouse in allowed]
+
+
 def get_stock_master_summary(filters):
-	warehouses = get_warehouses_based_on_account(filters.account, filters.company)
+	warehouses = _get_account_warehouses(filters.account, filters.company)
 	stock_filters = frappe._dict(
 		company=filters.company,
 		from_date=filters.from_date,
@@ -204,7 +225,7 @@ def get_asset_categories_for_account(company, account, account_type):
 
 
 def get_stock_month_values(filters, period):
-	warehouses = get_warehouses_based_on_account(filters.account, filters.company)
+	warehouses = _get_account_warehouses(filters.account, filters.company)
 	if filters.get("warehouse"):
 		warehouses = [warehouse for warehouse in warehouses if warehouse == filters.warehouse]
 
@@ -262,7 +283,7 @@ def get_asset_month_values(filters, period, account_type):
 
 def get_stock_voucher_scope(filters):
 	account = _single_account(filters.account)
-	warehouses = get_warehouses_based_on_account(account, filters.company)
+	warehouses = _get_account_warehouses(account, filters.company)
 	if filters.get("warehouse"):
 		warehouses = [warehouse for warehouse in warehouses if warehouse == filters.warehouse]
 
