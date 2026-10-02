@@ -89,7 +89,16 @@ def resolve_filter_template(template, report_context, row_context):
 	if not isinstance(template, dict):
 		frappe.throw(_("Base Filter Template must be a JSON object."))
 
-	return _resolve_value(template, {"ctx": report_context or {}, "row": row_context or {}})
+	template = dict(template)
+	inherit_context = bool(template.pop("$inherit_context", False))
+	resolved = _resolve_value(template, {"ctx": report_context or {}, "row": row_context or {}})
+
+	if not inherit_context:
+		return resolved
+
+	route_options = dict(report_context or {})
+	route_options.update(resolved)
+	return route_options
 
 
 def _get_account_details(row_context):
