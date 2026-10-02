@@ -222,6 +222,49 @@ DEFAULT_RULES = (
 		},
 	},
 
+
+	{
+		"rule_name": "Fixed Asset Master Summary",
+		"source_report": "Financial Account Summary",
+		"account_type": "Fixed Asset",
+		"target_report": "Financial Master Summary",
+		"priority": 200,
+		"base_filter_template": {
+			"$inherit_context": True,
+			"company": "{ctx.company}",
+			"account": "{row.account}",
+			"from_date": "{ctx.from_date}",
+			"to_date": "{ctx.to_date}",
+		},
+	},
+	{
+		"rule_name": "Accumulated Depreciation Master Summary",
+		"source_report": "Financial Account Summary",
+		"account_type": "Accumulated Depreciation",
+		"target_report": "Financial Master Summary",
+		"priority": 200,
+		"base_filter_template": {
+			"$inherit_context": True,
+			"company": "{ctx.company}",
+			"account": "{row.account}",
+			"from_date": "{ctx.from_date}",
+			"to_date": "{ctx.to_date}",
+		},
+	},
+	{
+		"rule_name": "Depreciation Master Summary",
+		"source_report": "Financial Account Summary",
+		"account_type": "Depreciation",
+		"target_report": "Financial Master Summary",
+		"priority": 200,
+		"base_filter_template": {
+			"$inherit_context": True,
+			"company": "{ctx.company}",
+			"account": "{row.account}",
+			"from_date": "{ctx.from_date}",
+			"to_date": "{ctx.to_date}",
+		},
+	},
 	{
 		"rule_name": "Asset Master Summary",
 		"source_report": "Financial Account Summary",
