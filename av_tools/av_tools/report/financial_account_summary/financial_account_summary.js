@@ -22,12 +22,6 @@ frappe.query_reports["Financial Account Summary"] = {
 			}),
 		},
 		{
-			fieldname: "fiscal_year",
-			label: __("Fiscal Year"),
-			fieldtype: "Link",
-			options: "Fiscal Year",
-		},
-		{
 			fieldname: "from_date",
 			label: __("From Date"),
 			fieldtype: "Date",
@@ -79,6 +73,9 @@ frappe.query_reports["Financial Account Summary"] = {
 		},
 	],
 	formatter: function (value, row, column, data, default_formatter) {
+		if (column.fieldname === "account") {
+			delete column.link_onclick;
+		}
 		if (data && column.fieldname === "account" && data.account) {
 			column.link_onclick =
 				"av_tools.financial_statements.route_drilldown(" + JSON.stringify(data) + ")";
@@ -87,4 +84,4 @@ frappe.query_reports["Financial Account Summary"] = {
 	},
 };
 
-erpnext.utils.add_dimensions("Financial Account Summary", 8);
+erpnext.utils.add_dimensions("Financial Account Summary", 7);
