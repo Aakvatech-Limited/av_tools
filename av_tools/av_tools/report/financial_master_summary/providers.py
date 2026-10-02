@@ -49,6 +49,7 @@ def get_stock_master_summary(filters):
 	rows = []
 	warehouse_totals = {}
 	group_totals = {}
+	item_totals = {}
 
 	for source in stock_rows:
 		warehouse = source.get("warehouse")
@@ -60,6 +61,8 @@ def get_stock_master_summary(filters):
 		_add_values(warehouse_totals.setdefault(warehouse, _empty_values()), source)
 		group_key = (warehouse, item_group or _("Ungrouped"))
 		_add_values(group_totals.setdefault(group_key, _empty_values()), source)
+		item_key = (warehouse, item_group or _("Ungrouped"), item_code)
+		_add_values(item_totals.setdefault(item_key, _empty_values()), source)
 
 	for warehouse in sorted(warehouse_totals):
 		values = warehouse_totals[warehouse]
@@ -89,25 +92,20 @@ def get_stock_master_summary(filters):
 				)
 			)
 
-			for source in sorted(
-				(
-					row
-					for row in stock_rows
-					if row.get("warehouse") == warehouse
-					and (row.get("item_group") or _("Ungrouped")) == item_group
-				),
-				key=lambda row: row.get("item_code") or "",
-			):
+			items = sorted(
+				key for key in item_totals if key[0] == warehouse and key[1] == item_group
+			)
+			for _, _, item_code in items:
 				rows.append(
 					_make_master_row(
-						label=source.get("item_code"),
+						label=item_code,
 						master_type="Item",
-						master_value=source.get("item_code"),
+						master_value=item_code,
 						indent=2,
-						values=_values_from_stock_row(source),
+						values=item_totals[(warehouse, item_group, item_code)],
 						warehouse=warehouse,
 						item_group=item_group,
-						item=source.get("item_code"),
+						item=item_code,
 					)
 				)
 
@@ -192,14 +190,15 @@ def get_asset_categories_for_account(company, account, account_type):
 	if account_type == "Depreciation":
 		default_account = frappe.get_cached_value("Company", company, "depreciation_expense_account")
 		if default_account == account:
-			categories += frappe.get_all(
-				"Asset Category Account",
-				filters={
-					"company_name": company,
-					"depreciation_expense_account": ("in", ["", None]),
-				},
-				pluck="parent",
-			)
+			categories += [
+				row.parent
+				for row in frappe.get_all(
+					"Asset Category Account",
+					filters={"company_name": company},
+					fields=["parent", "depreciation_expense_account"],
+				)
+				if not row.depreciation_expense_account
+			]
 
 	return sorted(set(categories))
 
