@@ -121,7 +121,7 @@ DEFAULT_RULES = (
 	{
 		"rule_name": "Monthly Summary General Ledger",
 		"source_report": "Financial Monthly Summary",
-		"target_report": "General Ledger",
+		"target_report": "Financial Drilldown Ledger",
 		"priority": 400,
 		"base_filter_template": {
 			"$inherit_context": True,
