@@ -29,14 +29,12 @@ frappe.query_reports["Financial Monthly Summary"] = {
 			label: __("Party Type"),
 			fieldtype: "Autocomplete",
 			options: Object.keys(frappe.boot.party_account_types),
-			reqd: 1,
 		},
 		{
 			fieldname: "party",
 			label: __("Party"),
 			fieldtype: "Dynamic Link",
 			options: "party_type",
-			reqd: 1,
 		},
 		{
 			fieldname: "from_date",
@@ -87,6 +85,51 @@ frappe.query_reports["Financial Monthly Summary"] = {
 			label: __("Include Default FB Entries"),
 			fieldtype: "Check",
 			default: 1,
+		},
+		{
+			fieldname: "provider",
+			fieldtype: "Data",
+			hidden: 1,
+		},
+		{
+			fieldname: "master_type",
+			fieldtype: "Data",
+			hidden: 1,
+		},
+		{
+			fieldname: "master_value",
+			fieldtype: "Data",
+			hidden: 1,
+		},
+		{
+			fieldname: "warehouse",
+			fieldtype: "Link",
+			options: "Warehouse",
+			hidden: 1,
+		},
+		{
+			fieldname: "item_group",
+			fieldtype: "Link",
+			options: "Item Group",
+			hidden: 1,
+		},
+		{
+			fieldname: "item",
+			fieldtype: "Link",
+			options: "Item",
+			hidden: 1,
+		},
+		{
+			fieldname: "asset_category",
+			fieldtype: "Link",
+			options: "Asset Category",
+			hidden: 1,
+		},
+		{
+			fieldname: "asset",
+			fieldtype: "Link",
+			options: "Asset",
+			hidden: 1,
 		},
 	],
 	formatter: function (value, row, column, data, default_formatter) {

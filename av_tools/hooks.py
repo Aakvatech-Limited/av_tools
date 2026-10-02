@@ -136,6 +136,7 @@ after_migrate = [
 	"av_tools.patches.v1_0.seed_financial_drilldown_rules.execute",
 	"av_tools.patches.v1_0.upgrade_financial_drilldown_rules_pr02.execute",
 	"av_tools.patches.v1_0.upgrade_financial_drilldown_rules_pr04.execute",
+	"av_tools.patches.v1_0.upgrade_financial_drilldown_rules_pr05.execute",
 ]
 
 # Uninstallation
