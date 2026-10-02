@@ -15,9 +15,6 @@ DEFAULT_RULES = (
 			"account": {
 				"$coalesce": ["{row.account?}", "{row.accounts?}"]
 			},
-			"fiscal_year": {
-				"$coalesce": ["{ctx.to_fiscal_year?}", "{ctx.from_fiscal_year?}"]
-			},
 			"from_date": {
 				"$coalesce": [
 					"{row.from_date?}",
@@ -44,9 +41,6 @@ DEFAULT_RULES = (
 			"company": "{ctx.company}",
 			"account": {
 				"$coalesce": ["{row.account?}", "{row.accounts?}"]
-			},
-			"fiscal_year": {
-				"$coalesce": ["{ctx.to_fiscal_year?}", "{ctx.from_fiscal_year?}"]
 			},
 			"from_date": {
 				"$coalesce": [
