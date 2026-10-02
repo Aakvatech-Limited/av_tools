@@ -133,7 +133,7 @@ def _get_provider_month_row(period, values, currency):
 
 def _get_provider_columns():
 	return [
-		{"fieldname": "month", "label": _("Month"), "fieldtype": "Data", "width": 120},
+		{"fieldname": "month", "label": _("Month"), "fieldtype": "Link", "width": 120},
 		{"fieldname": "from_date", "label": _("From Date"), "fieldtype": "Date", "hidden": 1},
 		{"fieldname": "to_date", "label": _("To Date"), "fieldtype": "Date", "hidden": 1},
 		{
@@ -187,7 +187,7 @@ def _get_columns():
 		{
 			"fieldname": "month",
 			"label": _("Month"),
-			"fieldtype": "Data",
+			"fieldtype": "Link",
 			"width": 120,
 		},
 		{
