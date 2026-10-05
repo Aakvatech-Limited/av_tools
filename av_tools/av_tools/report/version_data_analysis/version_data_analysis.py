@@ -7,7 +7,6 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, get_datetime, getdate
 
-
 ANALYSIS_MODES = {
 	"DocType Summary",
 	"Document Candidates",
@@ -379,22 +378,45 @@ def build_owner_summary(version_rows, filters):
 def get_columns(analysis_mode):
 	if analysis_mode == "Document Candidates":
 		return [
-			{"label": _("DocType"), "fieldname": "ref_doctype", "fieldtype": "Link", "options": "DocType", "width": 180},
-			{"label": _("Document"), "fieldname": "docname", "fieldtype": "Dynamic Link", "options": "ref_doctype", "width": 220},
+			{
+				"label": _("DocType"),
+				"fieldname": "ref_doctype",
+				"fieldtype": "Link",
+				"options": "DocType",
+				"width": 180,
+			},
+			{
+				"label": _("Document"),
+				"fieldname": "docname",
+				"fieldtype": "Dynamic Link",
+				"options": "ref_doctype",
+				"width": 220,
+			},
 			{"label": _("Exists"), "fieldname": "exists", "fieldtype": "Data", "width": 70},
 			{"label": _("Classification"), "fieldname": "classification", "fieldtype": "Data", "width": 190},
 			{"label": _("Versions"), "fieldname": "version_count", "fieldtype": "Int", "width": 85},
 			{"label": _("Pre"), "fieldname": "pre_versions", "fieldtype": "Int", "width": 70},
 			{"label": _("Post"), "fieldname": "post_versions", "fieldtype": "Int", "width": 70},
 			{"label": _("Data Import"), "fieldname": "data_import_versions", "fieldtype": "Int", "width": 95},
-			{"label": _("First Version"), "fieldname": "first_version", "fieldtype": "Datetime", "width": 155},
+			{
+				"label": _("First Version"),
+				"fieldname": "first_version",
+				"fieldtype": "Datetime",
+				"width": 155,
+			},
 			{"label": _("Last Version"), "fieldname": "last_version", "fieldtype": "Datetime", "width": 155},
 			{"label": _("Owners"), "fieldname": "owners", "fieldtype": "Data", "width": 220},
 		]
 
 	if analysis_mode == "Field Changes":
 		return [
-			{"label": _("DocType"), "fieldname": "ref_doctype", "fieldtype": "Link", "options": "DocType", "width": 200},
+			{
+				"label": _("DocType"),
+				"fieldname": "ref_doctype",
+				"fieldtype": "Link",
+				"options": "DocType",
+				"width": 200,
+			},
 			{"label": _("Field"), "fieldname": "fieldname", "fieldtype": "Data", "width": 220},
 			{"label": _("Changes"), "fieldname": "change_count", "fieldtype": "Int", "width": 100},
 			{"label": _("Documents"), "fieldname": "document_count", "fieldtype": "Int", "width": 100},
@@ -408,20 +430,51 @@ def get_columns(analysis_mode):
 			{"label": _("Post-Cutover"), "fieldname": "post_versions", "fieldtype": "Int", "width": 110},
 			{"label": _("DocTypes"), "fieldname": "doctype_count", "fieldtype": "Int", "width": 90},
 			{"label": _("Documents"), "fieldname": "document_count", "fieldtype": "Int", "width": 100},
-			{"label": _("First Activity"), "fieldname": "first_activity", "fieldtype": "Datetime", "width": 155},
-			{"label": _("Last Activity"), "fieldname": "last_activity", "fieldtype": "Datetime", "width": 155},
+			{
+				"label": _("First Activity"),
+				"fieldname": "first_activity",
+				"fieldtype": "Datetime",
+				"width": 155,
+			},
+			{
+				"label": _("Last Activity"),
+				"fieldname": "last_activity",
+				"fieldtype": "Datetime",
+				"width": 155,
+			},
 		]
 
 	return [
-		{"label": _("DocType"), "fieldname": "ref_doctype", "fieldtype": "Link", "options": "DocType", "width": 200},
+		{
+			"label": _("DocType"),
+			"fieldname": "ref_doctype",
+			"fieldtype": "Link",
+			"options": "DocType",
+			"width": 200,
+		},
 		{"label": _("Documents"), "fieldname": "document_count", "fieldtype": "Int", "width": 100},
 		{"label": _("Versions"), "fieldname": "version_count", "fieldtype": "Int", "width": 100},
 		{"label": _("Pre-Cutover Versions"), "fieldname": "pre_versions", "fieldtype": "Int", "width": 145},
 		{"label": _("Post-Cutover Versions"), "fieldname": "post_versions", "fieldtype": "Int", "width": 150},
-		{"label": _("Pre-Cutover Only Docs"), "fieldname": "pre_only_documents", "fieldtype": "Int", "width": 155},
+		{
+			"label": _("Pre-Cutover Only Docs"),
+			"fieldname": "pre_only_documents",
+			"fieldtype": "Int",
+			"width": 155,
+		},
 		{"label": _("Across Cutover"), "fieldname": "active_documents", "fieldtype": "Int", "width": 120},
-		{"label": _("Post-Cutover Only Docs"), "fieldname": "post_only_documents", "fieldtype": "Int", "width": 160},
+		{
+			"label": _("Post-Cutover Only Docs"),
+			"fieldname": "post_only_documents",
+			"fieldtype": "Int",
+			"width": 160,
+		},
 		{"label": _("Orphan Versions"), "fieldname": "orphan_versions", "fieldtype": "Int", "width": 120},
 		{"label": _("Orphan Documents"), "fieldname": "orphan_documents", "fieldtype": "Int", "width": 130},
-		{"label": _("Data Import Versions"), "fieldname": "data_import_versions", "fieldtype": "Int", "width": 140},
+		{
+			"label": _("Data Import Versions"),
+			"fieldname": "data_import_versions",
+			"fieldtype": "Int",
+			"width": 140,
+		},
 	]
