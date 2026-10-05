@@ -129,7 +129,7 @@ def get_statement_pdf(customer, from_date, to_date):
 	frappe.local.response.type = "pdf"
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def send_statement_email(
 	customer,
 	from_date,
@@ -146,8 +146,6 @@ def send_statement_email(
 
 	if not recipients:
 		frappe.throw(_("Please enter at least one email recipient."))
-
-	customer_name = frappe.db.get_value("Customer", customer, "customer_name") or customer
 
 	if not subject or not message:
 		email_defaults = get_email_defaults(
