@@ -212,6 +212,9 @@ doc_events = {
 	},
 	"Purchase Invoice": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
 	"Purchase Receipt": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
+	"Stock Entry": {
+		"validate": "av_tools.av_tools_hooks.stock_entry.set_bom_guided_qty",
+	},
 	"Custom DocPerm": {
 		"validate": "av_tools.av_tools_hooks.custom_docperm.grant_dependant_access",
 	},
