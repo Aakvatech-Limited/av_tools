@@ -1,0 +1,17 @@
+{
+ "cards": [
+  {"card": "Average BOM Efficiency"},
+  {"card": "Average BOM Absolute Variance"}
+ ],
+ "charts": [
+  {"chart": "BOM Variance by Component", "width": "Full"},
+  {"chart": "BOM Variance Monthly Trend", "width": "Full"}
+ ],
+ "dashboard_name": "Manufacturing BOM Variance",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "is_default": 0,
+ "is_standard": 1,
+ "module": "Av Tools",
+ "name": "Manufacturing BOM Variance"
+}
