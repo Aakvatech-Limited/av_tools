@@ -3,182 +3,180 @@ from frappe import _
 from frappe.utils import getdate, validate_email_address
 
 from av_tools.sales.customer_statement_renderer import (
-    apply_statement_settings,
-    get_customer_statement_pdf,
-    get_email_defaults,
+	apply_statement_settings,
+	get_customer_statement_pdf,
+	get_email_defaults,
 )
 
 
 def _get_company():
-    company = frappe.defaults.get_user_default("Company")
+	company = frappe.defaults.get_user_default("Company")
 
-    if not company:
-        company = frappe.db.get_single_value("Global Defaults", "default_company")
+	if not company:
+		company = frappe.db.get_single_value("Global Defaults", "default_company")
 
-    if not company:
-        frappe.throw(_("Please set a default Company before generating a customer statement."))
+	if not company:
+		frappe.throw(_("Please set a default Company before generating a customer statement."))
 
-    return company
+	return company
 
 
 def _validate_dates(from_date, to_date):
-    if not from_date or not to_date:
-        frappe.throw(_("From Date and To Date are required."))
+	if not from_date or not to_date:
+		frappe.throw(_("From Date and To Date are required."))
 
-    if getdate(from_date) > getdate(to_date):
-        frappe.throw(_("From Date cannot be after To Date."))
+	if getdate(from_date) > getdate(to_date):
+		frappe.throw(_("From Date cannot be after To Date."))
 
 
 def _parse_recipients(primary_email=None, additional_emails=None):
-    recipients = []
+	recipients = []
 
-    for value in (primary_email or "", additional_emails or ""):
-        for email in value.replace(";", ",").split(","):
-            email = email.strip()
-            if not email:
-                continue
+	for value in (primary_email or "", additional_emails or ""):
+		for email in value.replace(";", ",").split(","):
+			email = email.strip()
+			if not email:
+				continue
 
-            validate_email_address(email, throw=True)
+			validate_email_address(email, throw=True)
 
-            if email not in recipients:
-                recipients.append(email)
+			if email not in recipients:
+				recipients.append(email)
 
-    return recipients
+	return recipients
 
 
 def _build_statement_doc(customer, from_date, to_date):
-    frappe.has_permission("Customer", "read", customer, throw=True)
-    _validate_dates(from_date, to_date)
+	frappe.has_permission("Customer", "read", customer, throw=True)
+	_validate_dates(from_date, to_date)
 
-    company = _get_company()
-    customer_doc = frappe.get_cached_doc("Customer", customer)
+	company = _get_company()
+	customer_doc = frappe.get_cached_doc("Customer", customer)
 
-    statement = frappe.new_doc("Process Statement Of Accounts")
-    statement.company = company
-    statement.report = "General Ledger"
-    statement.from_date = from_date
-    statement.to_date = to_date
-    statement.show_remarks = 1
-    apply_statement_settings(statement)
+	statement = frappe.new_doc("Process Statement Of Accounts")
+	statement.company = company
+	statement.report = "General Ledger"
+	statement.from_date = from_date
+	statement.to_date = to_date
+	statement.show_remarks = 1
+	apply_statement_settings(statement)
 
-    statement.append(
-        "customers",
-        {
-            "customer": customer_doc.name,
-            "customer_name": customer_doc.customer_name,
-            "primary_email": customer_doc.email_id or "",
-        },
-    )
+	statement.append(
+		"customers",
+		{
+			"customer": customer_doc.name,
+			"customer_name": customer_doc.customer_name,
+			"primary_email": customer_doc.email_id or "",
+		},
+	)
 
-    return statement
+	return statement
 
 
 def _get_pdf(customer, from_date, to_date):
-    statement = _build_statement_doc(customer, from_date, to_date)
-    pdf = get_customer_statement_pdf(statement)
+	statement = _build_statement_doc(customer, from_date, to_date)
+	pdf = get_customer_statement_pdf(statement)
 
-    if not pdf:
-        frappe.throw(
-            _("No General Ledger transactions were found for this customer in the selected period.")
-        )
+	if not pdf:
+		frappe.throw(_("No General Ledger transactions were found for this customer in the selected period."))
 
-    return pdf
+	return pdf
 
 
 def _get_filename(customer, from_date, to_date):
-    customer_name = frappe.db.get_value("Customer", customer, "customer_name") or customer
-    return _("Customer Statement - {0} - {1} to {2}.pdf").format(
-        customer_name,
-        from_date,
-        to_date,
-    )
+	customer_name = frappe.db.get_value("Customer", customer, "customer_name") or customer
+	return _("Customer Statement - {0} - {1} to {2}.pdf").format(
+		customer_name,
+		from_date,
+		to_date,
+	)
 
 
 @frappe.whitelist()
 def get_customer_details(customer, from_date=None, to_date=None):
-    frappe.has_permission("Customer", "read", customer, throw=True)
+	frappe.has_permission("Customer", "read", customer, throw=True)
 
-    customer_details = frappe.db.get_value(
-        "Customer",
-        customer,
-        ["name", "customer_name", "email_id"],
-        as_dict=True,
-    )
+	customer_details = frappe.db.get_value(
+		"Customer",
+		customer,
+		["name", "customer_name", "email_id"],
+		as_dict=True,
+	)
 
-    if not customer_details:
-        frappe.throw(_("Customer {0} does not exist.").format(customer))
+	if not customer_details:
+		frappe.throw(_("Customer {0} does not exist.").format(customer))
 
-    if from_date and to_date:
-        company = _get_company()
-        customer_details.update(
-            get_email_defaults(
-                company=company,
-                customer=customer,
-                from_date=from_date,
-                to_date=to_date,
-            )
-        )
+	if from_date and to_date:
+		company = _get_company()
+		customer_details.update(
+			get_email_defaults(
+				company=company,
+				customer=customer,
+				from_date=from_date,
+				to_date=to_date,
+			)
+		)
 
-    return customer_details
+	return customer_details
 
 
 @frappe.whitelist()
 def get_statement_pdf(customer, from_date, to_date):
-    pdf = _get_pdf(customer, from_date, to_date)
+	pdf = _get_pdf(customer, from_date, to_date)
 
-    frappe.local.response.filename = _get_filename(customer, from_date, to_date)
-    frappe.local.response.filecontent = pdf
-    frappe.local.response.type = "pdf"
+	frappe.local.response.filename = _get_filename(customer, from_date, to_date)
+	frappe.local.response.filecontent = pdf
+	frappe.local.response.type = "pdf"
 
 
 @frappe.whitelist()
 def send_statement_email(
-    customer,
-    from_date,
-    to_date,
-    primary_email=None,
-    additional_emails=None,
-    subject=None,
-    message=None,
+	customer,
+	from_date,
+	to_date,
+	primary_email=None,
+	additional_emails=None,
+	subject=None,
+	message=None,
 ):
-    frappe.has_permission("Customer", "read", customer, throw=True)
-    _validate_dates(from_date, to_date)
+	frappe.has_permission("Customer", "read", customer, throw=True)
+	_validate_dates(from_date, to_date)
 
-    recipients = _parse_recipients(primary_email, additional_emails)
+	recipients = _parse_recipients(primary_email, additional_emails)
 
-    if not recipients:
-        frappe.throw(_("Please enter at least one email recipient."))
+	if not recipients:
+		frappe.throw(_("Please enter at least one email recipient."))
 
-    customer_name = frappe.db.get_value("Customer", customer, "customer_name") or customer
+	customer_name = frappe.db.get_value("Customer", customer, "customer_name") or customer
 
-    if not subject or not message:
-        email_defaults = get_email_defaults(
-            company=_get_company(),
-            customer=customer,
-            from_date=from_date,
-            to_date=to_date,
-        )
-        subject = subject or email_defaults["subject"]
-        message = message or email_defaults["message"]
+	if not subject or not message:
+		email_defaults = get_email_defaults(
+			company=_get_company(),
+			customer=customer,
+			from_date=from_date,
+			to_date=to_date,
+		)
+		subject = subject or email_defaults["subject"]
+		message = message or email_defaults["message"]
 
-    pdf = _get_pdf(customer, from_date, to_date)
-    filename = _get_filename(customer, from_date, to_date)
+	pdf = _get_pdf(customer, from_date, to_date)
+	filename = _get_filename(customer, from_date, to_date)
 
-    frappe.sendmail(
-        recipients=recipients,
-        subject=subject,
-        message=message,
-        attachments=[
-            {
-                "fname": filename,
-                "fcontent": pdf,
-            }
-        ],
-        reference_doctype="Customer",
-        reference_name=customer,
-    )
+	frappe.sendmail(
+		recipients=recipients,
+		subject=subject,
+		message=message,
+		attachments=[
+			{
+				"fname": filename,
+				"fcontent": pdf,
+			}
+		],
+		reference_doctype="Customer",
+		reference_name=customer,
+	)
 
-    return {
-        "success": True,
-        "recipients": recipients,
-    }
+	return {
+		"success": True,
+		"recipients": recipients,
+	}
