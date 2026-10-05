@@ -1,0 +1,15 @@
+[
+ {
+  "dt": "Stock Entry Detail",
+  "fieldname": "bom_guided_qty",
+  "fieldtype": "Float",
+  "label": "BOM Guided Qty",
+  "insert_after": "qty",
+  "in_list_view": 1,
+  "read_only": 1,
+  "no_copy": 1,
+  "print_hide": 0,
+  "description": "Quantity prescribed by the selected BOM for the Stock Entry finished-goods quantity. The Qty field remains the actual entered quantity.",
+  "module": "Av Tools"
+ }
+]
