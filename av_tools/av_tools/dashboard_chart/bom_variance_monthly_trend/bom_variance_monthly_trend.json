@@ -1,0 +1,19 @@
+{
+ "chart_name": "BOM Variance Monthly Trend",
+ "chart_type": "Report",
+ "custom_options": "{}",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart",
+ "dynamic_filters_json": "{}",
+ "filters_json": "{}",
+ "is_public": 1,
+ "is_standard": 1,
+ "module": "Av Tools",
+ "name": "BOM Variance Monthly Trend",
+ "number_of_groups": 0,
+ "report_name": "Manufacturing BOM Variance Trend",
+ "timeseries": 0,
+ "type": "Line",
+ "use_report_chart": 1,
+ "y_axis": []
+}
