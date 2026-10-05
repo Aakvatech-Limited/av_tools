@@ -59,34 +59,104 @@ def get_date_range(filters):
 
 def get_columns():
 	return [
-		{"label": _("Material Request"), "fieldname": "material_request", "fieldtype": "Link", "options": "Material Request", "width": 170},
+		{
+			"label": _("Material Request"),
+			"fieldname": "material_request",
+			"fieldtype": "Link",
+			"options": "Material Request",
+			"width": 170,
+		},
 		{"label": _("MR Date"), "fieldname": "material_request_date", "fieldtype": "Date", "width": 100},
 		{"label": _("Required By"), "fieldname": "schedule_date", "fieldtype": "Date", "width": 100},
-		{"label": _("Item Code"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 150},
+		{
+			"label": _("Item Code"),
+			"fieldname": "item_code",
+			"fieldtype": "Link",
+			"options": "Item",
+			"width": 150,
+		},
 		{"label": _("Item Name"), "fieldname": "item_name", "fieldtype": "Data", "width": 200},
-		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 160},
-		{"label": _("Project"), "fieldname": "project", "fieldtype": "Link", "options": "Project", "width": 140},
-		{"label": _("Stock UOM"), "fieldname": "stock_uom", "fieldtype": "Link", "options": "UOM", "width": 90},
+		{
+			"label": _("Warehouse"),
+			"fieldname": "warehouse",
+			"fieldtype": "Link",
+			"options": "Warehouse",
+			"width": 160,
+		},
+		{
+			"label": _("Project"),
+			"fieldname": "project",
+			"fieldtype": "Link",
+			"options": "Project",
+			"width": 140,
+		},
+		{
+			"label": _("Stock UOM"),
+			"fieldname": "stock_uom",
+			"fieldtype": "Link",
+			"options": "UOM",
+			"width": 90,
+		},
 		{"label": _("Requested Qty"), "fieldname": "requested_qty", "fieldtype": "Float", "width": 115},
 		{"label": _("Ordered Qty"), "fieldname": "ordered_qty", "fieldtype": "Float", "width": 110},
 		{"label": _("PO Audit Qty"), "fieldname": "po_audit_qty", "fieldtype": "Float", "width": 110},
 		{"label": _("Pending to Order"), "fieldname": "pending_to_order", "fieldtype": "Float", "width": 120},
 		{"label": _("Order Variance"), "fieldname": "order_variance", "fieldtype": "Float", "width": 110},
-		{"label": _("PO Audit Difference"), "fieldname": "po_audit_difference", "fieldtype": "Float", "width": 125},
+		{
+			"label": _("PO Audit Difference"),
+			"fieldname": "po_audit_difference",
+			"fieldtype": "Float",
+			"width": 125,
+		},
 		{"label": _("Received Qty"), "fieldname": "received_qty", "fieldtype": "Float", "width": 110},
 		{"label": _("PR Accepted Qty"), "fieldname": "pr_received_qty", "fieldtype": "Float", "width": 115},
 		{"label": _("PI Update Stock Qty"), "fieldname": "pi_stock_qty", "fieldtype": "Float", "width": 125},
-		{"label": _("Traced Received Qty"), "fieldname": "traced_received_qty", "fieldtype": "Float", "width": 125},
+		{
+			"label": _("Traced Received Qty"),
+			"fieldname": "traced_received_qty",
+			"fieldtype": "Float",
+			"width": 125,
+		},
 		{"label": _("Rejected Qty"), "fieldname": "rejected_qty", "fieldtype": "Float", "width": 105},
-		{"label": _("Pending to Receive"), "fieldname": "pending_to_receive", "fieldtype": "Float", "width": 125},
-		{"label": _("Request Not Received"), "fieldname": "request_not_received", "fieldtype": "Float", "width": 130},
+		{
+			"label": _("Pending to Receive"),
+			"fieldname": "pending_to_receive",
+			"fieldtype": "Float",
+			"width": 125,
+		},
+		{
+			"label": _("Request Not Received"),
+			"fieldname": "request_not_received",
+			"fieldtype": "Float",
+			"width": 130,
+		},
 		{"label": _("Receipt Variance"), "fieldname": "receipt_variance", "fieldtype": "Float", "width": 115},
-		{"label": _("Receipt Audit Difference"), "fieldname": "receipt_audit_difference", "fieldtype": "Float", "width": 135},
+		{
+			"label": _("Receipt Audit Difference"),
+			"fieldname": "receipt_audit_difference",
+			"fieldtype": "Float",
+			"width": 135,
+		},
 		{"label": _("Suppliers"), "fieldname": "suppliers", "fieldtype": "Data", "width": 180},
 		{"label": _("Purchase Orders"), "fieldname": "purchase_orders", "fieldtype": "Data", "width": 220},
-		{"label": _("Purchase Receipts"), "fieldname": "purchase_receipts", "fieldtype": "Data", "width": 220},
-		{"label": _("Stock Purchase Invoices"), "fieldname": "stock_purchase_invoices", "fieldtype": "Data", "width": 220},
-		{"label": _("Procurement Status"), "fieldname": "procurement_status", "fieldtype": "Data", "width": 150},
+		{
+			"label": _("Purchase Receipts"),
+			"fieldname": "purchase_receipts",
+			"fieldtype": "Data",
+			"width": 220,
+		},
+		{
+			"label": _("Stock Purchase Invoices"),
+			"fieldname": "stock_purchase_invoices",
+			"fieldtype": "Data",
+			"width": 220,
+		},
+		{
+			"label": _("Procurement Status"),
+			"fieldname": "procurement_status",
+			"fieldtype": "Data",
+			"width": 150,
+		},
 		{"label": _("Audit Exception"), "fieldname": "audit_exception", "fieldtype": "Data", "width": 220},
 		{"label": _("MR Item ID"), "fieldname": "material_request_item", "fieldtype": "Data", "width": 140},
 	]
@@ -192,7 +262,14 @@ def get_data(filters, from_date, to_date):
 		pr_item_rows = frappe.get_all(
 			"Purchase Receipt Item",
 			filters={"purchase_order_item": ["in", valid_po_item_names]},
-			fields=["name", "parent", "purchase_order_item", "stock_qty", "rejected_qty", "conversion_factor"],
+			fields=[
+				"name",
+				"parent",
+				"purchase_order_item",
+				"stock_qty",
+				"rejected_qty",
+				"conversion_factor",
+			],
 		)
 		pr_names = list({row.parent for row in pr_item_rows if row.parent})
 		pr_map = {}
@@ -208,7 +285,9 @@ def get_data(filters, from_date, to_date):
 			if row.parent not in pr_map or row.purchase_order_item not in po_item_to_mri:
 				continue
 			mri_name = po_item_to_mri[row.purchase_order_item]
-			entry = pr_audit_map.setdefault(mri_name, {"received_qty": 0.0, "rejected_qty": 0.0, "purchase_receipts": []})
+			entry = pr_audit_map.setdefault(
+				mri_name, {"received_qty": 0.0, "rejected_qty": 0.0, "purchase_receipts": []}
+			)
 			entry["received_qty"] += flt(row.stock_qty)
 			entry["rejected_qty"] += flt(row.rejected_qty) * flt(row.conversion_factor)
 			if row.parent not in entry["purchase_receipts"]:
