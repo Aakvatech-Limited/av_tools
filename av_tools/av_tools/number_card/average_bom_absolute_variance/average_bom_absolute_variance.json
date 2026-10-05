@@ -1,7 +1,7 @@
 {
  "docstatus": 0,
  "doctype": "Number Card",
- "dynamic_filters_json": "{}",
+ "dynamic_filters_json": "{\"company\":\"frappe.defaults.get_user_default(\\\"Company\\\")\",\"from_date\":\"frappe.datetime.month_start()\",\"to_date\":\"frappe.datetime.get_today()\"}",
  "filters_json": "{}",
  "function": "Average",
  "is_public": 1,
