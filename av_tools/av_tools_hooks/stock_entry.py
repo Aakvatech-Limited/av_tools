@@ -1,6 +1,6 @@
 import frappe
-from frappe.utils import flt
 from erpnext.manufacturing.doctype.bom.bom import get_bom_items_as_dict
+from frappe.utils import flt
 
 
 def set_bom_guided_qty(doc, method=None):
@@ -13,22 +13,28 @@ def set_bom_guided_qty(doc, method=None):
 			row.bom_guided_qty = None
 		return
 
-	raw_materials = get_bom_items_as_dict(
-		doc.bom_no,
-		doc.company,
-		qty=doc.fg_completed_qty,
-		fetch_exploded=doc.get("use_multi_level_bom"),
-		fetch_qty_in_stock_uom=False,
-	) or {}
+	raw_materials = (
+		get_bom_items_as_dict(
+			doc.bom_no,
+			doc.company,
+			qty=doc.fg_completed_qty,
+			fetch_exploded=doc.get("use_multi_level_bom"),
+			fetch_qty_in_stock_uom=False,
+		)
+		or {}
+	)
 
-	scrap_materials = get_bom_items_as_dict(
-		doc.bom_no,
-		doc.company,
-		qty=doc.fg_completed_qty,
-		fetch_exploded=0,
-		fetch_scrap_items=1,
-		fetch_qty_in_stock_uom=False,
-	) or {}
+	scrap_materials = (
+		get_bom_items_as_dict(
+			doc.bom_no,
+			doc.company,
+			qty=doc.fg_completed_qty,
+			fetch_exploded=0,
+			fetch_scrap_items=1,
+			fetch_qty_in_stock_uom=False,
+		)
+		or {}
+	)
 
 	raw_qty = {item.item_code: flt(item.qty) for item in raw_materials.values()}
 	scrap_qty = {item.item_code: flt(item.qty) for item in scrap_materials.values()}
