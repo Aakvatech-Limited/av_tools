@@ -103,9 +103,15 @@ def get_email_defaults(company, customer, from_date, to_date):
 		)
 	)
 
+	# Templates are controlled by Customer Statement Settings, an administrator-managed configuration.
+	# nosemgrep: frappe-semgrep-rules.rules.security.frappe-ssti
+	subject = frappe.render_template(subject_template, context)
+	# nosemgrep: frappe-semgrep-rules.rules.security.frappe-ssti
+	message = frappe.render_template(message_template, context)
+
 	return {
-		"subject": frappe.render_template(subject_template, context),
-		"message": frappe.render_template(message_template, context),
+		"subject": subject,
+		"message": message,
 	}
 
 
@@ -116,10 +122,14 @@ def _get_custom_print_format_pdf(statement, print_format_name):
 	if not context:
 		return False
 
+	# Print Format HTML is trusted administrator-managed configuration.
+	# nosemgrep: frappe-semgrep-rules.rules.security.frappe-ssti
 	body = frappe.render_template(print_format.html or "", context)
 
 	css = get_print_style(print_format=print_format)
 
+	# This is a fixed framework template path; only the context values vary.
+	# nosemgrep: frappe-semgrep-rules.rules.security.frappe-ssti
 	html = frappe.render_template(
 		"frappe/www/printview.html",
 		{
