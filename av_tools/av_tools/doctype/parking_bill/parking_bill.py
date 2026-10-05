@@ -16,7 +16,7 @@ class ParkingBill(Document):
 	pass
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def check_bills_all_vehicles():
 	plate_list = frappe.get_all("Vehicle", fields=["name", "number_plate", "license_plate"])
 
@@ -155,5 +155,5 @@ def mark_all_bills_as_paid(vehicle_name):
 
 	for bill in unpaid_bills:
 		doc = frappe.get_doc("Parking Bill", bill["name"])
-		doc.billpayed = 1  # Mark the bill as paid
+		doc.billpayed = 1
 		doc.save(ignore_permissions=True)
