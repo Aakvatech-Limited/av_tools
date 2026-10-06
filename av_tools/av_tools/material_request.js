@@ -75,16 +75,12 @@ async function show_material_request_review(frm) {
 			last_material_request = previous_parent.name;
 			last_request_date = previous_parent.transaction_date;
 
-			const previous_doc = await frappe.db.get_doc(
-				"Material Request",
-				previous_parent.name
-			);
+			const previous_doc = await frappe.db.get_doc("Material Request", previous_parent.name);
 
 			if (previous_doc && previous_doc.items && previous_doc.items.length) {
 				const matching_row = previous_doc.items.find(
-					item =>
-						item.item_code === row.item_code &&
-						item.warehouse === target_warehouse
+					(item) =>
+						item.item_code === row.item_code && item.warehouse === target_warehouse
 				);
 
 				if (matching_row) {
@@ -140,9 +136,7 @@ function show_review_dialog(results) {
 	let html = `
 		<div style="margin-bottom:15px;">
 			<b>
-				${__(
-					"Please review the previous request and current stock at the target warehouse."
-				)}
+				${__("Please review the previous request and current stock at the target warehouse.")}
 			</b>
 		</div>
 
@@ -161,7 +155,7 @@ function show_review_dialog(results) {
 				<tbody>
 	`;
 
-	results.forEach(row => {
+	results.forEach((row) => {
 		let item_html = `
 			<b>${escape_html(row.item_code)}</b>
 		`;
@@ -279,5 +273,7 @@ function format_qty(value) {
 }
 
 function escape_html(value) {
-	return $("<div>").text(value || "").html();
+	return $("<div>")
+		.text(value || "")
+		.html();
 }
