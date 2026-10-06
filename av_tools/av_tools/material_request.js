@@ -216,6 +216,16 @@ function show_review_dialog(results) {
 					</span>
 				`;
 
+		let current_qty_style = "";
+
+		if (row.last_request_qty !== null && row.last_request_qty !== undefined) {
+			if (row.current_requested_qty > row.last_request_qty) {
+				current_qty_style = "background-color: var(--red-50);";
+			} else if (row.current_requested_qty < row.last_request_qty) {
+				current_qty_style = "background-color: var(--green-50);";
+			}
+		}
+
 		html += `
 			<tr>
 				<td>${item_html}</td>
@@ -223,7 +233,9 @@ function show_review_dialog(results) {
 				<td>${last_request_html}</td>
 				<td class="text-right">${last_qty}</td>
 				<td class="text-right"><b>${current_stock}</b></td>
-				<td class="text-right"><b>${format_qty(row.current_requested_qty)}</b></td>
+				<td class="text-right" style="${current_qty_style}">
+					<b>${format_qty(row.current_requested_qty)}</b>
+				</td>
 			</tr>
 		`;
 	});
