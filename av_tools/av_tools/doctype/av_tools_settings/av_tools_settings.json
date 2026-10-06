@@ -18,6 +18,8 @@
   "is_manufacture",
   "buying_settings_section",
   "target_warehouse_based_price_list",
+  "material_request_review_section",
+  "require_material_request_review",
   "section_break_inter_company",
   "allow_inter_company_stock_transfer",
   "permissions_settings_section",
@@ -121,6 +123,18 @@
    "label": "Enable Target Warehouse Based Buying Price List"
   },
   {
+   "fieldname": "material_request_review_section",
+   "fieldtype": "Section Break",
+   "label": "Material Request Review"
+  },
+  {
+   "default": "0",
+   "description": "When enabled, Material Issue and Material Transfer requests show a post-save review dialog with the previous submitted request quantity and current stock for the same item and target warehouse.",
+   "fieldname": "require_material_request_review",
+   "fieldtype": "Check",
+   "label": "Require Material Request Review"
+  },
+  {
    "fieldname": "section_break_inter_company",
    "fieldtype": "Section Break",
    "label": "Inter Company Transfer"
@@ -212,7 +226,7 @@
    "fieldtype": "Int",
    "label": "Ideal Height"
   },
-   {
+  {
    "fieldname": "parallel_approval_section",
    "fieldtype": "Section Break",
    "label": "Parallel Approval"
