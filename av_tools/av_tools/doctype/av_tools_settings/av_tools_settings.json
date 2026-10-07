@@ -24,6 +24,7 @@
   "allow_inter_company_stock_transfer",
   "permissions_settings_section",
   "enable_dependent_auto_permission",
+  "enable_full_access_role",
   "indirect_expense_item_section",
   "enable_indirect_expense_item_creation",
   "trade_in_section",
@@ -156,6 +157,15 @@
    "fieldname": "enable_dependent_auto_permission",
    "fieldtype": "Check",
    "label": "Enable Dependent Auto Permission"
+  },
+  {
+   "default": "0",
+   "description": "Privileged policy switch. When enabled, AV Tools automatically maintains the FULL ACCESS role across all non-Frappe DocTypes, Reports, Pages and Workspaces. This field intentionally ships hidden and read-only and must be explicitly unlocked with Property Setters.",
+   "fieldname": "enable_full_access_role",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Enable FULL ACCESS Role",
+   "read_only": 1
   },
   {
    "fieldname": "indirect_expense_item_section",
