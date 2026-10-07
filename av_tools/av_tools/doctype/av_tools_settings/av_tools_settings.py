@@ -13,10 +13,6 @@ from av_tools.av_tools_hooks.parallel_approval import (
 	delete_approver_qr_print_format,
 )
 from av_tools.permissions.full_access import sync_full_access
-
-FULL_ACCESS_CONSENT_CACHE_KEY = "av_tools:full_access_consent"
-FULL_ACCESS_CONSENT_TTL = 600
-FULL_ACCESS_AUTHORIZED_USER = "Administrator"
 from av_tools.trade_in.utils import (
 	add_trade_in_control_account,
 	add_trade_in_item,
@@ -24,6 +20,10 @@ from av_tools.trade_in.utils import (
 	delete_trade_in_item_and_account,
 	set_negative_rates_for_items,
 )
+
+FULL_ACCESS_CONSENT_CACHE_KEY = "av_tools:full_access_consent"
+FULL_ACCESS_CONSENT_TTL = 600
+FULL_ACCESS_AUTHORIZED_USER = "Administrator"
 
 
 class AVToolsSettings(Document):
