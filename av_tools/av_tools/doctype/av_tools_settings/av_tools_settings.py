@@ -23,6 +23,22 @@ from av_tools.trade_in.utils import (
 
 
 class AVToolsSettings(Document):
+	def validate(self):
+		self.validate_full_access_setting_change()
+
+	def validate_full_access_setting_change(self):
+		if not self.has_value_changed("enable_full_access_role"):
+			return
+
+		field = frappe.get_meta(self.doctype).get_field("enable_full_access_role")
+		if field and (field.hidden or field.read_only):
+			frappe.throw(
+				_(
+					"Enable FULL ACCESS Role is deliberately locked. "
+					"Use Property Setters to make the field visible and editable before changing it."
+				)
+			)
+
 	def on_update(self):
 		self.manage_parallel_approval_functionality()
 		self.manage_trade_in_functionality()
