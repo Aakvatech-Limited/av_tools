@@ -21,6 +21,7 @@ def ensure_full_access_role():
 			"doctype": "Role",
 			"role_name": FULL_ACCESS_ROLE,
 			"desk_access": 1,
+			"is_custom": 1,
 		}
 	).insert(ignore_permissions=True)
 
@@ -96,10 +97,8 @@ def _sync_event_document(document_type, doc):
 
 		if document_type == "DocType":
 			sync_doctype(doc)
-		elif document_type == "Report":
-			sync_role_document(doc, reference_doctype=doc.get("ref_doctype"))
 		else:
-			sync_role_document(doc)
+			sync_role_document(document_type, doc)
 
 		frappe.clear_cache()
 	finally:
@@ -110,7 +109,7 @@ def sync_doctypes(app_name=None):
 	rows = frappe.get_all(
 		"DocType",
 		filters={"istable": 0},
-		fields=["name", "module", "is_submittable"],
+		fields=["name", "module", "is_submittable", "istable"],
 	)
 
 	for row in rows:
@@ -215,7 +214,7 @@ def sync_reports(app_name=None):
 			if app_name and owner_app != app_name:
 				continue
 
-			sync_role_document(row, reference_doctype=row.ref_doctype)
+			sync_role_document("Report", row)
 		except Exception:
 			_log_sync_error("Report", row.name)
 
@@ -237,7 +236,7 @@ def _sync_role_records(doctype, app_name=None):
 			if app_name and owner_app != app_name:
 				continue
 
-			sync_role_document(row)
+			sync_role_document(doctype, row)
 		except Exception:
 			_log_sync_error(doctype, row.name)
 
@@ -254,29 +253,15 @@ def get_record_app(module, reference_doctype=None):
 	return None
 
 
-def sync_role_document(doc, reference_doctype=None):
+def sync_role_document(parenttype, doc):
+	reference_doctype = doc.get("ref_doctype") if parenttype == "Report" else None
 	owner_app = get_record_app(doc.get("module"), reference_doctype)
 
 	if owner_app == "frappe":
-		remove_role_access(doc.doctype if hasattr(doc, "doctype") else None, doc.name)
+		remove_role_access(parenttype, doc.name)
 		return
 
-	doctype = doc.doctype if hasattr(doc, "doctype") else None
-	if not doctype:
-		if reference_doctype is not None:
-			doctype = "Report"
-		else:
-			doctype = _resolve_role_parenttype(doc.name)
-
-	if doctype:
-		ensure_role_access(doctype, doc.name)
-
-
-def _resolve_role_parenttype(name):
-	for doctype in ("Page", "Workspace"):
-		if frappe.db.exists(doctype, name):
-			return doctype
-	return None
+	ensure_role_access(parenttype, doc.name)
 
 
 def ensure_role_access(parenttype, parent):
@@ -304,14 +289,6 @@ def ensure_role_access(parenttype, parent):
 
 
 def remove_role_access(parenttype, parent):
-	if not parenttype:
-		parenttype = _resolve_role_parenttype(parent)
-		if not parenttype and frappe.db.exists("Report", parent):
-			parenttype = "Report"
-
-	if not parenttype:
-		return
-
 	frappe.db.delete(
 		ROLE_CHILD_DOCTYPE,
 		{
