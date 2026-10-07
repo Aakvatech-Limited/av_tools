@@ -10,7 +10,9 @@ frappe.ui.form.on("AV Tools Settings", {
 					issingle: 0,
 				},
 			};
-		,
+		});
+	},
+
 	enable_full_access_role(frm) {
 		if (!frm.doc.enable_full_access_role || frm.__full_access_consent_accepted) {
 			return;
@@ -63,5 +65,4 @@ frappe.ui.form.on("AV Tools Settings", {
 
 		dialog.show();
 	},
-});	},
 });
