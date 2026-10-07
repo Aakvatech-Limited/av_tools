@@ -9,7 +9,12 @@ ROLE_PARENT_FIELD = "roles"
 
 
 def is_full_access_enabled():
-	return bool(frappe.db.get_single_value(SETTINGS_DOCTYPE, SETTING_FIELD))
+	try:
+		return bool(frappe.db.get_single_value(SETTINGS_DOCTYPE, SETTING_FIELD))
+	except Exception:
+		# Hooks can load before a migration has added the setting column.
+		# Fail closed and let after_migrate reconcile once schema sync is complete.
+		return False
 
 
 def ensure_full_access_role():
