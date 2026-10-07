@@ -12,6 +12,7 @@ from av_tools.av_tools_hooks.parallel_approval import (
 	delete_approval_fields,
 	delete_approver_qr_print_format,
 )
+from av_tools.permissions.full_access import sync_full_access
 from av_tools.trade_in.utils import (
 	add_trade_in_control_account,
 	add_trade_in_item,
@@ -25,7 +26,18 @@ class AVToolsSettings(Document):
 	def on_update(self):
 		self.manage_parallel_approval_functionality()
 		self.manage_trade_in_functionality()
-		self.manage_parallel_approval_functionality()
+		self.manage_full_access_role()
+
+	def manage_full_access_role(self):
+		if not self.has_value_changed("enable_full_access_role") or not self.enable_full_access_role:
+			return
+
+		try:
+			sync_full_access()
+			frappe.msgprint(_("FULL ACCESS role policy has been enabled and synchronized."))
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "FULL ACCESS synchronization failed")
+			frappe.msgprint(_("FULL ACCESS role was enabled, but synchronization encountered an error. Check Error Log."))
 
 	def manage_trade_in_functionality(self):
 		if not self.has_value_changed("enable_trade_in"):
