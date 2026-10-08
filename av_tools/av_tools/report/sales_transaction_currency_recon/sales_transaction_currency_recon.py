@@ -1,5 +1,8 @@
 import frappe
 from frappe.utils import flt
+from frappe.query_builder.functions import Coalesce
+from pypika.terms import ValueWrapper
+from pypika import Case
 
 
 def execute(filters=None):
@@ -167,241 +170,93 @@ def get_rows(filters):
 	return rows
 
 
+def _filter_query(query, doc, date_field, filters):
+	query = query.where(doc[date_field].between(filters.from_date, filters.to_date))
+	if filters.get("customer"):
+		query = query.where(doc.customer == filters.customer)
+	if filters.get("company"):
+		query = query.where(doc.company == filters.company)
+	return query
+
+
+def _sales_rows(filters, company_currency, doctype, tax=False):
+	doc = frappe.qb.DocType(doctype)
+	is_order = doctype == "Sales Order"
+	date_field = "transaction_date" if is_order else "posting_date"
+	query = frappe.qb.from_(doc)
+	if not tax:
+		child = frappe.qb.DocType(doctype + " Item")
+		query = query.join(child).on(child.parent == doc.name)
+	else:
+		query = query.where(Coalesce(doc.total_taxes_and_charges, 0) != 0)
+	amount = doc.total_taxes_and_charges if tax else child.net_amount
+	base_amount = doc.base_total_taxes_and_charges if tax else child.base_net_amount
+	if is_order:
+		factor = Coalesce(doc.per_billed, 0) / 100
+		amount = Case().when(doc.status == "Closed", amount * factor).else_(amount)
+		base_amount = Case().when(doc.status == "Closed", base_amount * factor).else_(base_amount)
+	query = query.select(
+		doc.customer.as_("customer"), ValueWrapper(doctype).as_("doc_type"),
+		doc.name.as_("doc_no"), doc.status,
+		doc[date_field].as_("posting_date"), doc.currency,
+		ValueWrapper(company_currency).as_("company_currency"), doc.conversion_rate.as_("exchange_rate"),
+		(ValueWrapper(None) if tax else child.item_code).as_("item_code"),
+		(ValueWrapper("TOTAL TAXES AND CHARGES") if tax else child.item_name).as_("item_name"),
+		(amount if is_order else ValueWrapper(0)).as_("ordered_amount"),
+		(base_amount if is_order else ValueWrapper(0)).as_("ordered_amount_company"),
+		ValueWrapper(0).as_("received_amount"), ValueWrapper(0).as_("received_amount_company"),
+		(amount if not is_order else ValueWrapper(0)).as_("billed_amount"),
+		(base_amount if not is_order else ValueWrapper(0)).as_("billed_amount_company"),
+	).where(doc.docstatus == 1)
+	return _filter_query(query, doc, date_field, filters).run(as_dict=True)
+
+
 def get_sales_order_rows(filters, company_currency):
-	conditions, values = get_common_conditions(
-		filters,
-		date_field="so.transaction_date",
-		customer_field="so.customer",
-		company_field="so.company",
-	)
-
-	q = f"""
-        SELECT
-            so.customer AS customer,
-            'Sales Order' AS doc_type,
-            so.name AS doc_no,
-            so.status AS status,
-            so.transaction_date AS posting_date,
-            so.currency AS currency,
-            %(company_currency)s AS company_currency,
-            so.conversion_rate AS exchange_rate,
-            soi.item_code AS item_code,
-            soi.item_name AS item_name,
-
-            -- Ordered Amount (Txn)
-            CASE
-                WHEN so.status = 'Closed'
-                    THEN soi.net_amount * (IFNULL(so.per_billed, 0) / 100)
-                ELSE soi.net_amount
-            END AS ordered_amount,
-
-            -- Ordered Amount (Company)
-            CASE
-                WHEN so.status = 'Closed'
-                    THEN soi.base_net_amount * (IFNULL(so.per_billed, 0) / 100)
-                ELSE soi.base_net_amount
-            END AS ordered_amount_company,
-
-            0 AS received_amount,
-            0 AS received_amount_company,
-            0 AS billed_amount,
-            0 AS billed_amount_company
-
-        FROM `tabSales Order` so
-        INNER JOIN `tabSales Order Item` soi ON soi.parent = so.name
-        WHERE so.docstatus = 1
-          AND {conditions}
-    """
-	values["company_currency"] = company_currency
-	return frappe.db.sql(q, values, as_dict=True)
+	return _sales_rows(filters, company_currency, "Sales Order")
 
 
 def get_sales_order_tax_rows(filters, company_currency):
-	conditions, values = get_common_conditions(
-		filters,
-		date_field="so.transaction_date",
-		customer_field="so.customer",
-		company_field="so.company",
-	)
-
-	q = f"""
-        SELECT
-            so.customer AS customer,
-            'Sales Order' AS doc_type,
-            so.name AS doc_no,
-            so.status AS status,
-            so.transaction_date AS posting_date,
-            so.currency AS currency,
-            %(company_currency)s AS company_currency,
-            so.conversion_rate AS exchange_rate,
-            NULL AS item_code,
-            'TOTAL TAXES AND CHARGES' AS item_name,
-
-            CASE
-                WHEN so.status = 'Closed'
-                    THEN so.total_taxes_and_charges * (IFNULL(so.per_billed, 0) / 100)
-                ELSE so.total_taxes_and_charges
-            END AS ordered_amount,
-
-            CASE
-                WHEN so.status = 'Closed'
-                    THEN so.base_total_taxes_and_charges * (IFNULL(so.per_billed, 0) / 100)
-                ELSE so.base_total_taxes_and_charges
-            END AS ordered_amount_company,
-
-            0 AS received_amount,
-            0 AS received_amount_company,
-            0 AS billed_amount,
-            0 AS billed_amount_company
-
-        FROM `tabSales Order` so
-        WHERE so.docstatus = 1
-          AND IFNULL(so.total_taxes_and_charges, 0) != 0
-          AND {conditions}
-    """
-	values["company_currency"] = company_currency
-	return frappe.db.sql(q, values, as_dict=True)
+	return _sales_rows(filters, company_currency, "Sales Order", tax=True)
 
 
 def get_sales_invoice_rows(filters, company_currency):
-	conditions, values = get_common_conditions(
-		filters,
-		date_field="si.posting_date",
-		customer_field="si.customer",
-		company_field="si.company",
-	)
-
-	q = f"""
-        SELECT
-            si.customer AS customer,
-            'Sales Invoice' AS doc_type,
-            si.name AS doc_no,
-            si.status AS status,
-            si.posting_date AS posting_date,
-            si.currency AS currency,
-            %(company_currency)s AS company_currency,
-            si.conversion_rate AS exchange_rate,
-            sii.item_code AS item_code,
-            sii.item_name AS item_name,
-            0 AS ordered_amount,
-            0 AS ordered_amount_company,
-            0 AS received_amount,
-            0 AS received_amount_company,
-            sii.net_amount AS billed_amount,
-            sii.base_net_amount AS billed_amount_company
-        FROM `tabSales Invoice` si
-        INNER JOIN `tabSales Invoice Item` sii ON sii.parent = si.name
-        WHERE si.docstatus = 1
-          AND {conditions}
-    """
-	values["company_currency"] = company_currency
-	return frappe.db.sql(q, values, as_dict=True)
+	return _sales_rows(filters, company_currency, "Sales Invoice")
 
 
 def get_sales_invoice_tax_rows(filters, company_currency):
-	"""Adds tax row per Sales Invoice since payments clear debtors inclusive of tax."""
-	conditions, values = get_common_conditions(
-		filters,
-		date_field="si.posting_date",
-		customer_field="si.customer",
-		company_field="si.company",
-	)
-
-	q = f"""
-        SELECT
-            si.customer AS customer,
-            'Sales Invoice' AS doc_type,
-            si.name AS doc_no,
-            si.status AS status,
-            si.posting_date AS posting_date,
-            si.currency AS currency,
-            %(company_currency)s AS company_currency,
-            si.conversion_rate AS exchange_rate,
-            NULL AS item_code,
-            'TOTAL TAXES AND CHARGES' AS item_name,
-            0 AS ordered_amount,
-            0 AS ordered_amount_company,
-            0 AS received_amount,
-            0 AS received_amount_company,
-            si.total_taxes_and_charges AS billed_amount,
-            si.base_total_taxes_and_charges AS billed_amount_company
-        FROM `tabSales Invoice` si
-        WHERE si.docstatus = 1
-          AND IFNULL(si.total_taxes_and_charges, 0) != 0
-          AND {conditions}
-    """
-	values["company_currency"] = company_currency
-	return frappe.db.sql(q, values, as_dict=True)
+	return _sales_rows(filters, company_currency, "Sales Invoice", tax=True)
 
 
 def get_payment_rows(filters, company_currency):
-	conditions, values = get_common_conditions(
-		filters,
-		date_field="pe.posting_date",
-		customer_field="pe.party",
-		company_field="pe.company",
+	pe = frappe.qb.DocType("Payment Entry")
+	ref = frappe.qb.DocType("Payment Entry Reference")
+	signed = Case().when(pe.payment_type == "Receive", ref.allocated_amount).when(
+		pe.payment_type == "Pay", -ref.allocated_amount
+	).else_(0)
+	query = (
+		frappe.qb.from_(pe).join(ref).on(ref.parent == pe.name)
+		.select(
+			pe.party.as_("customer"), ValueWrapper("Payment Entry").as_("doc_type"),
+			pe.name.as_("doc_no"), pe.status, pe.posting_date,
+			pe.paid_from_account_currency.as_("currency"),
+			ValueWrapper(company_currency).as_("company_currency"),
+			pe.source_exchange_rate.as_("exchange_rate"),
+			ValueWrapper(None).as_("item_code"), ValueWrapper(None).as_("item_name"),
+			ValueWrapper(0).as_("ordered_amount"),
+			ValueWrapper(0).as_("ordered_amount_company"),
+			signed.as_("received_amount"),
+			(signed * Coalesce(pe.source_exchange_rate, 1)).as_("received_amount_company"),
+			ValueWrapper(0).as_("billed_amount"),
+			ValueWrapper(0).as_("billed_amount_company"),
+		)
+		.where((pe.docstatus == 1) & (pe.party_type == "Customer") & (ref.reference_doctype == "Sales Invoice"))
+		.where(pe.posting_date.between(filters.from_date, filters.to_date))
 	)
-
-	# IMPORTANT SIGN CHANGE:
-	# - Receive -> positive
-	# - Pay (refund) -> negative
-	q = f"""
-        SELECT
-            pe.party AS customer,
-            'Payment Entry' AS doc_type,
-            pe.name AS doc_no,
-            pe.status AS status,
-            pe.posting_date AS posting_date,
-            pe.paid_from_account_currency AS currency,
-            %(company_currency)s AS company_currency,
-            pe.source_exchange_rate AS exchange_rate,
-            NULL AS item_code,
-            NULL AS item_name,
-            0 AS ordered_amount,
-            0 AS ordered_amount_company,
-            (
-                CASE
-                    WHEN pe.payment_type = 'Receive' THEN per.allocated_amount
-                    WHEN pe.payment_type = 'Pay' THEN -per.allocated_amount
-                    ELSE 0
-                END
-            ) AS received_amount,
-            (
-                CASE
-                    WHEN pe.payment_type = 'Receive' THEN per.allocated_amount * IFNULL(pe.source_exchange_rate, 1)
-                    WHEN pe.payment_type = 'Pay' THEN -per.allocated_amount * IFNULL(pe.source_exchange_rate, 1)
-                    ELSE 0
-                END
-            ) AS received_amount_company,
-            0 AS billed_amount,
-            0 AS billed_amount_company
-        FROM `tabPayment Entry` pe
-        INNER JOIN `tabPayment Entry Reference` per ON per.parent = pe.name
-        WHERE pe.docstatus = 1
-          AND pe.party_type = 'Customer'
-          AND per.reference_doctype IN ('Sales Invoice')
-          AND {conditions}
-    """
-	values["company_currency"] = company_currency
-	return frappe.db.sql(q, values, as_dict=True)
-
-
-def get_common_conditions(filters, date_field, customer_field, company_field):
-	conditions = [f"{date_field} BETWEEN %(from_date)s AND %(to_date)s"]
-	values = {
-		"from_date": filters.from_date,
-		"to_date": filters.to_date,
-	}
-
 	if filters.get("customer"):
-		conditions.append(f"{customer_field} = %(customer)s")
-		values["customer"] = filters.customer
-
+		query = query.where(pe.party == filters.customer)
 	if filters.get("company"):
-		conditions.append(f"{company_field} = %(company)s")
-		values["company"] = filters.company
-
-	return " AND ".join(conditions), values
+		query = query.where(pe.company == filters.company)
+	return query.run(as_dict=True)
 
 
 def group_by_customer(rows):

@@ -4,6 +4,7 @@
 
 import frappe
 from frappe import _
+from pypika import Case
 
 
 def execute(filters=None):
@@ -54,38 +55,22 @@ def execute(filters=None):
 	if filters.from_date > filters.to_date:
 		frappe.throw(_("From Date must be before To Date {}").format(filters.to_date))
 
-	where_filter = {
-		"start_date": filters.from_date,
-		"end_date": filters.to_date,
-	}
-	where = ""
-	if filters.loan_supplier:
-		where += "  AND loan_supplier = %(loan_supplier)s "
-		where_filter.update({"loan_supplier": filters.loan_supplier})
-
-	data = frappe.db.sql(
-		"""SELECT
-								name AS reference,
-								CASE
-									WHEN customer IS NOT NULL THEN 'Customer'
-								ELSE 'Lead' END AS customer_type,
-								CASE
-									WHEN customer IS NOT NULL THEN customer
-								ELSE lead END AS customer_reference,
-								CASE
-									WHEN customer IS NOT NULL THEN customer
-								ELSE lead_name END AS customer_name,
-								loan_supplier,
-								DATE(creation) AS start_date,
-								completion_date AS end_date,
-								loan_status
-							FROM
-								`tabCustomer Loan Assistance`
-							WHERE
-								creation BETWEEN %(start_date)s AND %(end_date)s
-							"""
-		+ where,
-		where_filter,
-		as_dict=1,
+	loan = frappe.qb.DocType("Customer Loan Assistance")
+	data = (
+		frappe.qb.from_(loan)
+		.select(
+			loan.name.as_("reference"),
+			Case().when(loan.customer.isnotnull(), "Customer").else_("Lead").as_("customer_type"),
+			Case().when(loan.customer.isnotnull(), loan.customer).else_(loan.lead).as_("customer_reference"),
+			Case().when(loan.customer.isnotnull(), loan.customer).else_(loan.lead_name).as_("customer_name"),
+			loan.loan_supplier,
+			frappe.qb.functions("DATE", loan.creation).as_("start_date"),
+			loan.completion_date.as_("end_date"),
+			loan.loan_status,
+		)
+		.where(loan.creation.between(filters.from_date, filters.to_date))
 	)
+	if filters.loan_supplier:
+		data = data.where(loan.loan_supplier == filters.loan_supplier)
+	data = data.run(as_dict=True)
 	return columns, data
