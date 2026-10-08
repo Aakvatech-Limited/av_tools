@@ -5,7 +5,7 @@ Use **Bank Transaction Backfill** to create missing submitted Bank Transactions 
 ## Procedure
 
 1. Create a new **Bank Transaction Backfill** document.
-2. Select **Company**, **Source DocType** (Payment Entry or Journal Entry), and the inclusive **clearance-date range**.
+2. Select **Company**, **Source DocType** (loaded from the site bank reconciliation registry), and the inclusive **clearance-date range**.
 3. Save the draft, then click **Preview Eligible Transactions**.
 4. Review the candidate table, including bank accounts, deposit/withdrawal amounts and dates. The preview will be saved.
 5. **Submit** the backfill. Each candidate is revalidated against its source voucher and bank GL entries before the Bank Transaction is created and submitted.
@@ -28,3 +28,10 @@ Use **Bank Transaction Backfill** to create missing submitted Bank Transactions 
 - Vouchers with existing allocations are excluded, including partially allocated vouchers. This tool is not for repairing partially reconciled payments.
 - Dates are filtered on the source voucher **clearance date**, not its posting date.
 - Execute first on a staging copy and compare bank transaction totals to bank statement balances.
+
+## Source compatibility
+
+- Source DocType options come from `frappe.get_hooks("bank_reconciliation_doctypes")`, including Doctypes contributed by installed apps.
+- Payment Entry, Journal Entry and paid Purchase Invoice use the parent `clearance_date` field.
+- POS Sales Invoice uses `Sales Invoice Payment.clearance_date`. Multiple payment rows with conflicting clearance dates cannot be safely collapsed and are excluded.
+- Additional registered source types must expose `company` and `clearance_date`; bank GL entries must resolve to exactly one Bank Account. Sources without this common structure are refused rather than being silently processed.
