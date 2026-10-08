@@ -57,14 +57,17 @@ def get_detail_data(filters=None):
 			detail.item_code,
 			item.item_name,
 			detail.uom,
-			detail.qty.as_("actual_qty"),
+			detail.stock_uom,
+			detail.is_finished_item,
+			detail.is_scrap_item,
+			detail.qty.as_("actual_transaction_qty"),
+			detail.transfer_qty.as_("actual_qty"),
 			detail.bom_guided_qty,
+			detail.bom_guided_stock_qty,
 		)
 		.where(stock_entry.docstatus == 1)
 		.where(stock_entry.purpose.isin(SUPPORTED_PURPOSES))
-		.where(detail.is_finished_item == 0)
-		.where(detail.is_scrap_item == 0)
-		.where(detail.bom_guided_qty.isnotnull())
+		.where(detail.bom_guided_stock_qty.isnotnull())
 		.where(stock_entry.posting_date >= filters.from_date)
 		.where(stock_entry.posting_date <= filters.to_date)
 	)
@@ -88,21 +91,23 @@ def get_detail_data(filters=None):
 
 	for row in rows:
 		actual = flt(row.actual_qty)
-		guided = flt(row.bom_guided_qty)
+		guided = flt(row.bom_guided_stock_qty)
+		row.row_category = "Finished Goods" if row.is_finished_item else ("Scrap / By-product" if row.is_scrap_item else "Consumption")
+		row.transaction_variance_qty = flt(row.actual_transaction_qty) - flt(row.bom_guided_stock_qty)
 		row.variance_qty = actual - guided
 		row.variance_percent = row.variance_qty / guided * 100 if guided else 0
 		row.consumption_index_percent = actual / guided * 100 if guided else 0
 		row.efficiency_percent = guided / actual * 100 if actual else 0
-		row.variance_direction = get_variance_direction(row.variance_percent)
+		row.variance_direction = get_variance_direction(row.variance_percent, row.row_category)
 
 	return rows
 
 
-def get_variance_direction(variance_percent):
+def get_variance_direction(variance_percent, category="Consumption"):
 	if variance_percent > 0:
-		return _("Over Consumption")
+		return _("Over Consumption") if category == "Consumption" else _("Above Expected")
 	if variance_percent < 0:
-		return _("Under Consumption")
+		return _("Under Consumption") if category == "Consumption" else _("Below Expected")
 	return _("On Standard")
 
 
@@ -111,13 +116,14 @@ def get_item_summary(filters=None):
 	grouped = {}
 
 	for row in rows:
-		key = (row.item_code, row.uom)
+		key = (row.row_category, row.item_code, row.stock_uom)
 		summary = grouped.setdefault(
 			key,
 			frappe._dict(
+				row_category=row.row_category,
 				item_code=row.item_code,
 				item_name=row.item_name,
-				uom=row.uom,
+				uom=row.stock_uom,
 				actual_qty=0.0,
 				bom_guided_qty=0.0,
 				absolute_variance_qty=0.0,
@@ -129,7 +135,7 @@ def get_item_summary(filters=None):
 		)
 
 		summary.actual_qty += flt(row.actual_qty)
-		summary.bom_guided_qty += flt(row.bom_guided_qty)
+		summary.bom_guided_qty += flt(row.bom_guided_stock_qty)
 		summary.absolute_variance_qty += abs(flt(row.variance_qty))
 		summary.entry_names.add(row.stock_entry)
 
@@ -159,7 +165,7 @@ def get_item_summary(filters=None):
 		summary.efficiency_percent = (
 			summary.bom_guided_qty / summary.actual_qty * 100 if summary.actual_qty else 0
 		)
-		summary.variance_direction = get_variance_direction(summary.variance_percent)
+		summary.variance_direction = get_variance_direction(summary.variance_percent, summary.row_category)
 		result.append(summary)
 
 	return sorted(result, key=lambda row: row.absolute_variance_percent, reverse=True)
@@ -171,13 +177,13 @@ def get_monthly_summary(filters=None):
 
 	for row in rows:
 		month = row.posting_date.strftime("%Y-%m")
-		key = (month, row.item_code, row.uom)
+		key = (month, row.row_category, row.item_code, row.stock_uom)
 		summary = grouped.setdefault(
 			key,
 			{"month": month, "actual": 0.0, "guided": 0.0, "absolute_variance": 0.0},
 		)
 		summary["actual"] += flt(row.actual_qty)
-		summary["guided"] += flt(row.bom_guided_qty)
+		summary["guided"] += flt(row.bom_guided_stock_qty)
 		summary["absolute_variance"] += abs(flt(row.variance_qty))
 
 	monthly = {}
@@ -240,19 +246,20 @@ def get_report_summary(detail_rows):
 def summarize_detail_rows(detail_rows):
 	grouped = {}
 	for row in detail_rows:
-		key = (row.item_code, row.uom)
+		key = (row.row_category, row.item_code, row.stock_uom)
 		summary = grouped.setdefault(
 			key,
 			frappe._dict(
+				row_category=row.row_category,
 				item_code=row.item_code,
-				uom=row.uom,
+				uom=row.stock_uom,
 				actual_qty=0.0,
 				bom_guided_qty=0.0,
 				absolute_variance_qty=0.0,
 			),
 		)
 		summary.actual_qty += flt(row.actual_qty)
-		summary.bom_guided_qty += flt(row.bom_guided_qty)
+		summary.bom_guided_qty += flt(row.bom_guided_stock_qty)
 		summary.absolute_variance_qty += abs(flt(row.variance_qty))
 
 	result = []
@@ -306,9 +313,14 @@ def get_columns():
 			"width": 160,
 		},
 		{"label": _("Item Name"), "fieldname": "item_name", "fieldtype": "Data", "width": 180},
-		{"label": _("UOM"), "fieldname": "uom", "fieldtype": "Link", "options": "UOM", "width": 80},
+		{"label": _("Row UOM"), "fieldname": "uom", "fieldtype": "Link", "options": "UOM", "width": 80},
+		{"label": _("Stock UOM"), "fieldname": "stock_uom", "fieldtype": "Link", "options": "UOM", "width": 90},
+		{"label": _("Category"), "fieldname": "row_category", "fieldtype": "Data", "width": 140},
 		{"label": _("BOM Guided Qty"), "fieldname": "bom_guided_qty", "fieldtype": "Float", "width": 120},
-		{"label": _("Actual Qty"), "fieldname": "actual_qty", "fieldtype": "Float", "width": 110},
+		{"label": _("BOM Guided Stock Qty"), "fieldname": "bom_guided_stock_qty", "fieldtype": "Float", "width": 155},
+		{"label": _("Actual Qty"), "fieldname": "actual_transaction_qty", "fieldtype": "Float", "width": 110},
+		{"label": _("Actual Stock Qty"), "fieldname": "actual_qty", "fieldtype": "Float", "width": 145},
+		{"label": _("Transaction Variance Qty"), "fieldname": "transaction_variance_qty", "fieldtype": "Float", "width": 145},
 		{"label": _("Variance Qty"), "fieldname": "variance_qty", "fieldtype": "Float", "width": 110},
 		{"label": _("Variance %"), "fieldname": "variance_percent", "fieldtype": "Percent", "width": 100},
 		{
