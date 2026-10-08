@@ -5,6 +5,7 @@
  "istable": 1,
  "editable_grid": 1,
  "field_order": [
+  "source_doctype",
   "source_document",
   "bank_account",
   "clearance_date",
@@ -16,9 +17,17 @@
  ],
  "fields": [
   {
+   "fieldname": "source_doctype",
+   "fieldtype": "Link",
+   "options": "DocType",
+   "label": "Source DocType",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
    "fieldname": "source_document",
    "fieldtype": "Dynamic Link",
-   "options": "parent.source_doctype",
+   "options": "source_doctype",
    "label": "Source Document",
    "in_list_view": 1,
    "read_only": 1
