@@ -72,6 +72,7 @@ def _voucher_candidates(doc, voucher, accounts):
             continue
         result.append({
             "source_document": voucher.name,
+            "source_doctype": doc.source_doctype,
             "bank_account": matches[0],
             "clearance_date": str(voucher.clearance_date),
             "deposit": flt(amount, 2) if amount > 0 else 0,
@@ -123,6 +124,8 @@ class BankTransactionBackfill(Document):
         if not self.entries:
             frappe.throw(_("Preview and save eligible candidates before submitting."))
         keys = [(r.source_document, r.bank_account) for r in self.entries]
+        if any(r.source_doctype != self.source_doctype for r in self.entries):
+            frappe.throw(_("Source DocType mismatch in candidate rows."))
         if len(keys) != len(set(keys)):
             frappe.throw(_("Duplicate candidate rows are not permitted."))
         eligible = {(r["source_document"], r["bank_account"]): r for r in _candidates(self)}
@@ -137,6 +140,16 @@ class BankTransactionBackfill(Document):
                     frappe.throw(_("Candidate {0} changed; refresh the preview.").format(row.source_document))
         if len(self.entries) > MAX_CANDIDATES:
             frappe.throw(_("Maximum {0} entries per backfill.").format(MAX_CANDIDATES))
+
+    def _candidate_is_current(self, row):
+        voucher = frappe._dict(name=row.source_document, clearance_date=row.clearance_date)
+        candidates = _voucher_candidates(self, voucher, _bank_accounts(self.company))
+        return any(
+            c["bank_account"] == row.bank_account
+            and abs(flt(c["deposit"]) - flt(row.deposit)) < 0.001
+            and abs(flt(c["withdrawal"]) - flt(row.withdrawal)) < 0.001
+            for c in candidates
+        )
 
     def on_submit(self):
         counts = {"Created": 0, "Skipped": 0, "Failed": 0}
@@ -153,6 +166,8 @@ class BankTransactionBackfill(Document):
                     )
                     if not source or source.docstatus != 1 or source.company != self.company or str(source.clearance_date) != str(row.clearance_date):
                         state, detail, transaction = "Skipped", "Source voucher changed after preview", None
+                    elif not self._candidate_is_current(row):
+                        state, detail, transaction = "Skipped", "Bank ledger amount or bank mapping changed after preview", None
                     else:
                         transaction = frappe.get_doc({
                             "doctype": "Bank Transaction",
