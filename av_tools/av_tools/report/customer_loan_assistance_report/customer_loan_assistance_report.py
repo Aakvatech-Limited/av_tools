@@ -4,7 +4,6 @@
 
 import frappe
 from frappe import _
-from frappe.query_builder.functions import Date
 from pypika import Case
 
 
@@ -65,7 +64,7 @@ def execute(filters=None):
 			Case().when(loan.customer.isnotnull(), loan.customer).else_(loan.lead).as_("customer_reference"),
 			Case().when(loan.customer.isnotnull(), loan.customer).else_(loan.lead_name).as_("customer_name"),
 			loan.loan_supplier,
-			Date(loan.creation).as_("start_date"),
+			frappe.qb.functions("DATE", loan.creation).as_("start_date"),
 			loan.completion_date.as_("end_date"),
 			loan.loan_status,
 		)
