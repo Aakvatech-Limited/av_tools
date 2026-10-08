@@ -1,0 +1,75 @@
+{
+ "doctype": "DocType",
+ "name": "Bank Transaction Backfill Entry",
+ "module": "Av Tools",
+ "istable": 1,
+ "editable_grid": 1,
+ "field_order": [
+  "source_document",
+  "bank_account",
+  "clearance_date",
+  "deposit",
+  "withdrawal",
+  "status",
+  "bank_transaction",
+  "error_message"
+ ],
+ "fields": [
+  {
+   "fieldname": "source_document",
+   "fieldtype": "Dynamic Link",
+   "options": "parent.source_doctype",
+   "label": "Source Document",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "bank_account",
+   "fieldtype": "Link",
+   "options": "Bank Account",
+   "label": "Bank Account",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "clearance_date",
+   "fieldtype": "Date",
+   "label": "Clearance Date",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "deposit",
+   "fieldtype": "Currency",
+   "label": "Deposit",
+   "read_only": 1
+  },
+  {
+   "fieldname": "withdrawal",
+   "fieldtype": "Currency",
+   "label": "Withdrawal",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "options": "Pending\nCreated\nSkipped\nFailed",
+   "label": "Status",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "bank_transaction",
+   "fieldtype": "Link",
+   "options": "Bank Transaction",
+   "label": "Bank Transaction",
+   "read_only": 1
+  },
+  {
+   "fieldname": "error_message",
+   "fieldtype": "Small Text",
+   "label": "Details",
+   "read_only": 1
+  }
+ ]
+}
