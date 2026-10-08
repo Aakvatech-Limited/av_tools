@@ -7,6 +7,8 @@ excluded_doctype_list = ["Address", "Contact"]
 
 
 def grant_dependant_access(doc, method):
+	if getattr(frappe.flags, "in_full_access_sync", False):
+		return
 	if frappe.flags.in_install or frappe.flags.in_migrate:
 		return
 	enable_dependent_auto_permission = frappe.db.get_single_value(

@@ -12,6 +12,7 @@ from av_tools.av_tools_hooks.parallel_approval import (
 	delete_approval_fields,
 	delete_approver_qr_print_format,
 )
+from av_tools.permissions.full_access import sync_full_access
 from av_tools.trade_in.utils import (
 	add_trade_in_control_account,
 	add_trade_in_item,
@@ -20,12 +21,56 @@ from av_tools.trade_in.utils import (
 	set_negative_rates_for_items,
 )
 
+FULL_ACCESS_CONSENT_CACHE_KEY = "av_tools:full_access_consent"
+FULL_ACCESS_CONSENT_TTL = 600
+FULL_ACCESS_AUTHORIZED_USER = "Administrator"
+
 
 class AVToolsSettings(Document):
+	def validate(self):
+		self.validate_full_access_setting_change()
+
+	def validate_full_access_setting_change(self):
+		if not self.has_value_changed("enable_full_access_role"):
+			return
+
+		if frappe.session.user != FULL_ACCESS_AUTHORIZED_USER:
+			frappe.throw(_("Only Administrator is authorized to change Enable FULL ACCESS Role."))
+
+		field = frappe.get_meta(self.doctype).get_field("enable_full_access_role")
+		if field and (field.hidden or field.read_only):
+			frappe.throw(
+				_(
+					"Enable FULL ACCESS Role is deliberately locked. "
+					"Use Property Setters to make the field visible and editable before changing it."
+				)
+			)
+
+		if self.enable_full_access_role and not _has_valid_full_access_consent():
+			frappe.throw(
+				_(
+					"You must review the FULL ACCESS warning and click I Accept "
+					"before enabling this setting."
+				)
+			)
+
 	def on_update(self):
 		self.manage_parallel_approval_functionality()
 		self.manage_trade_in_functionality()
-		self.manage_parallel_approval_functionality()
+		self.manage_full_access_role()
+
+	def manage_full_access_role(self):
+		if not self.has_value_changed("enable_full_access_role") or not self.enable_full_access_role:
+			return
+
+		_clear_full_access_consent()
+
+		try:
+			sync_full_access()
+			frappe.msgprint(_("FULL ACCESS role policy has been enabled and synchronized."))
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "FULL ACCESS synchronization failed")
+			frappe.msgprint(_("FULL ACCESS role was enabled, but synchronization encountered an error. Check Error Log."))
 
 	def manage_trade_in_functionality(self):
 		if not self.has_value_changed("enable_trade_in"):
@@ -83,3 +128,63 @@ class AVToolsSettings(Document):
 			except Exception as e:
 				frappe.log_error(f"Parallel Approval: delete fields on '{dt}': {e}", "Parallel Approval")
 				frappe.msgprint(_("Could not remove approver fields from {0}: {1}").format(dt, str(e)))
+
+
+
+def _consent_cache_key():
+	return f"{FULL_ACCESS_CONSENT_CACHE_KEY}:{frappe.session.user}"
+
+
+def _has_valid_full_access_consent():
+	return bool(frappe.cache.get_value(_consent_cache_key(), expires=True))
+
+
+def _clear_full_access_consent():
+	frappe.cache.delete_value(_consent_cache_key())
+
+
+def _full_access_field_is_unlocked():
+	field = frappe.get_meta("AV Tools Settings").get_field("enable_full_access_role")
+	return bool(field and not field.hidden and not field.read_only)
+
+
+@frappe.whitelist()
+def accept_full_access_consent():
+	if frappe.session.user != FULL_ACCESS_AUTHORIZED_USER:
+		frappe.throw(_("Only Administrator is authorized to accept FULL ACCESS consent."))
+
+	if not _full_access_field_is_unlocked():
+		frappe.throw(
+			_(
+				"Enable FULL ACCESS Role is still hidden or read-only. "
+				"Unlock it deliberately with Property Setters before accepting consent."
+			)
+		)
+
+	consent_text = (
+		"I understand that enabling FULL ACCESS grants the FULL ACCESS role broad permissions "
+		"to all eligible non-Frappe DocTypes, Reports, Pages and Workspaces, and that this "
+		"privileged action must only be performed by the authorized Lead Implementor using "
+		"the Administrator account. I Accept."
+	)
+
+	frappe.get_doc(
+		{
+			"doctype": "Activity Log",
+			"subject": "FULL ACCESS consent accepted",
+			"content": consent_text,
+			"status": "Success",
+			"reference_doctype": "AV Tools Settings",
+			"reference_name": "AV Tools Settings",
+			"user": frappe.session.user,
+			"ip_address": getattr(frappe.local, "request_ip", None),
+		}
+	).insert(ignore_permissions=True)
+
+	frappe.cache.set_value(
+		_consent_cache_key(),
+		1,
+		expires_in_sec=FULL_ACCESS_CONSENT_TTL,
+	)
+
+	return {"accepted": True, "expires_in_seconds": FULL_ACCESS_CONSENT_TTL}

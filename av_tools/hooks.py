@@ -124,6 +124,7 @@ after_install = [
 	"av_tools.utils.create_property_setter.execute",
 ]
 after_migrate = [
+	"av_tools.permissions.full_access.sync_full_access",
 	"av_tools.utils.create_custom_fields.execute",
 	"av_tools.utils.create_property_setter.execute",
 	"av_tools.patches.v1_0.migrate_ai_integration_site_data.execute",
@@ -142,7 +143,7 @@ after_migrate = [
 # Name of the app being installed is passed as an argument
 
 # before_app_install = "av_tools.utils.before_app_install"
-# after_app_install = "av_tools.utils.after_app_install"
+after_app_install = "av_tools.permissions.full_access.after_app_install"
 
 # Integration Cleanup
 # -------------------
@@ -221,6 +222,22 @@ doc_events = {
 	"Account": {
 		"on_update": "av_tools.av_tools_hooks.account.create_indirect_expense_item",
 		"after_insert": "av_tools.av_tools_hooks.account.create_indirect_expense_item",
+	},
+	"DocType": {
+		"after_insert": "av_tools.permissions.full_access.on_doctype_change",
+		"on_update": "av_tools.permissions.full_access.on_doctype_change",
+	},
+	"Report": {
+		"after_insert": "av_tools.permissions.full_access.on_report_change",
+		"on_update": "av_tools.permissions.full_access.on_report_change",
+	},
+	"Page": {
+		"after_insert": "av_tools.permissions.full_access.on_page_change",
+		"on_update": "av_tools.permissions.full_access.on_page_change",
+	},
+	"Workspace": {
+		"after_insert": "av_tools.permissions.full_access.on_workspace_change",
+		"on_update": "av_tools.permissions.full_access.on_workspace_change",
 	},
 	"*": {
 		"validate": ["av_tools.av_tools.doctype.visibility.visibility.run_visibility"],
