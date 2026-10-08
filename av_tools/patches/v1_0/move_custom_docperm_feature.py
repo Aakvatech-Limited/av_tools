@@ -8,15 +8,9 @@ def execute():
 
 
 def _migrate_setting_value():
-	legacy_value = frappe.db.sql(
-		"""
-        SELECT value FROM tabSingles
-        WHERE doctype = %s AND field = %s
-        LIMIT 1
-        """,
-		("CSF TZ Settings", "enable_dependent_auto_permission"),
+	legacy_value = frappe.db.get_value(
+		"Singles", {"doctype": "CSF TZ Settings", "field": "enable_dependent_auto_permission"}, "value"
 	)
-	legacy_value = legacy_value[0][0] if legacy_value else None
 
 	current_value = frappe.db.get_single_value("AV Tools Settings", "enable_dependent_auto_permission")
 	if current_value is None:
