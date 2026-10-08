@@ -17,6 +17,8 @@
   "entries",
   "results_section",
   "created_count",
+  "partially_reconciled_count",
+  "unreconciled_count",
   "skipped_count",
   "failed_count",
   "amended_from"
@@ -78,7 +80,21 @@
   {
    "fieldname": "created_count",
    "fieldtype": "Int",
-   "label": "Created",
+   "label": "Fully Reconciled",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "partially_reconciled_count",
+   "fieldtype": "Int",
+   "label": "Partially Reconciled",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "unreconciled_count",
+   "fieldtype": "Int",
+   "label": "Unreconciled",
    "read_only": 1,
    "no_copy": 1
   },
