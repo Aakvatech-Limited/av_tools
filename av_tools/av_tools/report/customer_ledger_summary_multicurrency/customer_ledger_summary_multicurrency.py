@@ -6,7 +6,6 @@ import frappe
 from frappe import _, scrub
 from frappe.utils import getdate, nowdate
 from frappe.query_builder.functions import Coalesce
-from pypika.terms import ExistsCriterion
 
 
 class PartyLedgerSummaryReport:
@@ -221,16 +220,15 @@ class PartyLedgerSummaryReport:
 				sales_person = frappe.qb.DocType("Sales Person")
 				lft, rgt = frappe.db.get_value("Sales Person", self.filters.sales_person, ["lft", "rgt"])
 				member_names = frappe.qb.from_(sales_person).select(sales_person.name).where((sales_person.lft >= lft) & (sales_person.rgt <= rgt))
-				matching = (
-					frappe.qb.from_(sales_team).select(sales_team.name)
-					.where(sales_team.sales_person.isin(member_names))
-					.where(
-						((sales_team.parent == gle.voucher_no) & (sales_team.parenttype == gle.voucher_type))
-						| ((sales_team.parent == gle.against_voucher) & (sales_team.parenttype == gle.against_voucher_type))
-						| ((sales_team.parent == gle.party) & (sales_team.parenttype == "Customer"))
-					)
+				team = frappe.qb.from_(sales_team).select(sales_team.parent).where(sales_team.sales_person.isin(member_names))
+				by_voucher = team.where(sales_team.parenttype == gle.voucher_type)
+				by_against = team.where(sales_team.parenttype == gle.against_voucher_type)
+				by_customer = team.where(sales_team.parenttype == "Customer")
+				condition &= (
+					gle.voucher_no.isin(by_voucher)
+					| gle.against_voucher.isin(by_against)
+					| gle.party.isin(by_customer)
 				)
-				condition &= ExistsCriterion(matching)
 		elif self.filters.party_type == "Supplier" and self.filters.get("supplier_group"):
 			supplier = frappe.qb.DocType("Supplier")
 			members = frappe.qb.from_(supplier).select(supplier.name).where(supplier.supplier_group == self.filters.supplier_group)
