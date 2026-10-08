@@ -91,9 +91,9 @@ def get_detail_data(filters=None):
 
 	for row in rows:
 		actual = flt(row.actual_qty)
-		guided = flt(row.bom_guided_stock_qty)
+		guided = flt(row.get("bom_guided_stock_qty") if row.get("bom_guided_stock_qty") is not None else row.bom_guided_qty)
 		row.row_category = "Finished Goods" if row.is_finished_item else ("Scrap / By-product" if row.is_scrap_item else "Consumption")
-		row.transaction_variance_qty = flt(row.actual_transaction_qty) - flt(row.bom_guided_stock_qty)
+		row.transaction_variance_qty = flt(row.actual_transaction_qty) - flt(row.bom_guided_qty)
 		row.variance_qty = actual - guided
 		row.variance_percent = row.variance_qty / guided * 100 if guided else 0
 		row.consumption_index_percent = actual / guided * 100 if guided else 0
@@ -116,14 +116,14 @@ def get_item_summary(filters=None):
 	grouped = {}
 
 	for row in rows:
-		key = (row.row_category, row.item_code, row.stock_uom)
+		key = (getattr(row, "row_category", "Consumption"), row.item_code, getattr(row, "stock_uom", None) or row.uom)
 		summary = grouped.setdefault(
 			key,
 			frappe._dict(
-				row_category=row.row_category,
+				row_category=getattr(row, "row_category", "Consumption"),
 				item_code=row.item_code,
 				item_name=row.item_name,
-				uom=row.stock_uom,
+				uom=getattr(row, "stock_uom", None) or row.uom,
 				actual_qty=0.0,
 				bom_guided_qty=0.0,
 				absolute_variance_qty=0.0,
@@ -177,7 +177,7 @@ def get_monthly_summary(filters=None):
 
 	for row in rows:
 		month = row.posting_date.strftime("%Y-%m")
-		key = (month, row.row_category, row.item_code, row.stock_uom)
+		key = (month, getattr(row, "row_category", "Consumption"), row.item_code, getattr(row, "stock_uom", None) or row.uom)
 		summary = grouped.setdefault(
 			key,
 			{"month": month, "actual": 0.0, "guided": 0.0, "absolute_variance": 0.0},
