@@ -1,0 +1,130 @@
+{
+ "doctype": "DocType",
+ "name": "Bank Transaction Backfill",
+ "module": "Av Tools",
+ "autoname": "BTBF-.YYYY.-.#####",
+ "is_submittable": 1,
+ "track_changes": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "criteria_section",
+  "company",
+  "source_doctype",
+  "column_break_criteria",
+  "from_date",
+  "to_date",
+  "preview_section",
+  "entries",
+  "results_section",
+  "created_count",
+  "skipped_count",
+  "failed_count",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "criteria_section",
+   "fieldtype": "Section Break",
+   "label": "Backfill Criteria"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "options": "Company",
+   "reqd": 1,
+   "label": "Company"
+  },
+  {
+   "fieldname": "source_doctype",
+   "fieldtype": "Select",
+   "options": "Payment Entry\nJournal Entry",
+   "reqd": 1,
+   "label": "Source DocType"
+  },
+  {
+   "fieldname": "column_break_criteria",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "reqd": 1,
+   "label": "Clearance Date From"
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "reqd": 1,
+   "label": "Clearance Date To"
+  },
+  {
+   "fieldname": "preview_section",
+   "fieldtype": "Section Break",
+   "label": "Review Candidates",
+   "description": "Click Preview Eligible Transactions and save before submitting. Only reviewed rows are processed."
+  },
+  {
+   "fieldname": "entries",
+   "fieldtype": "Table",
+   "options": "Bank Transaction Backfill Entry",
+   "label": "Candidates",
+   "reqd": 1
+  },
+  {
+   "fieldname": "results_section",
+   "fieldtype": "Section Break",
+   "label": "Results"
+  },
+  {
+   "fieldname": "created_count",
+   "fieldtype": "Int",
+   "label": "Created",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "skipped_count",
+   "fieldtype": "Int",
+   "label": "Skipped",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "failed_count",
+   "fieldtype": "Int",
+   "label": "Failed",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "options": "Bank Transaction Backfill",
+   "read_only": 1,
+   "no_copy": 1,
+   "label": "Amended From"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "create": 1,
+   "write": 1,
+   "submit": 1,
+   "report": 1,
+   "print": 1
+  },
+  {
+   "role": "System Manager",
+   "read": 1,
+   "create": 1,
+   "write": 1,
+   "submit": 1,
+   "report": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}
