@@ -9,7 +9,20 @@
   "read_only": 1,
   "no_copy": 1,
   "print_hide": 0,
-  "description": "Quantity prescribed by the selected BOM for the Stock Entry finished-goods quantity. The Qty field remains the actual entered quantity.",
+  "description": "BOM expected quantity in the row UOM; actual Qty remains editable.",
+  "module": "Av Tools"
+ },
+ {
+  "dt": "Stock Entry Detail",
+  "fieldname": "bom_guided_stock_qty",
+  "fieldtype": "Float",
+  "label": "BOM Guided Stock Qty",
+  "insert_after": "bom_guided_qty",
+  "in_list_view": 1,
+  "read_only": 1,
+  "no_copy": 1,
+  "print_hide": 0,
+  "description": "BOM expected quantity in Stock UOM, comparable with transfer_qty.",
   "module": "Av Tools"
  }
 ]
