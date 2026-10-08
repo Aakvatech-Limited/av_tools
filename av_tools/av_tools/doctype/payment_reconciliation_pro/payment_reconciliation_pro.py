@@ -13,7 +13,7 @@ from frappe import _, msgprint
 from frappe.model.document import Document
 from frappe.utils import cint, flt, today
 from frappe.query_builder.functions import Coalesce, Sum
-from frappe.query_builder.terms import ConstantColumn
+from pypika.terms import ValueWrapper
 
 
 class PaymentReconciliationPro(Document):
@@ -71,7 +71,7 @@ class PaymentReconciliationPro(Document):
 			frappe.qb.from_(je)
 			.join(account).on(je.name == account.parent)
 			.select(
-				ConstantColumn("Journal Entry").as_("reference_type"),
+				ValueWrapper("Journal Entry").as_("reference_type"),
 				je.name.as_("reference_name"), je.posting_date,
 				je.remark.as_("remarks"), account.name.as_("reference_row"),
 				amount.as_("amount"), account.is_advance,
@@ -119,7 +119,7 @@ class PaymentReconciliationPro(Document):
 			.join(gl).on((doc.name == gl.against_voucher) | (doc.name == gl.voucher_no))
 			.select(
 				doc.name.as_("reference_name"),
-				ConstantColumn(voucher_type).as_("reference_type"),
+				ValueWrapper(voucher_type).as_("reference_type"),
 				amount.as_("amount"),
 				gl.account_currency.as_("currency"),
 			)
@@ -389,7 +389,7 @@ def get_advance_payment_entries(
 			frappe.qb.from_(pe)
 			.join(ref).on(pe.name == ref.parent)
 			.select(
-				ConstantColumn("Payment Entry").as_("reference_type"),
+				ValueWrapper("Payment Entry").as_("reference_type"),
 				pe.name.as_("reference_name"), pe.remarks,
 				ref.allocated_amount.as_("amount"), ref.name.as_("reference_row"),
 				ref.reference_name.as_("against_order"), pe.posting_date,
@@ -414,7 +414,7 @@ def get_advance_payment_entries(
 		query = (
 			frappe.qb.from_(pe)
 			.select(
-				ConstantColumn("Payment Entry").as_("reference_type"),
+				ValueWrapper("Payment Entry").as_("reference_type"),
 				pe.name.as_("reference_name"), pe.remarks,
 				pe.unallocated_amount.as_("amount"),
 				pe[exchange_rate_field].as_("exchange_rate"),
