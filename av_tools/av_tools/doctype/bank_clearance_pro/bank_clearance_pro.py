@@ -6,7 +6,7 @@ import frappe
 from frappe import _, msgprint
 from frappe.model.document import Document
 from frappe.query_builder.functions import Coalesce, Sum
-from frappe.query_builder.terms import ConstantColumn
+from pypika.terms import ValueWrapper
 from pypika import Case, Order
 from frappe.utils import flt, fmt_money, getdate, nowdate
 
@@ -47,7 +47,7 @@ class BankClearancePro(Document):
 			frappe.qb.from_(je)
 			.join(jea).on(jea.parent == je.name)
 			.select(
-				ConstantColumn("Journal Entry").as_("payment_document"),
+				ValueWrapper("Journal Entry").as_("payment_document"),
 				je.name.as_("payment_entry"), je.cheque_no.as_("cheque_number"),
 				je.cheque_date, Sum(jea.debit_in_account_currency).as_("debit"),
 				Sum(jea.credit_in_account_currency).as_("credit"),
@@ -63,7 +63,7 @@ class BankClearancePro(Document):
 		payment_entries = (
 			frappe.qb.from_(pe)
 			.select(
-				ConstantColumn("Payment Entry").as_("payment_document"),
+				ValueWrapper("Payment Entry").as_("payment_document"),
 				pe.name.as_("payment_entry"),
 				pe.reference_no.as_("cheque_number"),
 				pe.reference_date.as_("cheque_date"),
@@ -90,11 +90,11 @@ class BankClearancePro(Document):
 				.join(si).on(sip.parent == si.name)
 				.join(account).on(account.name == sip.account)
 				.select(
-					ConstantColumn("Sales Invoice Payment").as_("payment_document"),
+					ValueWrapper("Sales Invoice Payment").as_("payment_document"),
 					sip.name.as_("payment_entry"), sip.amount.as_("debit"),
 					si.posting_date, si.customer.as_("against_account"),
 					sip.clearance_date, account.account_currency,
-					ConstantColumn(0).as_("credit"),
+					ValueWrapper(0).as_("credit"),
 				)
 				.where((sip.account == self.account) & (si.docstatus == 1) & si.posting_date.between(self.from_date, self.to_date))
 				.orderby(si.posting_date).orderby(si.name, order=Order.desc)
@@ -103,11 +103,11 @@ class BankClearancePro(Document):
 				frappe.qb.from_(pi)
 				.join(account).on(account.name == pi.cash_bank_account)
 				.select(
-					ConstantColumn("Purchase Invoice").as_("payment_document"),
+					ValueWrapper("Purchase Invoice").as_("payment_document"),
 					pi.name.as_("payment_entry"), pi.paid_amount.as_("credit"),
 					pi.posting_date, pi.supplier.as_("against_account"),
 					pi.clearance_date, account.account_currency,
-					ConstantColumn(0).as_("debit"),
+					ValueWrapper(0).as_("debit"),
 				)
 				.where((pi.cash_bank_account == self.account) & (pi.docstatus == 1) & pi.posting_date.between(self.from_date, self.to_date))
 				.orderby(pi.posting_date).orderby(pi.name, order=Order.desc)
