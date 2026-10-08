@@ -21,6 +21,7 @@ class TestStockEntryBomGuidedQty(FrappeTestCase):
 							"qty": 12,
 							"is_finished_item": 0,
 							"is_scrap_item": 0,
+							"conversion_factor": 1,
 						}
 					),
 					frappe._dict(
@@ -29,6 +30,7 @@ class TestStockEntryBomGuidedQty(FrappeTestCase):
 							"qty": 10,
 							"is_finished_item": 1,
 							"is_scrap_item": 0,
+							"conversion_factor": 1,
 						}
 					),
 				],
@@ -62,6 +64,7 @@ class TestStockEntryBomGuidedQty(FrappeTestCase):
 							"qty": 4,
 							"is_finished_item": 0,
 							"is_scrap_item": 0,
+							"conversion_factor": 1,
 						}
 					)
 				],
