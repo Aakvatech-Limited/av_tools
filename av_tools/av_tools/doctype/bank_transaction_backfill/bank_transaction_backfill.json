@@ -37,7 +37,7 @@
   {
    "fieldname": "source_doctype",
    "fieldtype": "Select",
-   "options": "Payment Entry\nJournal Entry",
+   "options": "\nPayment Entry\nJournal Entry\nPurchase Invoice\nSales Invoice",
    "reqd": 1,
    "label": "Source DocType"
   },
