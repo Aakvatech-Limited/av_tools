@@ -29,10 +29,12 @@ def _validate_criteria(doc):
         frappe.throw(_("Company and both clearance dates are required."))
     if getdate(doc.from_date) > getdate(doc.to_date):
         frappe.throw(_("From Date must not exceed To Date."))
-    if doc.source_doctype not in CORE_SOURCES:
-        frappe.throw(
-            _("Source DocType {0} is registered but has no safe backfill mapping. Add a validated source adapter before running.").format(doc.source_doctype)
-        )
+    if doc.source_doctype != "Sales Invoice":
+        meta = frappe.get_meta(doc.source_doctype)
+        if not meta.has_field("clearance_date") or not meta.has_field("company"):
+            frappe.throw(
+                _("Reconciliation source {0} needs company and clearance_date fields for automatic backfill.").format(doc.source_doctype)
+            )
 
 
 def _bank_accounts(company):
