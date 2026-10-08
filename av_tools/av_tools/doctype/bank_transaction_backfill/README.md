@@ -35,3 +35,14 @@ Use **Bank Transaction Backfill** to create missing submitted Bank Transactions 
 - Payment Entry, Journal Entry and paid Purchase Invoice use the parent `clearance_date` field.
 - POS Sales Invoice uses `Sales Invoice Payment.clearance_date`. Multiple payment rows with conflicting clearance dates cannot be safely collapsed and are excluded.
 - Additional registered source types must expose `company` and `clearance_date`; bank GL entries must resolve to exactly one Bank Account. Sources without this common structure are refused rather than being silently processed.
+
+## Reconciliation outcomes
+
+After Bank Transaction submission, the backfill reads its persisted status and allocated/unallocated amounts.
+
+- **Created** / parent **Fully Reconciled**: submitted, status Reconciled, fully allocated and no remainder.
+- **Partially Reconciled**: submitted, some amount allocated and a positive unallocated balance remains.
+- **Unreconciled**: submitted but no meaningful allocation, or not confirmed as fully reconciled.
+- **Skipped**: no longer eligible; **Failed**: creation/submission error.
+
+The resulting Bank Transaction remains linked to the backfill row, including for partially reconciled or unreconciled transactions.
