@@ -184,6 +184,29 @@ def preview_candidates(name):
     return _candidates(doc)
 
 
+def _reconciliation_result(name):
+    bank_transaction = frappe.db.get_value(
+        "Bank Transaction", name,
+        ["docstatus", "status", "deposit", "withdrawal", "allocated_amount", "unallocated_amount"],
+        as_dict=True,
+    )
+    if not bank_transaction or bank_transaction.docstatus != 1:
+        return "Failed", "Bank Transaction was not submitted."
+    total = max(flt(bank_transaction.deposit), flt(bank_transaction.withdrawal))
+    allocated = flt(bank_transaction.allocated_amount)
+    remaining = flt(bank_transaction.unallocated_amount)
+    tolerance = 0.01
+    if (
+        bank_transaction.status == "Reconciled"
+        and abs(remaining) <= tolerance
+        and abs(allocated - total) <= tolerance
+    ):
+        return "Created", "Fully reconciled."
+    if allocated > tolerance and remaining > tolerance:
+        return "Partially Reconciled", f"Allocated {allocated}; remaining {remaining}."
+    return "Unreconciled", f"Allocated {allocated}; remaining {remaining}."
+
+
 def _candidate_matches(row, expected):
     return (
         str(row.clearance_date) == str(expected["clearance_date"])
@@ -212,7 +235,7 @@ class BankTransactionBackfill(Document):
                 frappe.throw(_("Candidate {0} has changed or is unsupported. Refresh the preview.").format(row.source_document))
 
     def on_submit(self):
-        counts = {"Created": 0, "Skipped": 0, "Failed": 0}
+        counts = {"Created": 0, "Partially Reconciled": 0, "Unreconciled": 0, "Skipped": 0, "Failed": 0}
         for row in self.entries:
             frappe.db.savepoint("bt_backfill_" + str(row.idx))
             try:
@@ -242,7 +265,8 @@ class BankTransactionBackfill(Document):
                     })
                     bt.insert()
                     bt.submit()
-                    status, message, bt_name = "Created", "", bt.name
+                    status, message = _reconciliation_result(bt.name)
+                    bt_name = bt.name
             except Exception as exc:
                 frappe.db.rollback(save_point="bt_backfill_" + str(row.idx))
                 status, message, bt_name = "Failed", str(exc)[:500], None
@@ -251,7 +275,10 @@ class BankTransactionBackfill(Document):
                 "status": status, "error_message": message, "bank_transaction": bt_name,
             }, update_modified=False)
         frappe.db.set_value(self.doctype, self.name, {
-            "created_count": counts["Created"], "skipped_count": counts["Skipped"],
+            "created_count": counts["Created"],
+            "partially_reconciled_count": counts["Partially Reconciled"],
+            "unreconciled_count": counts["Unreconciled"],
+            "skipped_count": counts["Skipped"],
             "failed_count": counts["Failed"],
         }, update_modified=False)
 
