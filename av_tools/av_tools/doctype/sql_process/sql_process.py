@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 
 
@@ -11,23 +12,14 @@ class SQLProcess(Document):
 
 	@frappe.whitelist()
 	def get_process(self):
-		process = frappe.db.sql(
-			"""
-                select id, time, info
-                from information_schema.processlist
-                WHERE info IS NOT NULL
-            """,
-			as_dict=True,
+		frappe.throw(
+			_("Database process management is unavailable in AV Tools."),
+			frappe.PermissionError,
 		)
-		return process
 
 	@frappe.whitelist()
 	def kill_process(self, pid):
-		frappe.msgprint(f"Killing process {pid}", alert=True, indicator="orange")
-		try:
-			frappe.db.sql(f"""Kill {pid}""")
-		except Exception:
-			frappe.msgprint("Process not found", alert=True, indicator="red")
-			return False
-		frappe.msgprint("Process killed", alert=True, indicator="green")
-		return True
+		frappe.throw(
+			_("Database process management is unavailable in AV Tools."),
+			frappe.PermissionError,
+		)

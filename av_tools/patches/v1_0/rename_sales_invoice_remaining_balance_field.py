@@ -1,4 +1,5 @@
 import frappe
+from frappe.query_builder.functions import Coalesce
 
 OLD = "Sales Invoice-custom_remaining_balance"
 NEW = "Sales Invoice-remaining_balance"
@@ -14,13 +15,12 @@ def execute():
 	has_new_column = frappe.db.has_column("Sales Invoice", NEW_FIELD)
 	if frappe.db.exists("Custom Field", NEW):
 		if has_old_column and has_new_column:
-			frappe.db.sql(
-				"""
-				update `tabSales Invoice`
-				set remaining_balance = custom_remaining_balance
-				where ifnull(remaining_balance, 0) = 0
-				"""
-			)
+			invoice = frappe.qb.DocType("Sales Invoice")
+			(
+				frappe.qb.update(invoice)
+				.set(invoice.remaining_balance, invoice.custom_remaining_balance)
+				.where(Coalesce(invoice.remaining_balance, 0) == 0)
+			).run()
 		elif has_old_column:
 			frappe.db.rename_column("Sales Invoice", OLD_FIELD, NEW_FIELD)
 		frappe.delete_doc("Custom Field", OLD, force=True, ignore_permissions=True, ignore_on_trash=True)
