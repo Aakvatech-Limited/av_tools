@@ -1,0 +1,18 @@
+{
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "dynamic_filters_json": "{\"company\":\"frappe.defaults.get_user_default(\\\"Company\\\")\",\"from_date\":\"frappe.datetime.month_start()\",\"to_date\":\"frappe.datetime.get_today()\"}",
+ "filters_json": "{}",
+ "function": "Average",
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Average BOM Absolute Variance",
+ "module": "Av Tools",
+ "name": "Average BOM Absolute Variance",
+ "report_field": "absolute_variance_percent",
+ "report_function": "Average",
+ "report_name": "Manufacturing BOM Variance Summary",
+ "show_full_number": 1,
+ "show_percentage_stats": 0,
+ "type": "Report"
+}
