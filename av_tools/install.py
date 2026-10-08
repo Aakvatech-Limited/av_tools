@@ -1,30 +1,38 @@
 import frappe
+from frappe import _
+
+SHARED_MODULES = ("AuthOTP", "Feedback", "AI Integration", "Trade In")
 
 
 def before_install():
-	"""
-	Some modules were previously owned by csf_tz. They have been moved to av_tools.
-	On sites where csf_tz was installed first, these Module Defs (e.g. AuthOTP, Feedback)
-	already exist in the database. Delete them here so Frappe can re-register them
-	cleanly under av_tools without hitting a duplicate primary key error.
-
-	On fresh sites where they do not exist yet, this is a no-op.
-	"""
-	try:
-		modules = frappe.get_module_list("av_tools")
-	except Exception:
-		modules = [
-			"Av Tools",
-			"Weigh Bridge",
-			"AuthOTP",
-			"Feedback",
-			"AI Integration",
-			"Compliance",
-			"Trade In",
-		]
+	"""Let Frappe register legacy modules without deleting another app's modules."""
+	modules = frappe.get_module_list("av_tools")
+	# Validate every collision before making changes. Frappe's installer inserts
+	# Module Defs afterwards; only their metadata rows need to be re-registered.
+	for module in modules:
+		if not frappe.db.exists("Module Def", module):
+			continue
+		owner = frappe.db.get_value("Module Def", module, "app_name")
+		if owner == "av_tools" or (module in SHARED_MODULES and owner == "csf_tz"):
+			continue
+		frappe.throw(_("Module {0} already belongs to {1}; installation stopped.").format(module, owner))
 
 	for module in modules:
 		if frappe.db.exists("Module Def", module):
 			frappe.db.delete("Module Def", {"name": module})
+	# The installer controls the transaction. Do not commit a partial handover.
 
-	frappe.db.commit()
+
+def reconcile_shared_modules():
+	"""Transfer legacy ownership without deleting DocTypes, tables or OTP data."""
+	for module in SHARED_MODULES:
+		if not frappe.db.exists("Module Def", module):
+			continue
+		owner = frappe.db.get_value("Module Def", module, "app_name")
+		if owner == "csf_tz":
+			frappe.db.set_value("Module Def", module, "app_name", "av_tools", update_modified=False)
+
+	# Older CSF TZ releases also shipped a second OTP Register in their core module.
+	if frappe.db.get_value("DocType", "OTP Register", "module") == "CSF TZ":
+		frappe.db.set_value("DocType", "OTP Register", "module", "AuthOTP", update_modified=False)
+		frappe.clear_cache(doctype="OTP Register")
