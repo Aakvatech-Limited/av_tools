@@ -135,7 +135,7 @@ def get_item_summary(filters=None):
 		)
 
 		summary.actual_qty += flt(row.actual_qty)
-		summary.bom_guided_qty += flt(row.bom_guided_stock_qty)
+		summary.bom_guided_qty += flt(row.get("bom_guided_stock_qty") if row.get("bom_guided_stock_qty") is not None else row.bom_guided_qty)
 		summary.absolute_variance_qty += abs(flt(row.variance_qty))
 		summary.entry_names.add(row.stock_entry)
 
@@ -246,13 +246,13 @@ def get_report_summary(detail_rows):
 def summarize_detail_rows(detail_rows):
 	grouped = {}
 	for row in detail_rows:
-		key = (row.row_category, row.item_code, row.stock_uom)
+		key = (row.get("row_category") or "Consumption", row.item_code, row.get("stock_uom") or row.uom)
 		summary = grouped.setdefault(
 			key,
 			frappe._dict(
-				row_category=row.row_category,
+				row_category=row.get("row_category") or "Consumption",
 				item_code=row.item_code,
-				uom=row.stock_uom,
+				uom=row.get("stock_uom") or row.uom,
 				actual_qty=0.0,
 				bom_guided_qty=0.0,
 				absolute_variance_qty=0.0,
