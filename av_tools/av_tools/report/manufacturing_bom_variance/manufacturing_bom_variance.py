@@ -183,7 +183,7 @@ def get_monthly_summary(filters=None):
 			{"month": month, "actual": 0.0, "guided": 0.0, "absolute_variance": 0.0},
 		)
 		summary["actual"] += flt(row.actual_qty)
-		summary["guided"] += flt(row.bom_guided_stock_qty)
+		summary["guided"] += flt(row.get("bom_guided_stock_qty") if row.get("bom_guided_stock_qty") is not None else row.bom_guided_qty)
 		summary["absolute_variance"] += abs(flt(row.variance_qty))
 
 	monthly = {}
