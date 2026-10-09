@@ -6,6 +6,7 @@ import frappe
 from erpnext.stock.utils import get_latest_stock_qty, get_stock_balance
 from frappe import _
 from frappe.model.document import Document
+from frappe.utils import nowtime
 
 
 class SpecialClosingBalance(Document):
@@ -114,7 +115,8 @@ class SpecialClosingBalance(Document):
 
 
 @frappe.whitelist()
-def get_items(warehouse, posting_date, posting_time, company):
+def get_items(warehouse, posting_date, company, posting_time=None):
+	posting_time = posting_time or nowtime()
 	lft, rgt = frappe.db.get_value("Warehouse", warehouse, ["lft", "rgt"])
 
 	items = frappe.db.sql(
