@@ -1,0 +1,57 @@
+{
+ "doctype": "Workspace",
+ "name": "Feedback",
+ "title": "Feedback",
+ "label": "Feedback",
+ "module": "Feedback",
+ "standard": 1,
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": "",
+ "roles": [],
+ "icon": "message-square",
+ "indicator_color": "blue",
+ "content": "[{\"id\":\"title\",\"type\":\"header\",\"data\":{\"text\":\"Feedback\",\"col\":12}},{\"id\":\"shortcut_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Feedback Form\",\"col\":4}},{\"id\":\"card_0\",\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\",\"col\":4}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Masters\",\"col\":4}}]",
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Transactions",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Feedback Form",
+   "link_type": "DocType",
+   "link_to": "Feedback Form",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Masters",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Feedback Template",
+   "link_type": "DocType",
+   "link_to": "Feedback Template",
+   "hidden": 0
+  }
+ ],
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_to": "Feedback Form",
+   "label": "Feedback Form",
+   "doc_view": "List",
+   "color": "Blue"
+  }
+ ],
+ "charts": [],
+ "number_cards": [],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "modified": "2026-10-10 11:00:00.000000",
+ "owner": "Administrator",
+ "modified_by": "Administrator"
+}

@@ -1,0 +1,80 @@
+{
+ "doctype": "Sidebar",
+ "name": "Google Chat Conversations",
+ "title": "Google Chat Conversations",
+ "app": "av_tools",
+ "module": "Google Chat Conversations",
+ "standard": 1,
+ "header_icon": "messages-square",
+ "items": [
+  {
+   "type": "Link",
+   "label": "Home",
+   "link_type": "Workspace",
+   "link_to": "Google Chat Conversations",
+   "icon": "home",
+   "child": 0
+  },
+  {
+   "type": "Section Break",
+   "label": "Conversations",
+   "child": 0,
+   "indent": 1,
+   "collapsible": 1,
+   "keep_closed": 1
+  },
+  {
+   "type": "Link",
+   "label": "Google Chat Conversation",
+   "link_type": "DocType",
+   "link_to": "Google Chat Conversation",
+   "child": 1
+  },
+  {
+   "type": "Section Break",
+   "label": "Masters",
+   "child": 0,
+   "indent": 1,
+   "collapsible": 1,
+   "keep_closed": 1
+  },
+  {
+   "type": "Link",
+   "label": "Google Chat User",
+   "link_type": "DocType",
+   "link_to": "Google Chat User",
+   "child": 1
+  },
+  {
+   "type": "Section Break",
+   "label": "Settings",
+   "child": 0,
+   "indent": 1,
+   "collapsible": 1,
+   "keep_closed": 1
+  },
+  {
+   "type": "Link",
+   "label": "Google Chat Settings",
+   "link_type": "DocType",
+   "link_to": "Google Chat Settings",
+   "child": 1
+  },
+  {
+   "type": "Section Break",
+   "label": "Delivery Diagnostics",
+   "child": 0,
+   "indent": 1,
+   "collapsible": 1,
+   "keep_closed": 1
+  },
+  {
+   "type": "Link",
+   "label": "Google Chat Delivery Log",
+   "link_type": "DocType",
+   "link_to": "Google Chat Delivery Log",
+   "child": 1
+  }
+ ],
+ "modified": "2026-10-10 11:00:00.000000"
+}

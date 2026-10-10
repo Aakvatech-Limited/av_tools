@@ -1,0 +1,197 @@
+{
+ "doctype": "Workspace",
+ "name": "AV Tools People and Payroll",
+ "title": "AV Tools People and Payroll",
+ "label": "AV Tools People and Payroll",
+ "module": "Av Tools",
+ "standard": 1,
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": "",
+ "roles": [],
+ "icon": "tool",
+ "indicator_color": "blue",
+ "content": "[{\"id\":\"title\",\"type\":\"header\",\"data\":{\"text\":\"AV Tools People and Payroll\",\"col\":12}},{\"id\":\"shortcut_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Piecework\",\"col\":4}},{\"id\":\"shortcut_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Piecework Single\",\"col\":4}},{\"id\":\"shortcut_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Piecework Salary Disbursement\",\"col\":4}},{\"id\":\"card_0\",\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\",\"col\":4}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Masters\",\"col\":4}},{\"id\":\"card_2\",\"type\":\"card\",\"data\":{\"card_name\":\"Payroll Reports\",\"col\":4}},{\"id\":\"card_3\",\"type\":\"card\",\"data\":{\"card_name\":\"Tools\",\"col\":4}}]",
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Transactions",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Piecework",
+   "link_type": "DocType",
+   "link_to": "Piecework",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Piecework Single",
+   "link_type": "DocType",
+   "link_to": "Piecework Single",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Piecework Salary Disbursement",
+   "link_type": "DocType",
+   "link_to": "Piecework Salary Disbursement",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Email Salary Slips",
+   "link_type": "DocType",
+   "link_to": "Email Salary Slips",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Temporary Role Access Request",
+   "link_type": "DocType",
+   "link_to": "Temporary Role Access Request",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Masters",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Piecework Type",
+   "link_type": "DocType",
+   "link_to": "Piecework Type",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Payroll Reports",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Employee Checkin & Checkout Report",
+   "link_type": "Report",
+   "link_to": "Employee Checkin & Checkout Report",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Employee Checkin"
+  },
+  {
+   "type": "Link",
+   "label": "Employee Salary Register with Monthly Comparison",
+   "link_type": "Report",
+   "link_to": "Employee Salary Register with Monthly Comparison",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Salary Slip"
+  },
+  {
+   "type": "Link",
+   "label": "Payroll for Mobile Payment",
+   "link_type": "Report",
+   "link_to": "Payroll for Mobile Payment",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Salary Slip"
+  },
+  {
+   "type": "Link",
+   "label": "Piecework Net Pay",
+   "link_type": "Report",
+   "link_to": "Piecework Net Pay",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Additional Salary"
+  },
+  {
+   "type": "Link",
+   "label": "Salary Register csf",
+   "link_type": "Report",
+   "link_to": "Salary Register csf",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Salary Slip"
+  },
+  {
+   "type": "Link",
+   "label": "Salary Register CTC",
+   "link_type": "Report",
+   "link_to": "Salary Register CTC",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Salary Slip"
+  },
+  {
+   "type": "Link",
+   "label": "Salary Register Summary",
+   "link_type": "Report",
+   "link_to": "Salary Register Summary",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Salary Slip"
+  },
+  {
+   "type": "Link",
+   "label": "Salary Register Summary with Components",
+   "link_type": "Report",
+   "link_to": "Salary Register Summary with Components",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Salary Slip"
+  },
+  {
+   "type": "Link",
+   "label": "Salary Register Summary with Monthly Comparison",
+   "link_type": "Report",
+   "link_to": "Salary Register Summary with Monthly Comparison",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Salary Slip"
+  },
+  {
+   "type": "Card Break",
+   "label": "Tools",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "salary-calculator",
+   "link_type": "Page",
+   "link_to": "salary-calculator",
+   "hidden": 0
+  }
+ ],
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_to": "Piecework",
+   "label": "Piecework",
+   "doc_view": "List",
+   "color": "Blue"
+  },
+  {
+   "type": "DocType",
+   "link_to": "Piecework Single",
+   "label": "Piecework Single",
+   "doc_view": "List",
+   "color": "Blue"
+  },
+  {
+   "type": "DocType",
+   "link_to": "Piecework Salary Disbursement",
+   "label": "Piecework Salary Disbursement",
+   "doc_view": "List",
+   "color": "Blue"
+  }
+ ],
+ "charts": [],
+ "number_cards": [],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "modified": "2026-10-10 11:00:00.000000",
+ "owner": "Administrator",
+ "modified_by": "Administrator"
+}

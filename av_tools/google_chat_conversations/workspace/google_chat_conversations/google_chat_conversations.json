@@ -1,0 +1,85 @@
+{
+ "doctype": "Workspace",
+ "name": "Google Chat Conversations",
+ "title": "Google Chat Conversations",
+ "label": "Google Chat Conversations",
+ "module": "Google Chat Conversations",
+ "standard": 1,
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": "",
+ "roles": [
+  {
+   "role": "System Manager"
+  }
+ ],
+ "icon": "messages-square",
+ "indicator_color": "blue",
+ "content": "[{\"id\":\"title\",\"type\":\"header\",\"data\":{\"text\":\"Google Chat Conversations\",\"col\":12}},{\"id\":\"shortcut_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Google Chat Conversation\",\"col\":4}},{\"id\":\"card_0\",\"type\":\"card\",\"data\":{\"card_name\":\"Conversations\",\"col\":4}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Masters\",\"col\":4}},{\"id\":\"card_2\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}},{\"id\":\"card_3\",\"type\":\"card\",\"data\":{\"card_name\":\"Delivery Diagnostics\",\"col\":4}}]",
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Conversations",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Google Chat Conversation",
+   "link_type": "DocType",
+   "link_to": "Google Chat Conversation",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Masters",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Google Chat User",
+   "link_type": "DocType",
+   "link_to": "Google Chat User",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Settings",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Google Chat Settings",
+   "link_type": "DocType",
+   "link_to": "Google Chat Settings",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Delivery Diagnostics",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Google Chat Delivery Log",
+   "link_type": "DocType",
+   "link_to": "Google Chat Delivery Log",
+   "hidden": 0
+  }
+ ],
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_to": "Google Chat Conversation",
+   "label": "Google Chat Conversation",
+   "doc_view": "List",
+   "color": "Blue"
+  }
+ ],
+ "charts": [],
+ "number_cards": [],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "modified": "2026-10-10 11:00:00.000000",
+ "owner": "Administrator",
+ "modified_by": "Administrator"
+}

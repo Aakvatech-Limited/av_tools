@@ -1,0 +1,57 @@
+{
+ "doctype": "Workspace",
+ "name": "Weigh Bridge",
+ "title": "Weigh Bridge",
+ "label": "Weigh Bridge",
+ "module": "Weigh Bridge",
+ "standard": 1,
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": "",
+ "roles": [],
+ "icon": "truck",
+ "indicator_color": "blue",
+ "content": "[{\"id\":\"title\",\"type\":\"header\",\"data\":{\"text\":\"Weigh Bridge\",\"col\":12}},{\"id\":\"shortcut_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Weighbridge Ticket\",\"col\":4}},{\"id\":\"card_0\",\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\",\"col\":4}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}}]",
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Transactions",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Weighbridge Ticket",
+   "link_type": "DocType",
+   "link_to": "Weighbridge Ticket",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Settings",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Weighbridge Settings",
+   "link_type": "DocType",
+   "link_to": "Weighbridge Settings",
+   "hidden": 0
+  }
+ ],
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_to": "Weighbridge Ticket",
+   "label": "Weighbridge Ticket",
+   "doc_view": "List",
+   "color": "Blue"
+  }
+ ],
+ "charts": [],
+ "number_cards": [],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "modified": "2026-10-10 11:00:00.000000",
+ "owner": "Administrator",
+ "modified_by": "Administrator"
+}

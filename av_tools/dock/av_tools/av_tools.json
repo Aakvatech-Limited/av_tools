@@ -1,0 +1,66 @@
+{
+ "doctype": "Dock",
+ "name": "av_tools",
+ "app": "av_tools",
+ "standard": 1,
+ "user": "",
+ "items": [
+  {
+   "link_type": "Sidebar",
+   "link_to": "Av Tools",
+   "title": "AV Tools",
+   "icon": "tool",
+   "hidden": 0,
+   "added": 0
+  },
+  {
+   "link_type": "Sidebar",
+   "link_to": "Weigh Bridge",
+   "title": "Weigh Bridge",
+   "icon": "truck",
+   "hidden": 0,
+   "added": 0
+  },
+  {
+   "link_type": "Sidebar",
+   "link_to": "Compliance",
+   "title": "Compliance",
+   "icon": "shield-check",
+   "hidden": 0,
+   "added": 0
+  },
+  {
+   "link_type": "Sidebar",
+   "link_to": "Feedback",
+   "title": "Feedback",
+   "icon": "message-square",
+   "hidden": 0,
+   "added": 0
+  },
+  {
+   "link_type": "Sidebar",
+   "link_to": "AuthOTP",
+   "title": "AuthOTP",
+   "icon": "key-round",
+   "hidden": 0,
+   "added": 0
+  },
+  {
+   "link_type": "Sidebar",
+   "link_to": "AI Integration",
+   "title": "AI Integration",
+   "icon": "bot",
+   "hidden": 0,
+   "added": 0
+  },
+  {
+   "link_type": "Sidebar",
+   "link_to": "Google Chat Conversations",
+   "title": "Google Chat Conversations",
+   "icon": "messages-square",
+   "hidden": 0,
+   "added": 0
+  }
+ ],
+ "modified": "2026-10-10 11:00:00.000000"
+}

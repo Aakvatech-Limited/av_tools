@@ -1,41 +1,106 @@
 {
- "charts": [],
- "content": "[{\"id\":\"3YMadInl3M\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Aakvatech Tools</span>\",\"col\":12}},{\"id\":\"3Pv-a4WVP3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"User Manager\",\"col\":3}}]",
- "creation": "2026-01-07 14:44:04.323458",
- "custom_blocks": [],
- "docstatus": 0,
  "doctype": "Workspace",
- "for_user": "",
- "hide_custom": 0,
- "icon": "getting-started",
- "idx": 0,
- "indicator_color": "green",
- "is_hidden": 0,
- "label": "AV Tools",
- "links": [],
- "modified": "2026-01-07 14:45:22.222468",
- "modified_by": "Administrator",
- "module": "Av Tools",
  "name": "AV Tools",
- "number_cards": [],
- "owner": "Administrator",
- "parent_page": "",
+ "title": "AV Tools",
+ "label": "AV Tools",
+ "module": "Av Tools",
+ "standard": 1,
  "public": 1,
- "quick_lists": [],
- "roles": [
-  {
-   "role": "System Manager"
-  }
- ],
- "sequence_id": 378.0,
+ "is_hidden": 0,
+ "for_user": "",
+ "roles": [],
+ "icon": "tool",
+ "indicator_color": "blue",
+ "content": "[{\"id\":\"title\",\"type\":\"header\",\"data\":{\"text\":\"AV Tools\",\"col\":12}},{\"id\":\"shortcut_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payment Reconciliation Pro\",\"col\":4}},{\"id\":\"shortcut_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Special Closing Balance\",\"col\":4}},{\"id\":\"shortcut_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Temporary Role Access Request\",\"col\":4}},{\"id\":\"domain_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"AV Tools Accounting\",\"col\":4}},{\"id\":\"domain_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"AV Tools Stock and Manufacturing\",\"col\":4}},{\"id\":\"domain_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"AV Tools People and Payroll\",\"col\":4}},{\"id\":\"domain_3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"AV Tools Administration\",\"col\":4}},{\"id\":\"domain_4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Weigh Bridge\",\"col\":4}},{\"id\":\"domain_5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Compliance\",\"col\":4}},{\"id\":\"domain_6\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Feedback\",\"col\":4}},{\"id\":\"domain_7\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"AuthOTP\",\"col\":4}},{\"id\":\"domain_8\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"AI Integration\",\"col\":4}},{\"id\":\"domain_9\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Google Chat Conversations\",\"col\":4}}]",
+ "links": [],
  "shortcuts": [
   {
-   "color": "Grey",
+   "type": "DocType",
+   "link_to": "Payment Reconciliation Pro",
+   "label": "Payment Reconciliation Pro",
    "doc_view": "List",
-   "label": "User Manager",
-   "link_to": "user_manager",
-   "type": "Page"
+   "color": "Blue"
+  },
+  {
+   "type": "DocType",
+   "link_to": "Special Closing Balance",
+   "label": "Special Closing Balance",
+   "doc_view": "List",
+   "color": "Blue"
+  },
+  {
+   "type": "DocType",
+   "link_to": "Temporary Role Access Request",
+   "label": "Temporary Role Access Request",
+   "doc_view": "List",
+   "color": "Blue"
+  },
+  {
+   "type": "URL",
+   "url": "/desk/av-tools-accounting",
+   "label": "AV Tools Accounting",
+   "color": "Grey"
+  },
+  {
+   "type": "URL",
+   "url": "/desk/av-tools-stock-and-manufacturing",
+   "label": "AV Tools Stock and Manufacturing",
+   "color": "Grey"
+  },
+  {
+   "type": "URL",
+   "url": "/desk/av-tools-people-and-payroll",
+   "label": "AV Tools People and Payroll",
+   "color": "Grey"
+  },
+  {
+   "type": "URL",
+   "url": "/desk/av-tools-administration",
+   "label": "AV Tools Administration",
+   "color": "Grey"
+  },
+  {
+   "type": "URL",
+   "url": "/desk/weigh-bridge",
+   "label": "Weigh Bridge",
+   "color": "Grey"
+  },
+  {
+   "type": "URL",
+   "url": "/desk/compliance",
+   "label": "Compliance",
+   "color": "Grey"
+  },
+  {
+   "type": "URL",
+   "url": "/desk/feedback",
+   "label": "Feedback",
+   "color": "Grey"
+  },
+  {
+   "type": "URL",
+   "url": "/desk/authotp",
+   "label": "AuthOTP",
+   "color": "Grey"
+  },
+  {
+   "type": "URL",
+   "url": "/desk/ai-integration",
+   "label": "AI Integration",
+   "color": "Grey"
+  },
+  {
+   "type": "URL",
+   "url": "/desk/google-chat-conversations",
+   "label": "Google Chat Conversations",
+   "color": "Grey"
   }
  ],
- "title": "AV Tools"
+ "charts": [],
+ "number_cards": [],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "modified": "2026-10-10 11:00:00.000000",
+ "owner": "Administrator",
+ "modified_by": "Administrator"
 }

@@ -1,0 +1,61 @@
+{
+ "doctype": "Workspace",
+ "name": "AI Integration",
+ "title": "AI Integration",
+ "label": "AI Integration",
+ "module": "AI Integration",
+ "standard": 1,
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": "",
+ "roles": [
+  {
+   "role": "System Manager"
+  }
+ ],
+ "icon": "bot",
+ "indicator_color": "blue",
+ "content": "[{\"id\":\"title\",\"type\":\"header\",\"data\":{\"text\":\"AI Integration\",\"col\":12}},{\"id\":\"shortcut_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"LLM Settings\",\"col\":4}},{\"id\":\"card_0\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Diagnostics\",\"col\":4}}]",
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Settings",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "LLM Settings",
+   "link_type": "DocType",
+   "link_to": "LLM Settings",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Diagnostics",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "OpenAI Query Log",
+   "link_type": "DocType",
+   "link_to": "OpenAI Query Log",
+   "hidden": 0
+  }
+ ],
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_to": "LLM Settings",
+   "label": "LLM Settings",
+   "doc_view": "List",
+   "color": "Blue"
+  }
+ ],
+ "charts": [],
+ "number_cards": [],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "modified": "2026-10-10 11:00:00.000000",
+ "owner": "Administrator",
+ "modified_by": "Administrator"
+}
