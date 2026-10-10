@@ -1,0 +1,286 @@
+{
+ "doctype": "Workspace",
+ "name": "AV Tools Stock and Manufacturing",
+ "title": "AV Tools Stock and Manufacturing",
+ "label": "AV Tools Stock and Manufacturing",
+ "module": "Av Tools",
+ "standard": 1,
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": "",
+ "roles": [],
+ "icon": "tool",
+ "indicator_color": "blue",
+ "content": "[{\"id\":\"title\",\"type\":\"header\",\"data\":{\"text\":\"AV Tools Stock and Manufacturing\",\"col\":12}},{\"id\":\"shortcut_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inter Company Material Request\",\"col\":4}},{\"id\":\"shortcut_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inter Company Stock Transfer\",\"col\":4}},{\"id\":\"shortcut_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Work Order Consignment\",\"col\":4}},{\"id\":\"card_0\",\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\",\"col\":4}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Masters\",\"col\":4}},{\"id\":\"card_2\",\"type\":\"card\",\"data\":{\"card_name\":\"Procurement and Sales Reports\",\"col\":4}},{\"id\":\"card_3\",\"type\":\"card\",\"data\":{\"card_name\":\"Manufacturing Reports\",\"col\":4}},{\"id\":\"card_4\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings & Administration\",\"col\":4}},{\"id\":\"variance_dashboard\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Manufacturing BOM Variance\",\"col\":4}}]",
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Transactions",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Inter Company Material Request",
+   "link_type": "DocType",
+   "link_to": "Inter Company Material Request",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Inter Company Stock Transfer",
+   "link_type": "DocType",
+   "link_to": "Inter Company Stock Transfer",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Work Order Consignment",
+   "link_type": "DocType",
+   "link_to": "Work Order Consignment",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Delivery Exchange Item",
+   "link_type": "DocType",
+   "link_to": "Delivery Exchange Item",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Maintenance Request",
+   "link_type": "DocType",
+   "link_to": "Maintenance Request",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Parking Bill",
+   "link_type": "DocType",
+   "link_to": "Parking Bill",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Price Change Request",
+   "link_type": "DocType",
+   "link_to": "Price Change Request",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Root Cause Analysis",
+   "link_type": "DocType",
+   "link_to": "Root Cause Analysis",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Special Closing Balance",
+   "link_type": "DocType",
+   "link_to": "Special Closing Balance",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Masters",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Repack Template",
+   "link_type": "DocType",
+   "link_to": "Repack Template",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Attachment Type",
+   "link_type": "DocType",
+   "link_to": "Attachment Type",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Dynamic Price List Assignment",
+   "link_type": "DocType",
+   "link_to": "Dynamic Price List Assignment",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Procurement and Sales Reports",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Material Request Procurement Audit",
+   "link_type": "Report",
+   "link_to": "Material Request Procurement Audit",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Material Request"
+  },
+  {
+   "type": "Link",
+   "label": "Purchase Cycle Report",
+   "link_type": "Report",
+   "link_to": "Purchase Cycle Report",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Purchase Order"
+  },
+  {
+   "type": "Link",
+   "label": "Sales Cycle Report",
+   "link_type": "Report",
+   "link_to": "Sales Cycle Report",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Sales Order"
+  },
+  {
+   "type": "Link",
+   "label": "Purchase Report by Type",
+   "link_type": "Report",
+   "link_to": "Purchase Report by Type",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Purchase Invoice"
+  },
+  {
+   "type": "Link",
+   "label": "Sales Report by Type",
+   "link_type": "Report",
+   "link_to": "Sales Report by Type",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Sales Invoice"
+  },
+  {
+   "type": "Link",
+   "label": "Purchase Reports by Tax Category",
+   "link_type": "Report",
+   "link_to": "Purchase Reports by Tax Category",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Purchase Invoice"
+  },
+  {
+   "type": "Link",
+   "label": "Purchases by Tax Category Summary",
+   "link_type": "Report",
+   "link_to": "Purchases by Tax Category Summary",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Purchase Invoice"
+  },
+  {
+   "type": "Link",
+   "label": "Supplier Quotation Comparison Vertical",
+   "link_type": "Report",
+   "link_to": "Supplier Quotation Comparison Vertical",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Supplier Quotation"
+  },
+  {
+   "type": "Link",
+   "label": "Item Price by Price List",
+   "link_type": "Report",
+   "link_to": "Item Price by Price List",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Item"
+  },
+  {
+   "type": "Link",
+   "label": "Price Change History",
+   "link_type": "Report",
+   "link_to": "Price Change History",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Price Change Request"
+  },
+  {
+   "type": "Card Break",
+   "label": "Manufacturing Reports",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Manufacturing BOM Variance",
+   "link_type": "Report",
+   "link_to": "Manufacturing BOM Variance",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Stock Entry"
+  },
+  {
+   "type": "Link",
+   "label": "Manufacturing BOM Variance Summary",
+   "link_type": "Report",
+   "link_to": "Manufacturing BOM Variance Summary",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Stock Entry"
+  },
+  {
+   "type": "Link",
+   "label": "Manufacturing BOM Variance Trend",
+   "link_type": "Report",
+   "link_to": "Manufacturing BOM Variance Trend",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Stock Entry"
+  },
+  {
+   "type": "Card Break",
+   "label": "Settings & Administration",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Item Barcode Update Tool",
+   "link_type": "DocType",
+   "link_to": "Item Barcode Update Tool",
+   "hidden": 0
+  }
+ ],
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_to": "Inter Company Material Request",
+   "label": "Inter Company Material Request",
+   "doc_view": "List",
+   "color": "Blue"
+  },
+  {
+   "type": "DocType",
+   "link_to": "Inter Company Stock Transfer",
+   "label": "Inter Company Stock Transfer",
+   "doc_view": "List",
+   "color": "Blue"
+  },
+  {
+   "type": "DocType",
+   "link_to": "Work Order Consignment",
+   "label": "Work Order Consignment",
+   "doc_view": "List",
+   "color": "Blue"
+  },
+  {
+   "type": "Dashboard",
+   "link_to": "Manufacturing BOM Variance",
+   "label": "Manufacturing BOM Variance",
+   "color": "Blue"
+  }
+ ],
+ "charts": [],
+ "number_cards": [],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "modified": "2026-10-10 11:00:00.000000",
+ "owner": "Administrator",
+ "modified_by": "Administrator"
+}

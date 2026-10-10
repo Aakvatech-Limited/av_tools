@@ -10,16 +10,18 @@ app_license = "mit"
 
 # required_apps = []
 
-# Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "av_tools",
-# 		"logo": "/assets/av_tools/logo.png",
-# 		"title": "Av Tools",
-# 		"route": "/av_tools",
-# 		"has_permission": "av_tools.api.permission.has_app_permission"
-# 	}
-# ]
+# Desktop opens the existing Workspace route; it is not a custom Page.
+add_to_apps_screen = [
+	{
+		"name": "av_tools",
+		"logo": "/assets/av_tools/images/av_tools.svg",
+		"title": "AV Tools",
+		"route": "/desk/av-tools",
+	}
+]
+
+# Trade In extends ERPNext transactions and has no standalone navigation records.
+code_only_modules = {"Trade In": ["Av Tools"]}
 
 # Includes in <head>
 # ------------------

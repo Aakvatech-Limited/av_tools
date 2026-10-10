@@ -1,0 +1,224 @@
+{
+ "doctype": "Workspace",
+ "name": "AV Tools Administration",
+ "title": "AV Tools Administration",
+ "label": "AV Tools Administration",
+ "module": "Av Tools",
+ "standard": 1,
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": "",
+ "roles": [
+  {
+   "role": "System Manager"
+  }
+ ],
+ "icon": "tool",
+ "indicator_color": "blue",
+ "content": "[{\"id\":\"title\",\"type\":\"header\",\"data\":{\"text\":\"AV Tools Administration\",\"col\":12}},{\"id\":\"shortcut_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"AV Tools Settings\",\"col\":4}},{\"id\":\"shortcut_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Theme\",\"col\":4}},{\"id\":\"shortcut_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Visibility\",\"col\":4}},{\"id\":\"card_0\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Implementation Tools\",\"col\":4}},{\"id\":\"card_2\",\"type\":\"card\",\"data\":{\"card_name\":\"Access Audit\",\"col\":4}},{\"id\":\"card_3\",\"type\":\"card\",\"data\":{\"card_name\":\"Diagnostics\",\"col\":4}}]",
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Settings",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "AV Tools Settings",
+   "link_type": "DocType",
+   "link_to": "AV Tools Settings",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Theme",
+   "link_type": "DocType",
+   "link_to": "Theme",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Visibility",
+   "link_type": "DocType",
+   "link_to": "Visibility",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Site Configuration",
+   "link_type": "DocType",
+   "link_to": "Site Configuration",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Report Extension",
+   "link_type": "DocType",
+   "link_to": "Report Extension",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Scheduled Auto Email Report",
+   "link_type": "DocType",
+   "link_to": "Scheduled Auto Email Report",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Implementation Tools",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "user_manager",
+   "link_type": "Page",
+   "link_to": "user_manager",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Implementation Handover Snapshot",
+   "link_type": "DocType",
+   "link_to": "Implementation Handover Snapshot",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Access Audit",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Temporary Role Access Grant Log",
+   "link_type": "DocType",
+   "link_to": "Temporary Role Access Grant Log",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Role Permission Listing",
+   "link_type": "Report",
+   "link_to": "Role Permission Listing",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Custom DocPerm"
+  },
+  {
+   "type": "Link",
+   "label": "User Role Listing",
+   "link_type": "Report",
+   "link_to": "User Role Listing",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "User"
+  },
+  {
+   "type": "Card Break",
+   "label": "Diagnostics",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Master Data Statistics",
+   "link_type": "Report",
+   "link_to": "Master Data Statistics",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Company"
+  },
+  {
+   "type": "Link",
+   "label": "Transaction Statistics",
+   "link_type": "Report",
+   "link_to": "Transaction Statistics",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Company"
+  },
+  {
+   "type": "Link",
+   "label": "Parent Child Relationship",
+   "link_type": "Report",
+   "link_to": "Parent Child Relationship",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "DocType"
+  },
+  {
+   "type": "Link",
+   "label": "Schema Details",
+   "link_type": "Report",
+   "link_to": "Schema Details",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "CSF TZ Settings"
+  },
+  {
+   "type": "Link",
+   "label": "SHOW PROCESSLIST",
+   "link_type": "Report",
+   "link_to": "SHOW PROCESSLIST",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Company"
+  },
+  {
+   "type": "Link",
+   "label": "Table Indexes",
+   "link_type": "Report",
+   "link_to": "Table Indexes",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "System Settings"
+  },
+  {
+   "type": "Link",
+   "label": "Version Data Analysis",
+   "link_type": "Report",
+   "link_to": "Version Data Analysis",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Version"
+  },
+  {
+   "type": "Link",
+   "label": "Version Table Statistics",
+   "link_type": "Report",
+   "link_to": "Version Table Statistics",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Version"
+  }
+ ],
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_to": "AV Tools Settings",
+   "label": "AV Tools Settings",
+   "doc_view": "List",
+   "color": "Blue"
+  },
+  {
+   "type": "DocType",
+   "link_to": "Theme",
+   "label": "Theme",
+   "doc_view": "List",
+   "color": "Blue"
+  },
+  {
+   "type": "DocType",
+   "link_to": "Visibility",
+   "label": "Visibility",
+   "doc_view": "List",
+   "color": "Blue"
+  }
+ ],
+ "charts": [],
+ "number_cards": [],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "modified": "2026-10-10 11:00:00.000000",
+ "owner": "Administrator",
+ "modified_by": "Administrator"
+}

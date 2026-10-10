@@ -1,0 +1,64 @@
+{
+ "doctype": "Sidebar",
+ "name": "Compliance",
+ "title": "Compliance",
+ "app": "av_tools",
+ "module": "Compliance",
+ "standard": 1,
+ "header_icon": "shield-check",
+ "items": [
+  {
+   "type": "Link",
+   "label": "Home",
+   "link_type": "Workspace",
+   "link_to": "Compliance",
+   "icon": "home",
+   "child": 0
+  },
+  {
+   "type": "Section Break",
+   "label": "Transactions",
+   "child": 0,
+   "indent": 1,
+   "collapsible": 1,
+   "keep_closed": 1
+  },
+  {
+   "type": "Link",
+   "label": "License Register",
+   "link_type": "DocType",
+   "link_to": "License Register",
+   "child": 1
+  },
+  {
+   "type": "Link",
+   "label": "Inspection Record",
+   "link_type": "DocType",
+   "link_to": "Inspection Record",
+   "child": 1
+  },
+  {
+   "type": "Section Break",
+   "label": "Masters",
+   "child": 0,
+   "indent": 1,
+   "collapsible": 1,
+   "keep_closed": 1
+  },
+  {
+   "type": "Link",
+   "label": "License Type",
+   "link_type": "DocType",
+   "link_to": "License Type",
+   "child": 1
+  },
+  {
+   "type": "Link",
+   "label": "Inspection Type",
+   "link_type": "DocType",
+   "link_to": "Inspection Type",
+   "child": 1
+  }
+ ],
+ "modified": "2026-10-10 11:00:00.000000"
+}

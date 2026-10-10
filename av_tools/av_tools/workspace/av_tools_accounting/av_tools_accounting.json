@@ -1,0 +1,273 @@
+{
+ "doctype": "Workspace",
+ "name": "AV Tools Accounting",
+ "title": "AV Tools Accounting",
+ "label": "AV Tools Accounting",
+ "module": "Av Tools",
+ "standard": 1,
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": "",
+ "roles": [],
+ "icon": "tool",
+ "indicator_color": "blue",
+ "content": "[{\"id\":\"title\",\"type\":\"header\",\"data\":{\"text\":\"AV Tools Accounting\",\"col\":12}},{\"id\":\"shortcut_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Payment Reconciliation Pro\",\"col\":4}},{\"id\":\"shortcut_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Bank Clearance Pro\",\"col\":4}},{\"id\":\"shortcut_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Bank Statement Summary\",\"col\":4}},{\"id\":\"card_0\",\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\",\"col\":4}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Masters\",\"col\":4}},{\"id\":\"card_2\",\"type\":\"card\",\"data\":{\"card_name\":\"Financial Reports\",\"col\":4}},{\"id\":\"card_3\",\"type\":\"card\",\"data\":{\"card_name\":\"Customer Statements\",\"col\":4}},{\"id\":\"card_4\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings & Administration\",\"col\":4}}]",
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Transactions",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Payment Reconciliation Pro",
+   "link_type": "DocType",
+   "link_to": "Payment Reconciliation Pro",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Bank Clearance Pro",
+   "link_type": "DocType",
+   "link_to": "Bank Clearance Pro",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Bank Statement Summary",
+   "link_type": "DocType",
+   "link_to": "Bank Statement Summary",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Open Invoice Exchange Rate Revaluation",
+   "link_type": "DocType",
+   "link_to": "Open Invoice Exchange Rate Revaluation",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Expense Record",
+   "link_type": "DocType",
+   "link_to": "Expense Record",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Masters",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Expense Type",
+   "link_type": "DocType",
+   "link_to": "Expense Type",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Section",
+   "link_type": "DocType",
+   "link_to": "Section",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Financial Reports",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Financial Account Summary",
+   "link_type": "Report",
+   "link_to": "Financial Account Summary",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Account"
+  },
+  {
+   "type": "Link",
+   "label": "Financial Master Summary",
+   "link_type": "Report",
+   "link_to": "Financial Master Summary",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Account"
+  },
+  {
+   "type": "Link",
+   "label": "Financial Monthly Summary",
+   "link_type": "Report",
+   "link_to": "Financial Monthly Summary",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Account"
+  },
+  {
+   "type": "Link",
+   "label": "Financial Drilldown Ledger",
+   "link_type": "Report",
+   "link_to": "Financial Drilldown Ledger",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "GL Entry"
+  },
+  {
+   "type": "Link",
+   "label": "Customer GL Entries by Fiscal Year",
+   "link_type": "Report",
+   "link_to": "Customer GL Entries by Fiscal Year",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "GL Entry"
+  },
+  {
+   "type": "Link",
+   "label": "Supplier GL Entries by Fiscal Year",
+   "link_type": "Report",
+   "link_to": "Supplier GL Entries by Fiscal Year",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "GL Entry"
+  },
+  {
+   "type": "Link",
+   "label": "Customer Ledger Summary Multicurrency",
+   "link_type": "Report",
+   "link_to": "Customer Ledger Summary Multicurrency",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Sales Invoice"
+  },
+  {
+   "type": "Link",
+   "label": "Supplier Ledger Summary Multicurrency",
+   "link_type": "Report",
+   "link_to": "Supplier Ledger Summary Multicurrency",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Purchase Invoice"
+  },
+  {
+   "type": "Link",
+   "label": "Depreciation Transaction Summary",
+   "link_type": "Report",
+   "link_to": "Depreciation Transaction Summary",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Asset"
+  },
+  {
+   "type": "Link",
+   "label": "Sales Transaction Currency Recon",
+   "link_type": "Report",
+   "link_to": "Sales Transaction Currency Recon",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Sales Invoice"
+  },
+  {
+   "type": "Link",
+   "label": "Customer Loan Assistance report",
+   "link_type": "Report",
+   "link_to": "Customer Loan Assistance report",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Customer Loan Assistance"
+  },
+  {
+   "type": "Link",
+   "label": "Loan Outstanding",
+   "link_type": "Report",
+   "link_to": "Loan Outstanding",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Loan"
+  },
+  {
+   "type": "Link",
+   "label": "Loan Repayment Details",
+   "link_type": "Report",
+   "link_to": "Loan Repayment Details",
+   "hidden": 0,
+   "is_query_report": 1,
+   "report_ref_doctype": "Loan"
+  },
+  {
+   "type": "Card Break",
+   "label": "Customer Statements",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "customer-statement",
+   "link_type": "Page",
+   "link_to": "customer-statement",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Customer Statement Settings",
+   "link_type": "DocType",
+   "link_to": "Customer Statement Settings",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Settings & Administration",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Bank Transaction Backfill",
+   "link_type": "DocType",
+   "link_to": "Bank Transaction Backfill",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Reporting Currency Settings",
+   "link_type": "DocType",
+   "link_to": "Reporting Currency Settings",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Financial Drilldown Rule",
+   "link_type": "DocType",
+   "link_to": "Financial Drilldown Rule",
+   "hidden": 0
+  }
+ ],
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_to": "Payment Reconciliation Pro",
+   "label": "Payment Reconciliation Pro",
+   "doc_view": "List",
+   "color": "Blue"
+  },
+  {
+   "type": "DocType",
+   "link_to": "Bank Clearance Pro",
+   "label": "Bank Clearance Pro",
+   "doc_view": "List",
+   "color": "Blue"
+  },
+  {
+   "type": "DocType",
+   "link_to": "Bank Statement Summary",
+   "label": "Bank Statement Summary",
+   "doc_view": "List",
+   "color": "Blue"
+  }
+ ],
+ "charts": [],
+ "number_cards": [],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "modified": "2026-10-10 11:00:00.000000",
+ "owner": "Administrator",
+ "modified_by": "Administrator"
+}

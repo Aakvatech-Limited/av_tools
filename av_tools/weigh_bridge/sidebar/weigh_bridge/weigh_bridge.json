@@ -1,0 +1,50 @@
+{
+ "doctype": "Sidebar",
+ "name": "Weigh Bridge",
+ "title": "Weigh Bridge",
+ "app": "av_tools",
+ "module": "Weigh Bridge",
+ "standard": 1,
+ "header_icon": "truck",
+ "items": [
+  {
+   "type": "Link",
+   "label": "Home",
+   "link_type": "Workspace",
+   "link_to": "Weigh Bridge",
+   "icon": "home",
+   "child": 0
+  },
+  {
+   "type": "Section Break",
+   "label": "Transactions",
+   "child": 0,
+   "indent": 1,
+   "collapsible": 1,
+   "keep_closed": 1
+  },
+  {
+   "type": "Link",
+   "label": "Weighbridge Ticket",
+   "link_type": "DocType",
+   "link_to": "Weighbridge Ticket",
+   "child": 1
+  },
+  {
+   "type": "Section Break",
+   "label": "Settings",
+   "child": 0,
+   "indent": 1,
+   "collapsible": 1,
+   "keep_closed": 1
+  },
+  {
+   "type": "Link",
+   "label": "Weighbridge Settings",
+   "link_type": "DocType",
+   "link_to": "Weighbridge Settings",
+   "child": 1
+  }
+ ],
+ "modified": "2026-10-10 11:00:00.000000"
+}

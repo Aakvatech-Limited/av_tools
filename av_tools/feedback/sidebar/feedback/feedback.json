@@ -1,0 +1,50 @@
+{
+ "doctype": "Sidebar",
+ "name": "Feedback",
+ "title": "Feedback",
+ "app": "av_tools",
+ "module": "Feedback",
+ "standard": 1,
+ "header_icon": "message-square",
+ "items": [
+  {
+   "type": "Link",
+   "label": "Home",
+   "link_type": "Workspace",
+   "link_to": "Feedback",
+   "icon": "home",
+   "child": 0
+  },
+  {
+   "type": "Section Break",
+   "label": "Transactions",
+   "child": 0,
+   "indent": 1,
+   "collapsible": 1,
+   "keep_closed": 1
+  },
+  {
+   "type": "Link",
+   "label": "Feedback Form",
+   "link_type": "DocType",
+   "link_to": "Feedback Form",
+   "child": 1
+  },
+  {
+   "type": "Section Break",
+   "label": "Masters",
+   "child": 0,
+   "indent": 1,
+   "collapsible": 1,
+   "keep_closed": 1
+  },
+  {
+   "type": "Link",
+   "label": "Feedback Template",
+   "link_type": "DocType",
+   "link_to": "Feedback Template",
+   "child": 1
+  }
+ ],
+ "modified": "2026-10-10 11:00:00.000000"
+}

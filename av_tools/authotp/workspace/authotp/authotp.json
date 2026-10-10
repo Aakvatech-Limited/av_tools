@@ -1,0 +1,57 @@
+{
+ "doctype": "Workspace",
+ "name": "AuthOTP",
+ "title": "AuthOTP",
+ "label": "AuthOTP",
+ "module": "AuthOTP",
+ "standard": 1,
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": "",
+ "roles": [],
+ "icon": "key-round",
+ "indicator_color": "blue",
+ "content": "[{\"id\":\"title\",\"type\":\"header\",\"data\":{\"text\":\"AuthOTP\",\"col\":12}},{\"id\":\"shortcut_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"OTP Register\",\"col\":4}},{\"id\":\"card_0\",\"type\":\"card\",\"data\":{\"card_name\":\"Audit\",\"col\":4}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}}]",
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Audit",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "OTP Register",
+   "link_type": "DocType",
+   "link_to": "OTP Register",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Settings",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "AuthOTP Settings",
+   "link_type": "DocType",
+   "link_to": "AuthOTP Settings",
+   "hidden": 0
+  }
+ ],
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_to": "OTP Register",
+   "label": "OTP Register",
+   "doc_view": "List",
+   "color": "Blue"
+  }
+ ],
+ "charts": [],
+ "number_cards": [],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "modified": "2026-10-10 11:00:00.000000",
+ "owner": "Administrator",
+ "modified_by": "Administrator"
+}

@@ -1,0 +1,78 @@
+{
+ "doctype": "Workspace",
+ "name": "Compliance",
+ "title": "Compliance",
+ "label": "Compliance",
+ "module": "Compliance",
+ "standard": 1,
+ "public": 1,
+ "is_hidden": 0,
+ "for_user": "",
+ "roles": [],
+ "icon": "shield-check",
+ "indicator_color": "blue",
+ "content": "[{\"id\":\"title\",\"type\":\"header\",\"data\":{\"text\":\"Compliance\",\"col\":12}},{\"id\":\"shortcut_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"License Register\",\"col\":4}},{\"id\":\"shortcut_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inspection Record\",\"col\":4}},{\"id\":\"card_0\",\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\",\"col\":4}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Masters\",\"col\":4}}]",
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Transactions",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "License Register",
+   "link_type": "DocType",
+   "link_to": "License Register",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Inspection Record",
+   "link_type": "DocType",
+   "link_to": "Inspection Record",
+   "hidden": 0
+  },
+  {
+   "type": "Card Break",
+   "label": "Masters",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "License Type",
+   "link_type": "DocType",
+   "link_to": "License Type",
+   "hidden": 0
+  },
+  {
+   "type": "Link",
+   "label": "Inspection Type",
+   "link_type": "DocType",
+   "link_to": "Inspection Type",
+   "hidden": 0
+  }
+ ],
+ "shortcuts": [
+  {
+   "type": "DocType",
+   "link_to": "License Register",
+   "label": "License Register",
+   "doc_view": "List",
+   "color": "Blue"
+  },
+  {
+   "type": "DocType",
+   "link_to": "Inspection Record",
+   "label": "Inspection Record",
+   "doc_view": "List",
+   "color": "Blue"
+  }
+ ],
+ "charts": [],
+ "number_cards": [],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "modified": "2026-10-10 11:00:00.000000",
+ "owner": "Administrator",
+ "modified_by": "Administrator"
+}
