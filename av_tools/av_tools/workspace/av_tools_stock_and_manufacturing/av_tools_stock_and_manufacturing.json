@@ -11,7 +11,7 @@
  "roles": [],
  "icon": "tool",
  "indicator_color": "blue",
- "content": "[{\"id\":\"title\",\"type\":\"header\",\"data\":{\"text\":\"AV Tools Stock and Manufacturing\",\"col\":12}},{\"id\":\"shortcut_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inter Company Material Request\",\"col\":4}},{\"id\":\"shortcut_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inter Company Stock Transfer\",\"col\":4}},{\"id\":\"shortcut_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Work Order Consignment\",\"col\":4}},{\"id\":\"card_0\",\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\",\"col\":4}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Masters\",\"col\":4}},{\"id\":\"card_2\",\"type\":\"card\",\"data\":{\"card_name\":\"Procurement and Sales Reports\",\"col\":4}},{\"id\":\"card_3\",\"type\":\"card\",\"data\":{\"card_name\":\"Manufacturing Reports\",\"col\":4}},{\"id\":\"card_4\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings & Administration\",\"col\":4}},{\"id\":\"variance_dashboard\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Manufacturing BOM Variance\",\"col\":4}}]",
+ "content": "[{\"id\":\"bom_header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Manufacturing BOM Variance Dashboard</span>\",\"col\":12}},{\"id\":\"bom_card_efficiency\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Average BOM Efficiency\",\"col\":3}},{\"id\":\"bom_card_variance\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Average BOM Absolute Variance\",\"col\":3}},{\"id\":\"bom_chart_components\",\"type\":\"chart\",\"data\":{\"chart_name\":\"BOM Variance by Component\",\"col\":12}},{\"id\":\"bom_chart_trend\",\"type\":\"chart\",\"data\":{\"chart_name\":\"BOM Variance Monthly Trend\",\"col\":12}},{\"id\":\"title\",\"type\":\"header\",\"data\":{\"text\":\"AV Tools Stock and Manufacturing\",\"col\":12}},{\"id\":\"shortcut_0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inter Company Material Request\",\"col\":4}},{\"id\":\"shortcut_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Inter Company Stock Transfer\",\"col\":4}},{\"id\":\"shortcut_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Work Order Consignment\",\"col\":4}},{\"id\":\"card_0\",\"type\":\"card\",\"data\":{\"card_name\":\"Transactions\",\"col\":4}},{\"id\":\"card_1\",\"type\":\"card\",\"data\":{\"card_name\":\"Masters\",\"col\":4}},{\"id\":\"card_2\",\"type\":\"card\",\"data\":{\"card_name\":\"Procurement and Sales Reports\",\"col\":4}},{\"id\":\"card_3\",\"type\":\"card\",\"data\":{\"card_name\":\"Manufacturing Reports\",\"col\":4}},{\"id\":\"card_4\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings & Administration\",\"col\":4}},{\"id\":\"variance_dashboard\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Manufacturing BOM Variance\",\"col\":4}}]",
  "links": [
   {
    "type": "Card Break",
@@ -276,8 +276,26 @@
    "color": "Blue"
   }
  ],
- "charts": [],
- "number_cards": [],
+ "charts": [
+  {
+   "chart_name": "BOM Variance by Component",
+   "label": "BOM Variance by Component"
+  },
+  {
+   "chart_name": "BOM Variance Monthly Trend",
+   "label": "BOM Variance Monthly Trend"
+  }
+ ],
+ "number_cards": [
+  {
+   "number_card_name": "Average BOM Efficiency",
+   "label": "Average BOM Efficiency"
+  },
+  {
+   "number_card_name": "Average BOM Absolute Variance",
+   "label": "Average BOM Absolute Variance"
+  }
+ ],
  "quick_lists": [],
  "custom_blocks": [],
  "modified": "2026-10-10 11:00:00.000000",
