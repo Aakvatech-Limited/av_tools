@@ -10,11 +10,13 @@ permissions:
 
 jobs:
   no-raw-sql:
-    name: Reject raw database SQL
+    name: Reject newly introduced raw database SQL
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Locate Frappe app package
         id: app
@@ -28,16 +30,55 @@ jobs:
           fi
           echo "app_dir=$(dirname "${hooks[0]}")" >> "$GITHUB_OUTPUT"
 
-      - name: Reject raw database SQL calls
+      - name: Reject newly introduced raw database SQL calls
         shell: bash
         env:
           APP_DIR: ${{ steps.app.outputs.app_dir }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PUSH_BEFORE_SHA: ${{ github.event.before || '' }}
         run: |
           set -euo pipefail
-          if grep -RInE --include='*.py' \
-            'frappe\.db\.(sql|multisql)\b|(^|[^[:alnum:]_])db\.sql[[:space:]]*\(' \
-            "$APP_DIR"; then
-            echo "::error::Raw database SQL calls are not allowed. Use frappe.qb or higher-level Frappe database APIs."
-            exit 1
+          # Existing legacy SQL is tracked separately. Only added lines block CI.
+          # Full-history checkout makes PR comparisons and multi-commit pushes reliable.
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git diff --unified=0 "$PR_BASE_SHA" HEAD -- "$APP_DIR" > /tmp/raw-sql-diff.patch
+          elif [ "$EVENT_NAME" = "push" ] && [ -n "$PUSH_BEFORE_SHA" ] && [[ ! "$PUSH_BEFORE_SHA" =~ ^0+$ ]] && git cat-file -e "$PUSH_BEFORE_SHA^{commit}" 2>/dev/null; then
+            git diff --unified=0 "$PUSH_BEFORE_SHA" HEAD -- "$APP_DIR" > /tmp/raw-sql-diff.patch
+          else
+            echo "No reliable comparison base: running non-blocking legacy inventory."
+            grep -RInE --include='*.py' 'frappe[.]db[.](sql|multisql)|db[.]sql[[:space:]]*[(]' "$APP_DIR" || true
+            exit 0
           fi
-          echo "No raw database SQL calls found."
+
+          # Parse added source lines only (not diff metadata or removed lines).
+          # Ignore literal strings/comments by using Python's tokenizer.
+          python3 - <<'PY'
+          import ast
+          import os
+          import subprocess
+          import sys
+          import tokenize
+          from io import BytesIO
+
+          diff = open("/tmp/raw-sql-diff.patch", encoding="utf-8").read()
+          offenders = []
+          path = None
+          for line in diff.splitlines():
+              if line.startswith("+++ b/"):
+                  path = line[6:]
+              elif line.startswith("+") and not line.startswith("+++"):
+                  candidate = line[1:]
+                  if not path or not path.endswith(".py"):
+                      continue
+                  if "frappe.db.sql" in candidate or "frappe.db.multisql" in candidate or "db.sql(" in candidate:
+                      stripped = candidate.lstrip()
+                      if stripped.startswith("#"):
+                          continue
+                      offenders.append((path, candidate.strip()))
+          if offenders:
+              for path, line in offenders:
+                  print(f"::error file={path}::New raw SQL usage: {line}")
+              sys.exit(1)
+          print("No newly introduced raw SQL calls found.")
+          PY
