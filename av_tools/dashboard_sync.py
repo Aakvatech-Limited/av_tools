@@ -1,10 +1,10 @@
-"""Restore app-owned standard dashboard records omitted by Frappe v15 module sync.
+"""Restore app-owned standard dashboard records not imported by module sync.
 
-Frappe v15 syncs Report and Workspace JSON but not Dashboard, Dashboard Chart,
-or Number Card JSON from custom apps. This routine creates missing records
+This routine creates missing Dashboard, Dashboard Chart, and Number Card records
 without replacing site-specific edits to existing records.
 """
 
+import json
 from pathlib import Path
 
 import frappe
@@ -35,8 +35,6 @@ def execute():
 
             # Only import missing records. Existing site customizations are
             # retained; do not use force to overwrite them during every migrate.
-            import json
-
             with path.open(encoding="utf-8") as source:
                 data = json.load(source)
 
