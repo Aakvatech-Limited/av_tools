@@ -124,12 +124,14 @@ jinja = {
 # before_install = "av_tools.install.before_install"
 before_install = "av_tools.install.before_install"
 after_install = [
+	"av_tools.dashboard_sync.execute",
 	"av_tools.install.run_migration_patches",
 	"av_tools.utils.create_custom_fields.execute",
 	"av_tools.utils.create_property_setter.execute",
 	"av_tools.utils.module_ownership.execute",
 ]
 after_migrate = [
+	"av_tools.dashboard_sync.execute",
 	"av_tools.utils.create_custom_fields.execute",
 	"av_tools.utils.create_property_setter.execute",
 	"av_tools.utils.module_ownership.execute",
