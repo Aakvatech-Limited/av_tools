@@ -167,6 +167,8 @@ def create_trade_in_stock_entry(doc, method):
 	# Iterate through the items in the document
 	for item in doc.items:
 		if item.get("custom_trade_in_item") and item.get("custom_trade_in_qty"):
+			_ensure_serial_nos_exist(item, doc.company)
+
 			# Check if custom_trade_in_batch_no exists
 			custom_batch_no = item.get("custom_trade_in_batch_no")
 
@@ -239,3 +241,14 @@ def cancel_trade_in_stock_entry(doc, method=None):
 		se_doc = frappe.get_doc("Stock Entry", se_name)
 		se_doc.flags.ignore_permissions = True
 		se_doc.cancel()
+
+
+def _ensure_serial_nos_exist(item, company):
+	if not frappe.get_cached_value("Item", item.custom_trade_in_item, "has_serial_no"):
+		return
+
+	for serial_no in [s.strip() for s in (item.custom_trade_in_serial_no or "").split("\n") if s.strip()]:
+		if not frappe.db.exists("Serial No", serial_no):
+			frappe.get_doc(
+				{"doctype": "Serial No", "serial_no": serial_no, "item_code": item.custom_trade_in_item, "company": company}
+			).insert(ignore_permissions=True, ignore_mandatory=True)
