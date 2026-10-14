@@ -59,7 +59,7 @@ def get_detail_data(filters=None):
 			detail.uom,
 			detail.stock_uom,
 			detail.is_finished_item,
-			detail.is_scrap_item,
+			detail.secondary_item_type,
 			detail.qty.as_("actual_transaction_qty"),
 			detail.transfer_qty.as_("actual_qty"),
 			detail.bom_guided_qty,
@@ -92,7 +92,13 @@ def get_detail_data(filters=None):
 	for row in rows:
 		actual = flt(row.actual_qty)
 		guided = flt(row.get("bom_guided_stock_qty") if row.get("bom_guided_stock_qty") is not None else row.bom_guided_qty)
-		row.row_category = "Finished Goods" if row.is_finished_item else ("Scrap / By-product" if row.is_scrap_item else "Consumption")
+		row.row_category = (
+			"Finished Goods"
+			if row.is_finished_item or row.secondary_item_type == "Additional Finished Good"
+			else row.secondary_item_type
+			if row.secondary_item_type in ("Scrap", "By-Product", "Co-Product")
+			else "Consumption"
+		)
 		row.transaction_variance_qty = flt(row.actual_transaction_qty) - flt(row.bom_guided_qty)
 		row.variance_qty = actual - guided
 		row.variance_percent = row.variance_qty / guided * 100 if guided else 0
