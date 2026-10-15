@@ -8,9 +8,9 @@ import numpy as np
 import pandas as pd
 from frappe import _, msgprint
 from frappe.query_builder.functions import Count, Date, Max, Min
-from pypika import CustomFunction
 from frappe.utils import add_to_date, cint, cstr, get_time, getdate
 from frappe.utils.nestedset import get_descendants_of
+from pypika import CustomFunction
 
 
 def execute(filters=None):
@@ -302,8 +302,10 @@ def _query_checkin_details(filters, log_type):
 	date = Date(Checkin.time)
 	query = (
 		frappe.qb.from_(Checkin)
-		.join(Employee).on(Employee.name == Checkin.employee)
-		.left_join(Assignment).on(
+		.join(Employee)
+		.on(Employee.name == Checkin.employee)
+		.left_join(Assignment)
+		.on(
 			(Assignment.employee == Checkin.employee)
 			& (Assignment.start_date.between(filters.get("from_date"), filters.get("to_date")))
 			& (date.between(Assignment.start_date, Assignment.end_date))
@@ -315,9 +317,11 @@ def _query_checkin_details(filters, log_type):
 			Employee.default_shift,
 			Assignment.shift_type,
 			DateFormat(Checkin.time, "%Y-%m-%d").as_("date"),
-			(Min(DateFormat(Checkin.time, "%T")) if log_type == "IN" else Max(DateFormat(Checkin.time, "%T"))).as_(
-				"checkin_time" if log_type == "IN" else "checkout_time"
-			),
+			(
+				Min(DateFormat(Checkin.time, "%T"))
+				if log_type == "IN"
+				else Max(DateFormat(Checkin.time, "%T"))
+			).as_("checkin_time" if log_type == "IN" else "checkout_time"),
 		)
 		.where(Checkin.log_type == log_type)
 	)
@@ -328,7 +332,9 @@ def _query_checkin_details(filters, log_type):
 	if filters.get("company"):
 		query = query.where(Employee.company == filters.get("company"))
 	if filters.get("department") and filters.get("company"):
-		query = query.where(Employee.department.isin(get_department(filters.get("department"), filters.get("company"))))
+		query = query.where(
+			Employee.department.isin(get_department(filters.get("department"), filters.get("company")))
+		)
 	if filters.get("employee"):
 		query = query.where(Checkin.employee == filters.get("employee"))
 	return query.groupby(Checkin.employee, date).orderby(date).orderby(Checkin.employee).run(as_dict=True)
