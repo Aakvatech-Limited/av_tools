@@ -172,7 +172,9 @@ def _query_salary_slips(filters, company_currency, from_date, to_date, amount_al
 	if previous:
 		query = query.where(Slip.docstatus <= 1)
 	elif filters.get("docstatus"):
-		query = query.where(Slip.docstatus == {"Draft": 0, "Submitted": 1, "Cancelled": 2}[filters.get("docstatus")])
+		query = query.where(
+			Slip.docstatus == {"Draft": 0, "Submitted": 1, "Cancelled": 2}[filters.get("docstatus")]
+		)
 	if from_date:
 		query = query.where(Slip.start_date >= from_date)
 	if to_date:
@@ -184,16 +186,22 @@ def _query_salary_slips(filters, company_currency, from_date, to_date, amount_al
 	if filters.get("currency") and filters.get("currency") != company_currency:
 		query = query.where(Slip.currency == filters.get("currency"))
 	if filters.get("department") and filters.get("company"):
-		query = query.where(Slip.department.isin(get_departments(filters.get("department"), filters.get("company"))))
+		query = query.where(
+			Slip.department.isin(get_departments(filters.get("department"), filters.get("company")))
+		)
 	return query.orderby(Slip.employee).run(as_dict=True)
 
 
 def get_prev_salary_slips(filters, company_currency, prev_first_date, prev_last_date):
-	return _query_salary_slips(filters, company_currency, prev_first_date, prev_last_date, "prev_gross_pay", previous=True)
+	return _query_salary_slips(
+		filters, company_currency, prev_first_date, prev_last_date, "prev_gross_pay", previous=True
+	)
 
 
 def get_cur_salary_slips(filters, company_currency):
-	return _query_salary_slips(filters, company_currency, filters.get("from_date"), filters.get("to_date"), "cur_gross_pay")
+	return _query_salary_slips(
+		filters, company_currency, filters.get("from_date"), filters.get("to_date"), "cur_gross_pay"
+	)
 
 
 def get_prev_month_date(filters):
