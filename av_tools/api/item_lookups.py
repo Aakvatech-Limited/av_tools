@@ -5,35 +5,43 @@ from typing import Any
 
 import frappe
 from frappe import _
+from frappe.query_builder.functions import IfNull, Max
 from frappe.utils import cint, flt
 
 DEFAULT_MAX_RECORDS = 20
 
 
 def _get_stock_ledger_entries(item_code: str) -> list[dict]:
-	return frappe.db.sql(
-		"""
-		SELECT sle.batch_no, sle.item_code, sle.warehouse,
-		       sle.qty_after_transaction AS actual_qty
-		FROM `tabStock Ledger Entry` sle
-		INNER JOIN (
-			SELECT IF(batch_no IS NULL, '', batch_no) AS batch_no,
-			       item_code, warehouse,
-			       MAX(posting_datetime) AS posting_datetime
-			FROM `tabStock Ledger Entry`
-			GROUP BY IF(batch_no IS NULL, '', batch_no), item_code, warehouse
-		) AS sle_max
-			ON IF(sle.batch_no IS NULL, '', sle.batch_no) = sle_max.batch_no
-			AND sle.item_code = sle_max.item_code
-			AND sle.warehouse = sle_max.warehouse
-			AND sle.posting_datetime = sle_max.posting_datetime
-		WHERE sle.docstatus = 1
-		  AND sle.is_cancelled = 0
-		  AND sle.item_code = %(item_code)s
-		ORDER BY sle.warehouse, sle.item_code, sle.batch_no
-		""",
-		{"item_code": item_code},
-		as_dict=1,
+	SLE = frappe.qb.DocType("Stock Ledger Entry")
+	LatestSLE = frappe.qb.DocType("Stock Ledger Entry")
+	latest = (
+		frappe.qb.from_(LatestSLE)
+		.select(
+			IfNull(LatestSLE.batch_no, "").as_("batch_no"),
+			LatestSLE.item_code,
+			LatestSLE.warehouse,
+			Max(LatestSLE.posting_datetime).as_("posting_datetime"),
+		)
+		.where(LatestSLE.item_code == item_code)
+		.groupby(IfNull(LatestSLE.batch_no, ""), LatestSLE.item_code, LatestSLE.warehouse)
+	).as_("sle_max")
+	return (
+		frappe.qb.from_(SLE)
+		.join(latest)
+		.on(
+			(IfNull(SLE.batch_no, "") == latest.batch_no)
+			& (SLE.item_code == latest.item_code)
+			& (SLE.warehouse == latest.warehouse)
+			& (SLE.posting_datetime == latest.posting_datetime)
+		)
+		.select(SLE.batch_no, SLE.item_code, SLE.warehouse, SLE.qty_after_transaction.as_("actual_qty"))
+		.where(SLE.docstatus == 1)
+		.where(SLE.is_cancelled == 0)
+		.where(SLE.item_code == item_code)
+		.orderby(SLE.warehouse)
+		.orderby(SLE.item_code)
+		.orderby(SLE.batch_no)
+		.run(as_dict=True)
 	)
 
 
@@ -69,6 +77,35 @@ def get_item_info(item_code: Any):
 	return result
 
 
+def _get_invoice_prices(invoice_type, item_code, currency, company, party=None, posting_date_range=None):
+	"""Fetch invoice item prices with safely bound Query Builder predicates."""
+	parent_doctype = "Sales Invoice" if invoice_type == "Sales" else "Purchase Invoice"
+	item_doctype = parent_doctype + " Item"
+	Invoice = frappe.qb.DocType(parent_doctype)
+	Item = frappe.qb.DocType(item_doctype)
+	party_field = Invoice.customer if invoice_type == "Sales" else Invoice.supplier
+	query = (
+		frappe.qb.from_(Invoice)
+		.join(Item)
+		.on(Item.parent == Invoice.name)
+		.select(Invoice.name, Invoice.posting_date, party_field, Item.item_code, Item.qty, Item.rate)
+		.where(Item.item_code == item_code)
+		.where(Invoice.docstatus == 1)
+		.where(Invoice.currency == currency)
+		.where(Invoice.is_return != 1)
+		.where(Invoice.company == company)
+	)
+	if party:
+		query = query.where(party_field == party)
+	if posting_date_range and isinstance(posting_date_range, (list, tuple)) and len(posting_date_range) > 1:
+		try:
+			from_date, to_date = posting_date_range[1][0], posting_date_range[1][1]
+			query = query.where(Invoice.posting_date.between(from_date, to_date))
+		except (IndexError, TypeError):
+			pass
+	return query.orderby(Invoice.posting_date, order=frappe.qb.desc).run(as_dict=True)
+
+
 def _collect_prices(rows: list[dict], rate_field: str, mapper, max_records: int) -> list[dict]:
 	prices: list[dict] = []
 	for row in rows:
@@ -80,30 +117,7 @@ def _collect_prices(rows: list[dict], rate_field: str, mapper, max_records: int)
 @frappe.whitelist()
 def get_item_prices(item_code: Any, currency: Any, customer: Any = None, company: Any = None):
 	"""Sales Invoice historical prices for an item (legacy shape: `price`, `date`)."""
-	conditions = ""
-	params: dict = {"item_code": item_code, "currency": currency, "company": company}
-	if customer:
-		conditions = " AND SI.customer = %(customer)s"
-		params["customer"] = customer
-
-	# conditions holds fixed fragments with %(name)s placeholders; values are bound in params
-	rows = frappe.db.sql(  # nosemgrep
-		f"""
-		SELECT SI.name, SI.posting_date, SI.customer, SIT.item_code, SIT.qty, SIT.rate
-		FROM `tabSales Invoice` AS SI
-		INNER JOIN `tabSales Invoice Item` AS SIT ON SIT.parent = SI.name
-		WHERE SIT.item_code = %(item_code)s
-		  AND SI.docstatus = 1
-		  AND SI.currency = %(currency)s
-		  AND SI.is_return != 1
-		  AND SI.company = %(company)s
-		  {conditions}
-		ORDER BY SI.posting_date DESC
-		""",
-		params,
-		as_dict=True,
-	)
-
+	rows = _get_invoice_prices("Sales", item_code, currency, company, party=customer)
 	return _collect_prices(
 		rows,
 		"rate",
@@ -137,37 +151,9 @@ def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20)
 	posting_date_range = filters.get("posting_date")
 	max_records = int(start) + int(limit)
 
-	conditions = ""
-	params: dict = {"item_code": item_code, "currency": currency, "company": company}
-	if posting_date_range and isinstance(posting_date_range, list | tuple) and len(posting_date_range) > 1:
-		try:
-			conditions += " AND DATE(SI.posting_date) BETWEEN %(from_date)s AND %(to_date)s"
-			params["from_date"] = posting_date_range[1][0]
-			params["to_date"] = posting_date_range[1][1]
-		except (IndexError, TypeError):
-			pass
-	if customer:
-		conditions += " AND SI.customer = %(customer)s"
-		params["customer"] = customer
-
-	# conditions holds fixed fragments with %(name)s placeholders; values are bound in params
-	rows = frappe.db.sql(  # nosemgrep
-		f"""
-		SELECT SI.name, SI.posting_date, SI.customer, SIT.item_code, SIT.qty, SIT.rate
-		FROM `tabSales Invoice` AS SI
-		INNER JOIN `tabSales Invoice Item` AS SIT ON SIT.parent = SI.name
-		WHERE SIT.item_code = %(item_code)s
-		  AND SI.docstatus = 1
-		  AND SI.currency = %(currency)s
-		  AND SI.is_return != 1
-		  AND SI.company = %(company)s
-		  {conditions}
-		ORDER BY SI.posting_date DESC
-		""",
-		params,
-		as_dict=True,
+	rows = _get_invoice_prices(
+		"Sales", item_code, currency, company, party=customer, posting_date_range=posting_date_range
 	)
-
 	return _collect_prices(
 		rows,
 		"rate",
@@ -201,37 +187,9 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 	posting_date_range = filters.get("posting_date")
 	max_records = int(start) + int(limit)
 
-	conditions = ""
-	params: dict = {"item_code": item_code, "currency": currency, "company": company}
-	if posting_date_range and isinstance(posting_date_range, list | tuple) and len(posting_date_range) > 1:
-		try:
-			conditions += " AND DATE(PI.posting_date) BETWEEN %(from_date)s AND %(to_date)s"
-			params["from_date"] = posting_date_range[1][0]
-			params["to_date"] = posting_date_range[1][1]
-		except (IndexError, TypeError):
-			pass
-	if supplier:
-		conditions += " AND PI.supplier = %(supplier)s"
-		params["supplier"] = supplier
-
-	# conditions holds fixed fragments with %(name)s placeholders; values are bound in params
-	rows = frappe.db.sql(  # nosemgrep
-		f"""
-		SELECT PI.name, PI.posting_date, PI.supplier, PIT.item_code, PIT.qty, PIT.rate
-		FROM `tabPurchase Invoice` AS PI
-		INNER JOIN `tabPurchase Invoice Item` AS PIT ON PIT.parent = PI.name
-		WHERE PIT.item_code = %(item_code)s
-		  AND PI.docstatus = 1
-		  AND PI.currency = %(currency)s
-		  AND PI.is_return != 1
-		  AND PI.company = %(company)s
-		  {conditions}
-		ORDER BY PI.posting_date DESC
-		""",
-		params,
-		as_dict=True,
+	rows = _get_invoice_prices(
+		"Purchase", item_code, currency, company, party=supplier, posting_date_range=posting_date_range
 	)
-
 	return _collect_prices(
 		rows,
 		"rate",
@@ -251,30 +209,7 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 @frappe.whitelist()
 def get_item_prices_po(item_code: Any, currency: Any, customer: Any = None, company: Any = None):
 	"""Purchase Invoice historical prices (legacy PO shape: `price`, `date`)."""
-	conditions = ""
-	params: dict = {"item_code": item_code, "currency": currency, "company": company}
-	if customer:
-		conditions = " AND PI.supplier = %(supplier)s"
-		params["supplier"] = customer
-
-	# conditions holds fixed fragments with %(name)s placeholders; values are bound in params
-	rows = frappe.db.sql(  # nosemgrep
-		f"""
-		SELECT PI.name, PI.posting_date, PI.supplier, PIT.item_code, PIT.qty, PIT.rate
-		FROM `tabPurchase Invoice` AS PI
-		INNER JOIN `tabPurchase Invoice Item` AS PIT ON PIT.parent = PI.name
-		WHERE PIT.item_code = %(item_code)s
-		  AND PI.docstatus = 1
-		  AND PI.currency = %(currency)s
-		  AND PI.is_return != 1
-		  AND PI.company = %(company)s
-		  {conditions}
-		ORDER BY PI.posting_date DESC
-		""",
-		params,
-		as_dict=True,
-	)
-
+	rows = _get_invoice_prices("Purchase", item_code, currency, company, party=customer)
 	return _collect_prices(
 		rows,
 		"rate",
