@@ -5,9 +5,9 @@ import frappe
 from frappe import scrub
 from frappe.desk.search import search_link as original_search_link
 from frappe.desk.search import search_widget as original_search_widget
-from frappe.utils import nowdate
 from frappe.query_builder.functions import IfNull
-from pypika import CustomFunction, Case
+from frappe.utils import nowdate
+from pypika import Case, CustomFunction
 
 ERP_ITEM_QUERY = "erpnext.controllers.queries.item_query"
 AV_TOOLS_ITEM_QUERY = "av_tools.av_tools_hooks.item_search.item_query"
@@ -104,7 +104,6 @@ def item_query(
 	as_dict: bool = False,
 ):
 	doctype = "Item"
-	conditions = []
 	search_terms = split_search_terms(txt)
 	search_text = "%".join(search_terms) if search_terms else ""
 
@@ -119,10 +118,16 @@ def item_query(
 	if "description" in searchfields:
 		select_fields.append("description")
 
-	searchfields = list(dict.fromkeys(searchfields + [
-		field for field in [searchfield or "name", "item_code", "item_group", "item_name"]
-		if field not in searchfields
-	]))
+	searchfields = list(
+		dict.fromkeys(
+			searchfields
+			+ [
+				field
+				for field in [searchfield or "name", "item_code", "item_group", "item_name"]
+				if field not in searchfields
+			]
+		)
+	)
 
 	if filters and isinstance(filters, dict):
 		if filters.get("customer") or filters.get("supplier"):
@@ -156,7 +161,9 @@ def item_query(
 	Item = frappe.qb.DocType("Item")
 	Barcode = frappe.qb.DocType("Item Barcode")
 	query = frappe.qb.get_query(
-		"Item", fields=select_fields, filters=filters,
+		"Item",
+		fields=select_fields,
+		filters=filters,
 		ignore_permissions=False,
 	)
 	query = (
@@ -179,8 +186,8 @@ def item_query(
 		criterion = matches_terms(Item[fieldname])
 		search_condition = criterion if search_condition is None else search_condition | criterion
 
-	barcode_query = frappe.qb.from_(Barcode).select(Barcode.parent).where(
-		Barcode.barcode.like(f"%{search_text}%")
+	barcode_query = (
+		frappe.qb.from_(Barcode).select(Barcode.parent).where(Barcode.barcode.like(f"%{search_text}%"))
 	)
 	search_condition = search_condition | Item.item_code.isin(barcode_query)
 	if frappe.db.count(doctype, cache=True) < 50000:
