@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe.query_builder.functions import Sum
 from frappe import _
 from frappe.utils import flt
 
@@ -75,72 +76,82 @@ def get_columns(filters):
 	]
 
 
-def get_loans_not_started_to_be_paid(filters, all_repayments):
-	conditions = ""
-	if filters.get("employee"):
-		conditions += " AND l.applicant = '{}' ".format(filters["employee"])
+def _aggregate_loans(loan_names, from_salary=None, unpaid=False, employee=None):
+	"""Aggregate loans by applicant while preserving report column semantics."""
+	Loan = frappe.qb.DocType("Loan")
+	query = (
+		frappe.qb.from_(Loan)
+		.select(
+			Loan.name, Loan.applicant, Loan.applicant_name, Loan.posting_date,
+			Loan.total_payment, Loan.total_amount_paid, Loan.written_off_amount,
+		)
+		.where(Loan.status != "Closed")
+	)
+	if unpaid:
+		query = query.where(Loan.docstatus == 1)
+		if loan_names:
+			query = query.where(Loan.name.notin(loan_names))
+		if employee:
+			query = query.where(Loan.applicant == employee)
+	else:
+		if not loan_names:
+			return []
+		query = query.where(Loan.name.isin(loan_names))
 
-	return frappe.db.sql(
-		"""
-		SELECT
-			l.applicant AS applicant,
-			l.applicant_name AS applicant_name,
-			GROUP_CONCAT(l.name ORDER BY l.posting_date SEPARATOR ', ') AS loan,
-			SUM(l.total_payment) AS total_payable_amount,
-			null AS amount_paid_from_salary,
-			null AS amount_paid_not_from_salary,
-			SUM(wr.write_off_amount) AS write_off_amount,
-			null AS loan_balance
-		FROM `tabLoan` l
-		LEFT JOIN `tabLoan Write Off` wr ON l.name = wr.loan and l.applicant = wr.applicant
-		WHERE l.name NOT IN ({})
-		AND l.status != "Closed"
-		AND l.docstatus = 1 {conditions}
-		GROUP BY l.applicant
-		ORDER BY l.posting_date, l.applicant
-	""".format(
-			", ".join(frappe.db.escape(loan.against_loan) for loan in all_repayments), conditions=conditions
-		),
-		as_dict=True,
+	loans = query.orderby(Loan.posting_date).orderby(Loan.applicant).run(as_dict=True)
+	write_offs = {}
+	if unpaid and loans:
+		WriteOff = frappe.qb.DocType("Loan Write Off")
+		rows = (
+			frappe.qb.from_(WriteOff)
+			.select(WriteOff.loan, WriteOff.applicant, WriteOff.write_off_amount)
+			.where(WriteOff.loan.isin([loan.name for loan in loans]))
+			.run(as_dict=True)
+		)
+		for write_off in rows:
+			key = (write_off.loan, write_off.applicant)
+			write_offs[key] = write_offs.get(key, 0) + flt(write_off.write_off_amount)
+
+	applicants = {}
+	for loan in loans:
+		key = loan.applicant
+		if key not in applicants:
+			applicants[key] = frappe._dict({
+				"applicant": loan.applicant,
+				"applicant_name": loan.applicant_name,
+				"loan": "",
+				"total_payable_amount": 0,
+				"amount_paid_from_salary": 0 if from_salary is True else None,
+				"amount_paid_not_from_salary": 0 if from_salary is False else None,
+				"write_off_amount": 0,
+				"loan_balance": None,
+			})
+		result = applicants[key]
+		result.loan = result.loan + (", " if result.loan else "") + loan.name
+		result.total_payable_amount += flt(loan.total_payment)
+		if unpaid:
+			result.write_off_amount += write_offs.get((loan.name, loan.applicant), 0)
+		else:
+			if from_salary:
+				result.amount_paid_from_salary += flt(loan.total_amount_paid)
+			else:
+				result.amount_paid_not_from_salary += flt(loan.total_amount_paid)
+			result.write_off_amount += flt(loan.written_off_amount)
+	return list(applicants.values())
+
+
+def get_loans_not_started_to_be_paid(filters, all_repayments):
+	return _aggregate_loans(
+		[repayment.against_loan for repayment in all_repayments],
+		unpaid=True,
+		employee=filters.get("employee"),
 	)
 
 
 def get__paid_loans(filters, repayments, from_salary):
-	conditional_columns = ""
-	if from_salary:
-		conditional_columns += """
-			SUM(l.total_amount_paid) AS amount_paid_from_salary,
-			null AS amount_paid_not_from_salary,
-		"""
-	else:
-		conditional_columns += """
-			null AS amount_paid_from_salary,
-			SUM(l.total_amount_paid) AS amount_paid_not_from_salary,
-		"""
-
-	loans = frappe.db.sql(
-		"""
-		SELECT
-			l.applicant AS applicant,
-			l.applicant_name AS applicant_name,
-			GROUP_CONCAT(l.name ORDER BY l.posting_date SEPARATOR ', ') AS loan,
-			SUM(l.total_payment) AS total_payable_amount,
-			{conditional_columns}
-			SUM(l.written_off_amount) AS write_off_amount,
-			null AS loan_balance
-		FROM `tabLoan` l
-		WHERE l.name in ({})
-		AND l.status != "Closed"
-		GROUP BY l.applicant
-		ORDER BY l.posting_date, l.applicant
-	""".format(
-			", ".join(frappe.db.escape(loan.against_loan) for loan in repayments),
-			conditional_columns=conditional_columns,
-		),
-		as_dict=True,
+	return _aggregate_loans(
+		[repayment.against_loan for repayment in repayments], from_salary=from_salary
 	)
-
-	return loans
 
 
 def get_repayments(filters):
@@ -170,12 +181,11 @@ def get_repayments(filters):
 
 
 def get_custom_loan_repayment_not_from_salary(filters):
-	return frappe.db.sql(
-		"""
-		SELECT loan, SUM(payment_amount) AS amount_paid_not_from_salary
-		FROM `tabLoan Repayment Not From Salary`
-		WHERE loan != ""
-		GROUP BY loan
-	""",
-		as_dict=True,
+	Repayment = frappe.qb.DocType("Loan Repayment Not From Salary")
+	return (
+		frappe.qb.from_(Repayment)
+		.select(Repayment.loan, Sum(Repayment.payment_amount).as_("amount_paid_not_from_salary"))
+		.where(Repayment.loan != "")
+		.groupby(Repayment.loan)
+		.run(as_dict=True)
 	)
