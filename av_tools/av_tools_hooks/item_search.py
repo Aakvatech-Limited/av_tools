@@ -3,10 +3,11 @@ import re
 
 import frappe
 from frappe import scrub
-from frappe.desk.reportview import get_filters_cond, get_match_cond
 from frappe.desk.search import search_link as original_search_link
 from frappe.desk.search import search_widget as original_search_widget
 from frappe.utils import nowdate
+from frappe.query_builder.functions import IfNull
+from pypika import CustomFunction, Case
 
 ERP_ITEM_QUERY = "erpnext.controllers.queries.item_query"
 AV_TOOLS_ITEM_QUERY = "av_tools.av_tools_hooks.item_search.item_query"
@@ -113,29 +114,15 @@ def item_query(
 	meta = frappe.get_meta(doctype, cached=True)
 	searchfields = meta.get_search_fields()
 
-	columns = ""
 	extra_searchfields = [field for field in searchfields if field not in ["name", "description"]]
-
-	if extra_searchfields:
-		columns += ", " + ", ".join(extra_searchfields)
-
+	select_fields = ["name", *extra_searchfields]
 	if "description" in searchfields:
-		columns += """, if(length(tabItem.description) > 40, \
-			concat(substr(tabItem.description, 1, 40), "..."), description) as description"""
+		select_fields.append("description")
 
-	searchfields = searchfields + [
-		field
-		for field in [searchfield or "name", "item_code", "item_group", "item_name"]
+	searchfields = list(dict.fromkeys(searchfields + [
+		field for field in [searchfield or "name", "item_code", "item_group", "item_name"]
 		if field not in searchfields
-	]
-
-	def build_search_condition(field):
-		if len(search_terms) <= 1:
-			return f"{field} like %(txt)s"
-
-		return "(" + " and ".join([f"{field} like %(txt_{i})s" for i in range(len(search_terms))]) + ")"
-
-	searchfields = " or ".join([build_search_condition(field) for field in searchfields])
+	]))
 
 	if filters and isinstance(filters, dict):
 		if filters.get("customer") or filters.get("supplier"):
@@ -166,41 +153,52 @@ def item_query(
 			filters.pop("customer", None)
 			filters.pop("supplier", None)
 
-	description_cond = ""
-	if frappe.db.count(doctype, cache=True) < 50000:
-		description_cond = f"or {build_search_condition('tabItem.description')}"
-
-	# fragments come from frappe's own filter/match builders and validated search fields
-	return frappe.db.sql(  # nosemgrep
-		"""select
-			tabItem.name {columns}
-		from tabItem
-		where tabItem.docstatus < 2
-			and tabItem.disabled=0
-			and tabItem.has_variants=0
-			and (tabItem.end_of_life > %(today)s or ifnull(tabItem.end_of_life, '0000-00-00')='0000-00-00')
-			and ({scond} or tabItem.item_code IN (select parent from `tabItem Barcode` where barcode LIKE %(txt)s)
-				{description_cond})
-			{fcond} {mcond}
-		order by
-			if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
-			if(locate(%(_txt)s, item_name), locate(%(_txt)s, item_name), 99999),
-			idx desc,
-			name, item_name
-		limit %(start)s, %(page_len)s """.format(
-			columns=columns,
-			scond=searchfields,
-			fcond=get_filters_cond(doctype, filters, conditions).replace("%", "%%"),
-			mcond=get_match_cond(doctype).replace("%", "%%"),
-			description_cond=description_cond,
-		),
-		{
-			"today": nowdate(),
-			"txt": f"%{search_text}%",
-			"_txt": (search_terms[0] if search_terms else "").replace("%", ""),
-			"start": start,
-			"page_len": page_len,
-			**{f"txt_{i}": f"%{term}%" for i, term in enumerate(search_terms)},
-		},
-		as_dict=as_dict,
+	Item = frappe.qb.DocType("Item")
+	Barcode = frappe.qb.DocType("Item Barcode")
+	query = frappe.qb.get_query(
+		"Item", fields=select_fields, filters=filters,
+		ignore_permissions=False,
 	)
+	query = (
+		query.where(Item.docstatus < 2)
+		.where(Item.disabled == 0)
+		.where(Item.has_variants == 0)
+		.where((Item.end_of_life > nowdate()) | (IfNull(Item.end_of_life, "0000-00-00") == "0000-00-00"))
+	)
+
+	def matches_terms(field):
+		if len(search_terms) <= 1:
+			return field.like(f"%{search_text}%")
+		criterion = field.like(f"%{search_terms[0]}%")
+		for term in search_terms[1:]:
+			criterion = criterion & field.like(f"%{term}%")
+		return criterion
+
+	search_condition = None
+	for fieldname in searchfields:
+		criterion = matches_terms(Item[fieldname])
+		search_condition = criterion if search_condition is None else search_condition | criterion
+
+	barcode_query = frappe.qb.from_(Barcode).select(Barcode.parent).where(
+		Barcode.barcode.like(f"%{search_text}%")
+	)
+	search_condition = search_condition | Item.item_code.isin(barcode_query)
+	if frappe.db.count(doctype, cache=True) < 50000:
+		search_condition = search_condition | matches_terms(Item.description)
+	query = query.where(search_condition)
+
+	Locate = CustomFunction("LOCATE", ["needle", "haystack"])
+	first_term = (search_terms[0] if search_terms else "").replace("%", "")
+	for field in (Item.name, Item.item_name):
+		rank = Locate(first_term, field)
+		query = query.orderby(Case().when(rank > 0, rank).else_(99999))
+	query = query.orderby(Item.idx, order=frappe.qb.desc).orderby(Item.name).orderby(Item.item_name)
+	query = query.offset(start).limit(page_len)
+	rows = query.run(as_dict=True)
+	if "description" in select_fields:
+		for row in rows:
+			if row.get("description") and len(row.description) > 40:
+				row.description = row.description[:40] + "..."
+	if as_dict:
+		return rows
+	return [tuple(row.get(field) for field in select_fields) for row in rows]
