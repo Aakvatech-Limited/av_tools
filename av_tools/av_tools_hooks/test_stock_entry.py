@@ -123,3 +123,52 @@ class TestStockEntryBomGuidedQty(FrappeTestCase):
 		self.assertEqual(doc.items[0].transfer_qty, 550)
 		self.assertEqual(doc.items[1].bom_guided_stock_qty, 10)
 		self.assertEqual(doc.items[2].bom_guided_stock_qty, 2)
+
+	def test_v16_secondary_item_uses_secondary_bom_quantities(self):
+		"""Material transfer rows linked to BOM Secondary Item use v16 secondary quantities."""
+		doc = frappe._dict({
+			"bom_no": "BOM-TEST-001", "company": "Test Company",
+			"fg_completed_qty": 10200, "use_multi_level_bom": 1,
+			"items": [frappe._dict({
+				"idx": 1, "item_code": "Waste Lube Oil",
+				"bom_secondary_item": "br0sk96o3b",
+				"qty": 12000, "transfer_qty": 12000,
+				"conversion_factor": 1, "is_finished_item": 0,
+			})],
+		})
+		raw = {"Waste Lube Oil": frappe._dict({"item_code": "Waste Lube Oil", "qty": 100})}
+		secondary = {"Waste Lube Oil": frappe._dict({"item_code": "Waste Lube Oil", "qty": 11500})}
+		with patch(
+			"av_tools.av_tools_hooks.stock_entry.get_bom_items_as_dict",
+			side_effect=[raw, secondary],
+		) as get_items:
+			set_bom_guided_qty(doc)
+			self.assertEqual(get_items.call_args_list[1].kwargs["fetch_secondary_items"], 1)
+			self.assertNotIn("fetch_scrap_items", get_items.call_args_list[1].kwargs)
+		self.assertEqual(doc.items[0].bom_guided_stock_qty, 11500)
+		self.assertEqual(doc.items[0].bom_guided_qty, 11500)
+		self.assertEqual(doc.items[0].qty, 12000)
+		self.assertEqual(doc.items[0].transfer_qty, 12000)
+
+	def test_combines_multiple_bom_rows_for_same_item(self):
+		"""Different BOM operations may return multiple dictionary rows per item code."""
+		doc = frappe._dict({
+			"bom_no": "BOM-TEST-001", "company": "Test Company",
+			"fg_completed_qty": 10, "use_multi_level_bom": 0,
+			"items": [frappe._dict({
+				"idx": 1, "item_code": "RM-001", "qty": 9,
+				"conversion_factor": 2, "is_finished_item": 0,
+			})],
+		})
+		raw = {
+			("RM-001", "Operation 1"): frappe._dict({"item_code": "RM-001", "qty": 6}),
+			("RM-001", "Operation 2"): frappe._dict({"item_code": "RM-001", "qty": 10}),
+		}
+		with patch(
+			"av_tools.av_tools_hooks.stock_entry.get_bom_items_as_dict",
+			side_effect=[raw, {}],
+		):
+			set_bom_guided_qty(doc)
+		self.assertEqual(doc.items[0].bom_guided_stock_qty, 16)
+		self.assertEqual(doc.items[0].bom_guided_qty, 8)
+		self.assertEqual(doc.items[0].qty, 9)
