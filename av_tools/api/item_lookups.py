@@ -4,6 +4,7 @@ import json
 from typing import Any
 
 import frappe
+from frappe.query_builder.functions import IfNull, Max
 from frappe import _
 from frappe.utils import cint, flt
 
@@ -11,29 +12,36 @@ DEFAULT_MAX_RECORDS = 20
 
 
 def _get_stock_ledger_entries(item_code: str) -> list[dict]:
-	return frappe.db.sql(
-		"""
-		SELECT sle.batch_no, sle.item_code, sle.warehouse,
-		       sle.qty_after_transaction AS actual_qty
-		FROM `tabStock Ledger Entry` sle
-		INNER JOIN (
-			SELECT IF(batch_no IS NULL, '', batch_no) AS batch_no,
-			       item_code, warehouse,
-			       MAX(posting_datetime) AS posting_datetime
-			FROM `tabStock Ledger Entry`
-			GROUP BY IF(batch_no IS NULL, '', batch_no), item_code, warehouse
-		) AS sle_max
-			ON IF(sle.batch_no IS NULL, '', sle.batch_no) = sle_max.batch_no
-			AND sle.item_code = sle_max.item_code
-			AND sle.warehouse = sle_max.warehouse
-			AND sle.posting_datetime = sle_max.posting_datetime
-		WHERE sle.docstatus = 1
-		  AND sle.is_cancelled = 0
-		  AND sle.item_code = %(item_code)s
-		ORDER BY sle.warehouse, sle.item_code, sle.batch_no
-		""",
-		{"item_code": item_code},
-		as_dict=1,
+	SLE = frappe.qb.DocType("Stock Ledger Entry")
+	LatestSLE = frappe.qb.DocType("Stock Ledger Entry")
+	latest = (
+		frappe.qb.from_(LatestSLE)
+		.select(
+			IfNull(LatestSLE.batch_no, "").as_("batch_no"),
+			LatestSLE.item_code,
+			LatestSLE.warehouse,
+			Max(LatestSLE.posting_datetime).as_("posting_datetime"),
+		)
+		.where(LatestSLE.item_code == item_code)
+		.groupby(IfNull(LatestSLE.batch_no, ""), LatestSLE.item_code, LatestSLE.warehouse)
+	).as_("sle_max")
+	return (
+		frappe.qb.from_(SLE)
+		.join(latest)
+		.on(
+			(IfNull(SLE.batch_no, "") == latest.batch_no)
+			& (SLE.item_code == latest.item_code)
+			& (SLE.warehouse == latest.warehouse)
+			& (SLE.posting_datetime == latest.posting_datetime)
+		)
+		.select(SLE.batch_no, SLE.item_code, SLE.warehouse, SLE.qty_after_transaction.as_("actual_qty"))
+		.where(SLE.docstatus == 1)
+		.where(SLE.is_cancelled == 0)
+		.where(SLE.item_code == item_code)
+		.orderby(SLE.warehouse)
+		.orderby(SLE.item_code)
+		.orderby(SLE.batch_no)
+		.run(as_dict=True)
 	)
 
 
