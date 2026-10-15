@@ -1,3 +1,4 @@
+from frappe.query_builder.functions import Count, Date
 # Copyright (c) 2013, Aakvatech and contributors
 # For license information, please see license.txt
 
@@ -346,13 +347,17 @@ def get_checkout_details(conditions, filters):
 
 def get_today_summary():
 	today = frappe.utils.today()
-	in_count = frappe.db.sql(
-		"SELECT COUNT(*) FROM `tabEmployee Checkin` WHERE log_type='IN' AND DATE(time)=%s", (today,)
-	)[0][0]
-	out_count = frappe.db.sql(
-		"SELECT COUNT(*) FROM `tabEmployee Checkin` WHERE log_type='OUT' AND DATE(time)=%s", (today,)
-	)[0][0]
-	return {"date": today, "in_count": in_count, "out_count": out_count}
+	Checkin = frappe.qb.DocType("Employee Checkin")
+	counts = (
+		frappe.qb.from_(Checkin)
+		.select(Checkin.log_type, Count(Checkin.name).as_("total"))
+		.where(Date(Checkin.time) == today)
+		.where(Checkin.log_type.isin(["IN", "OUT"]))
+		.groupby(Checkin.log_type)
+		.run(as_dict=True)
+	)
+	by_type = {row.log_type: row.total for row in counts}
+	return {"date": today, "in_count": by_type.get("IN", 0), "out_count": by_type.get("OUT", 0)}
 
 
 @frappe.whitelist()
