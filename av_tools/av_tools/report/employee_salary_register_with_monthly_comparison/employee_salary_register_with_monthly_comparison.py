@@ -164,37 +164,36 @@ def get_difference_amount_detail(bsc_amount_diff):
 	return result
 
 
-def get_prev_salary_slips(filters, company_currency, prev_first_date, prev_last_date):
-	"""Get submitted salary slips for precious month"""
-
-	custom_filters = filters
-	custom_filters.update({"prev_first_date": prev_first_date, "prev_last_date": prev_last_date})
-	prev_conditions = get_prev_conditions(custom_filters, company_currency)
-	prev_salary_slips = frappe.db.sql(
-		f"""
-		select name, employee, employee_name, department, gross_pay as prev_gross_pay from `tabSalary Slip` where {prev_conditions}
-		order by employee""",
-		filters,
-		as_dict=1,
+def _query_salary_slips(filters, company_currency, from_date, to_date, amount_alias, previous=False):
+	Slip = frappe.qb.DocType("Salary Slip")
+	query = frappe.qb.from_(Slip).select(
+		Slip.name, Slip.employee, Slip.employee_name, Slip.department, Slip.gross_pay.as_(amount_alias)
 	)
+	if previous:
+		query = query.where(Slip.docstatus <= 1)
+	elif filters.get("docstatus"):
+		query = query.where(Slip.docstatus == {"Draft": 0, "Submitted": 1, "Cancelled": 2}[filters.get("docstatus")])
+	if from_date:
+		query = query.where(Slip.start_date >= from_date)
+	if to_date:
+		query = query.where(Slip.end_date <= to_date)
+	if filters.get("company"):
+		query = query.where(Slip.company == filters.get("company"))
+	if filters.get("employee"):
+		query = query.where(Slip.employee == filters.get("employee"))
+	if filters.get("currency") and filters.get("currency") != company_currency:
+		query = query.where(Slip.currency == filters.get("currency"))
+	if filters.get("department") and filters.get("company"):
+		query = query.where(Slip.department.isin(get_departments(filters.get("department"), filters.get("company"))))
+	return query.orderby(Slip.employee).run(as_dict=True)
 
-	return prev_salary_slips or []
+
+def get_prev_salary_slips(filters, company_currency, prev_first_date, prev_last_date):
+	return _query_salary_slips(filters, company_currency, prev_first_date, prev_last_date, "prev_gross_pay", previous=True)
 
 
 def get_cur_salary_slips(filters, company_currency):
-	"""Get salary slips for the current month"""
-
-	filters.update({"from_date": filters.get("from_date"), "to_date": filters.get("to_date")})
-	conditions, filters = get_cur_conditions(filters, company_currency)
-	salary_slips = frappe.db.sql(
-		f"""
-		select name, employee, employee_name, department, gross_pay as cur_gross_pay from `tabSalary Slip` where {conditions}
-        order by employee""",
-		filters,
-		as_dict=1,
-	)
-
-	return salary_slips or []
+	return _query_salary_slips(filters, company_currency, filters.get("from_date"), filters.get("to_date"), "cur_gross_pay")
 
 
 def get_prev_month_date(filters):
