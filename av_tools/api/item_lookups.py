@@ -4,8 +4,8 @@ import json
 from typing import Any
 
 import frappe
-from frappe.query_builder.functions import IfNull, Max
 from frappe import _
+from frappe.query_builder.functions import IfNull, Max
 from frappe.utils import cint, flt
 
 DEFAULT_MAX_RECORDS = 20
@@ -151,7 +151,9 @@ def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20)
 	posting_date_range = filters.get("posting_date")
 	max_records = int(start) + int(limit)
 
-	rows = _get_invoice_prices("Sales", item_code, currency, company, party=customer, posting_date_range=posting_date_range)
+	rows = _get_invoice_prices(
+		"Sales", item_code, currency, company, party=customer, posting_date_range=posting_date_range
+	)
 	return _collect_prices(
 		rows,
 		"rate",
@@ -185,7 +187,9 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 	posting_date_range = filters.get("posting_date")
 	max_records = int(start) + int(limit)
 
-	rows = _get_invoice_prices("Purchase", item_code, currency, company, party=supplier, posting_date_range=posting_date_range)
+	rows = _get_invoice_prices(
+		"Purchase", item_code, currency, company, party=supplier, posting_date_range=posting_date_range
+	)
 	return _collect_prices(
 		rows,
 		"rate",
