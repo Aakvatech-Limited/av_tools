@@ -4,8 +4,8 @@
 
 import erpnext
 import frappe
-from frappe.query_builder.functions import Sum
 from frappe import _, msgprint
+from frappe.query_builder.functions import Sum
 from frappe.utils import flt
 from frappe.utils.nestedset import get_descendants_of
 
@@ -81,7 +81,9 @@ def get_salary_slips(filters, company_currency):
 	Slip = frappe.qb.DocType("Salary Slip")
 	query = frappe.qb.from_(Slip).select(Slip.star)
 	if filters.get("docstatus"):
-		query = query.where(Slip.docstatus == {"Draft": 0, "Submitted": 1, "Cancelled": 2}[filters.get("docstatus")])
+		query = query.where(
+			Slip.docstatus == {"Draft": 0, "Submitted": 1, "Cancelled": 2}[filters.get("docstatus")]
+		)
 	if filters.get("from_date"):
 		query = query.where(Slip.start_date >= filters.get("from_date"))
 	if filters.get("to_date"):
@@ -93,7 +95,9 @@ def get_salary_slips(filters, company_currency):
 	if filters.get("currency") and filters.get("currency") != company_currency:
 		query = query.where(Slip.currency == filters.get("currency"))
 	if filters.get("department") and filters.get("company"):
-		query = query.where(Slip.department.isin(get_departments(filters.get("department"), filters.get("company"))))
+		query = query.where(
+			Slip.department.isin(get_departments(filters.get("department"), filters.get("company")))
+		)
 	return query.orderby(Slip.employee).run(as_dict=True)
 
 
@@ -102,7 +106,8 @@ def _component_totals(salary_slips, parentfield, basic=None, negative=False):
 	Slip = frappe.qb.DocType("Salary Slip")
 	query = (
 		frappe.qb.from_(Detail)
-		.join(Slip).on(Detail.parent == Slip.name)
+		.join(Slip)
+		.on(Detail.parent == Slip.name)
 		.select(Detail.salary_component, (Sum(Detail.amount) * (-1 if negative else 1)).as_("total"))
 		.where(Detail.parent.isin([slip.name for slip in salary_slips]))
 		.where(Detail.do_not_include_in_total == 0)
