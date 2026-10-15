@@ -1,4 +1,3 @@
-from frappe.query_builder.functions import Count, Date
 # Copyright (c) 2013, Aakvatech and contributors
 # For license information, please see license.txt
 
@@ -8,6 +7,8 @@ import frappe
 import numpy as np
 import pandas as pd
 from frappe import _, msgprint
+from frappe.query_builder.functions import Count, Date, Max, Min
+from pypika import CustomFunction
 from frappe.utils import add_to_date, cint, cstr, get_time, getdate
 from frappe.utils.nestedset import get_descendants_of
 
@@ -293,56 +294,52 @@ def get_checkout_data(conditions, filters, chift_type_details):
 	return checkout_data
 
 
-def get_checkin_details(conditions, filters):
-	data = frappe.db.sql(
-		f"""
-        SELECT
-            chec.employee AS employee,
-            chec.employee_name AS employee_name,
-            emp.department AS department,
-            emp.default_shift AS default_shift,
-            sha.shift_type AS shift_type,
-            DATE_FORMAT(chec.time, '%%Y-%%m-%%d') AS date,
-            MIN(DATE_FORMAT(chec.time, '%%T')) AS checkin_time
-        FROM `tabEmployee Checkin` chec
-            INNER JOIN `tabEmployee` emp ON emp.name = chec.employee
-            LEFT JOIN `tabShift Assignment` sha ON chec.employee = sha.employee
-            AND sha.start_date BETWEEN  %(from_date)s AND %(to_date)s
-            AND DATE(chec.time) BETWEEN sha.start_date AND sha.end_date
-        WHERE chec.log_type = "IN" {conditions}
-        GROUP BY chec.employee, DATE(chec.time)
-        ORDER BY DATE(chec.time) ASC, chec.employee ASC
-    """,
-		filters,
-		as_dict=1,
+def _query_checkin_details(filters, log_type):
+	Checkin = frappe.qb.DocType("Employee Checkin")
+	Employee = frappe.qb.DocType("Employee")
+	Assignment = frappe.qb.DocType("Shift Assignment")
+	DateFormat = CustomFunction("DATE_FORMAT", ["value", "format"])
+	date = Date(Checkin.time)
+	query = (
+		frappe.qb.from_(Checkin)
+		.join(Employee).on(Employee.name == Checkin.employee)
+		.left_join(Assignment).on(
+			(Assignment.employee == Checkin.employee)
+			& (Assignment.start_date.between(filters.get("from_date"), filters.get("to_date")))
+			& (date.between(Assignment.start_date, Assignment.end_date))
+		)
+		.select(
+			Checkin.employee,
+			Checkin.employee_name,
+			Employee.department,
+			Employee.default_shift,
+			Assignment.shift_type,
+			DateFormat(Checkin.time, "%Y-%m-%d").as_("date"),
+			(Min(DateFormat(Checkin.time, "%T")) if log_type == "IN" else Max(DateFormat(Checkin.time, "%T"))).as_(
+				"checkin_time" if log_type == "IN" else "checkout_time"
+			),
+		)
+		.where(Checkin.log_type == log_type)
 	)
-	return data
+	if filters.get("from_date"):
+		query = query.where(date >= filters.get("from_date"))
+	if filters.get("to_date"):
+		query = query.where(date <= filters.get("to_date"))
+	if filters.get("company"):
+		query = query.where(Employee.company == filters.get("company"))
+	if filters.get("department") and filters.get("company"):
+		query = query.where(Employee.department.isin(get_department(filters.get("department"), filters.get("company"))))
+	if filters.get("employee"):
+		query = query.where(Checkin.employee == filters.get("employee"))
+	return query.groupby(Checkin.employee, date).orderby(date).orderby(Checkin.employee).run(as_dict=True)
+
+
+def get_checkin_details(conditions, filters):
+	return _query_checkin_details(filters, "IN")
 
 
 def get_checkout_details(conditions, filters):
-	data = frappe.db.sql(
-		f"""
-        SELECT
-            chec.employee AS employee,
-            chec.employee_name AS employee_name,
-            emp.department AS department,
-            emp.default_shift AS default_shift,
-            sha.shift_type AS shift_type,
-            DATE_FORMAT(chec.time, '%%Y-%%m-%%d') AS date,
-            MAX(DATE_FORMAT(chec.time, '%%T')) AS checkout_time
-        FROM `tabEmployee Checkin` chec
-            INNER JOIN `tabEmployee` emp ON emp.name = chec.employee
-            LEFT JOIN `tabShift Assignment` sha ON chec.employee = sha.employee
-            AND sha.start_date BETWEEN  %(from_date)s AND %(to_date)s
-            AND DATE(chec.time) BETWEEN sha.start_date AND sha.end_date
-        WHERE chec.log_type = "OUT" {conditions}
-        GROUP BY chec.employee, DATE(chec.time)
-        ORDER BY DATE(chec.time) ASC, chec.employee ASC
-    """,
-		filters,
-		as_dict=1,
-	)
-	return data
+	return _query_checkin_details(filters, "OUT")
 
 
 def get_today_summary():
