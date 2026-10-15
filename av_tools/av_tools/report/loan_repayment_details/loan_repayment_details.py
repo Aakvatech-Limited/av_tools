@@ -2,8 +2,8 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.query_builder.functions import Sum
 from frappe import _
+from frappe.query_builder.functions import Sum
 from frappe.utils import flt
 
 
@@ -82,8 +82,13 @@ def _aggregate_loans(loan_names, from_salary=None, unpaid=False, employee=None):
 	query = (
 		frappe.qb.from_(Loan)
 		.select(
-			Loan.name, Loan.applicant, Loan.applicant_name, Loan.posting_date,
-			Loan.total_payment, Loan.total_amount_paid, Loan.written_off_amount,
+			Loan.name,
+			Loan.applicant,
+			Loan.applicant_name,
+			Loan.posting_date,
+			Loan.total_payment,
+			Loan.total_amount_paid,
+			Loan.written_off_amount,
 		)
 		.where(Loan.status != "Closed")
 	)
@@ -116,16 +121,18 @@ def _aggregate_loans(loan_names, from_salary=None, unpaid=False, employee=None):
 	for loan in loans:
 		key = loan.applicant
 		if key not in applicants:
-			applicants[key] = frappe._dict({
-				"applicant": loan.applicant,
-				"applicant_name": loan.applicant_name,
-				"loan": "",
-				"total_payable_amount": 0,
-				"amount_paid_from_salary": 0 if from_salary is True else None,
-				"amount_paid_not_from_salary": 0 if from_salary is False else None,
-				"write_off_amount": 0,
-				"loan_balance": None,
-			})
+			applicants[key] = frappe._dict(
+				{
+					"applicant": loan.applicant,
+					"applicant_name": loan.applicant_name,
+					"loan": "",
+					"total_payable_amount": 0,
+					"amount_paid_from_salary": 0 if from_salary is True else None,
+					"amount_paid_not_from_salary": 0 if from_salary is False else None,
+					"write_off_amount": 0,
+					"loan_balance": None,
+				}
+			)
 		result = applicants[key]
 		result.loan = result.loan + (", " if result.loan else "") + loan.name
 		result.total_payable_amount += flt(loan.total_payment)
@@ -149,9 +156,7 @@ def get_loans_not_started_to_be_paid(filters, all_repayments):
 
 
 def get__paid_loans(filters, repayments, from_salary):
-	return _aggregate_loans(
-		[repayment.against_loan for repayment in repayments], from_salary=from_salary
-	)
+	return _aggregate_loans([repayment.against_loan for repayment in repayments], from_salary=from_salary)
 
 
 def get_repayments(filters):
