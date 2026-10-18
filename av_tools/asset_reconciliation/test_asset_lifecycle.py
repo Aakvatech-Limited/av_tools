@@ -168,6 +168,24 @@ class TestPurchaseAssets(unittest.TestCase):
 			self.module.create_draft_assets(self.invoice)
 		self.assertEqual(self.inserted, [])
 
+	def test_receipt_asset_conflict_is_checked_separately(self):
+		self.row.purchase_receipt = "PR-1"
+		self.row.pr_detail = "PR-LINE-1"
+		self.f.db.exists.side_effect = lambda doctype, filters: "purchase_receipt" in filters
+		with self.assertRaises(ValueError):
+			self.module.create_draft_assets(self.invoice)
+		self.assertEqual(self.inserted, [])
+
+	def test_generated_source_cannot_be_forged_or_changed(self):
+		self.module.create_draft_assets(self.invoice)
+		asset = self.inserted[0]
+		asset.get_doc_before_save = lambda: None
+		self.f.get_doc = Mock(return_value=self.invoice)
+		self.module.validate_asset_source(asset)
+		asset.av_nta_unit_key = "forged"
+		with self.assertRaises(ValueError):
+			self.module.validate_asset_source(asset)
+
 	def test_create_permission_failure_is_not_bypassed(self):
 		self.f.has_permission.side_effect = PermissionError
 		with self.assertRaises(PermissionError):

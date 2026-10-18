@@ -9,6 +9,18 @@ from av_tools.asset_reconciliation.api import asset_capitalization_reconciliatio
 
 
 class TestNativeReconciliationIntegration(unittest.TestCase):
+	def test_purchase_asset_settings_and_source_fields_are_installed(self):
+		settings = frappe.get_meta("AV Tools Settings")
+		self.assertEqual(settings.get_field("enable_no_time_appropriation_assets").default, "0")
+		for fieldname in (
+			"av_nta_purchase_invoice",
+			"av_nta_purchase_invoice_item",
+			"av_nta_unit_number",
+			"av_nta_unit_key",
+		):
+			self.assertTrue(frappe.get_meta("Asset").has_field(fieldname))
+		self.assertTrue(frappe.get_meta("Asset").get_field("av_nta_unit_key").unique)
+
 	def test_standard_metadata_and_connections_are_registered(self):
 		self.assertFalse(frappe.get_meta("Asset Capitalization Reconciliation").custom)
 		for source in ("Asset", "Purchase Invoice", "Journal Entry"):
