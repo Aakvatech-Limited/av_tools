@@ -9,6 +9,11 @@ on:
       - "av_tools/patches/v1_0/*asset_reconciliation.py"
       - "av_tools/hooks.py"
       - "av_tools/install.py"
+      - "av_tools/av_tools/doctype/av_tools_settings/**"
+      - "av_tools/patches/custom_fields/custom_fields_json/no_time_appropriation_asset_fields.json"
+      - "av_tools/patches/v1_0/add_no_time_appropriation_asset_fields.py"
+      - "av_tools/public/js/asset_lifecycle.js"
+      - "av_tools/public/js/purchase_invoice_assets.js"
       - ".github/workflows/asset-reconciliation.yml"
   workflow_dispatch:
 
@@ -24,4 +29,4 @@ jobs:
         with:
           python-version: "3.11"
       - name: Run isolated financial and permission unit tests
-        run: python -m unittest av_tools.asset_reconciliation.test_reconciliation -v
+        run: python -m unittest av_tools.asset_reconciliation.test_reconciliation av_tools.asset_reconciliation.test_asset_lifecycle -v

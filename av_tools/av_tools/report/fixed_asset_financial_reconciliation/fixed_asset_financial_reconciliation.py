@@ -328,6 +328,8 @@ def execute(filters=None):
 			Asset.name,
 			Asset.purchase_invoice,
 			Asset.purchase_invoice_item,
+			Asset.av_nta_purchase_invoice,
+			Asset.av_nta_purchase_invoice_item,
 			Asset.asset_category,
 			Asset.total_asset_cost,
 			Asset.purchase_amount,
@@ -341,6 +343,8 @@ def execute(filters=None):
 	)
 	asset_purchase = {}
 	for a in purchases:
+		a.purchase_invoice = a.purchase_invoice or a.av_nta_purchase_invoice
+		a.purchase_invoice_item = a.purchase_invoice_item or a.av_nta_purchase_invoice_item
 		asset_purchase[a.name] = a
 		if a.purchase_invoice:
 			if a.purchase_invoice not in assets_by_invoice:
@@ -630,7 +634,7 @@ def execute(filters=None):
 		if valid_invoice_names:
 			item_rows = run_permitted(
 				frappe.qb.from_(PII)
-				.select(PII.name, PII.parent, PII.expense_account, PII.base_net_amount)
+				.select(PII.name, PII.parent, PII.expense_account, PII.base_net_amount, PII.qty)
 				.where(PII.parent.isin(valid_invoice_names)),
 				"Purchase Invoice Item",
 				permission_cache,
@@ -638,12 +642,27 @@ def execute(filters=None):
 			items_by_id = {}
 			for inv_item in item_rows:
 				items_by_id[inv_item.name] = inv_item
+			quantity_by_line = {}
+			for asset_record in purchases:
+				line = asset_record.purchase_invoice_item
+				quantity_by_line[line] = quantity_by_line.get(line, 0) + float(
+					asset_record.asset_quantity or 1
+				)
 			for asset_record in purchases:
 				inv_item = items_by_id.get(asset_record.purchase_invoice_item)
 				if inv_item and inv_item.parent == asset_record.purchase_invoice:
 					category_account = account_by_category.get(asset_record.asset_category)
-					if category_account and inv_item.expense_account == category_account:
-						direct_invoice_assets[asset_record.name] = float(inv_item.base_net_amount or 0)
+					if (
+						category_account
+						and inv_item.expense_account == category_account
+						and float(inv_item.qty or 0) > 0
+						and quantity_by_line.get(inv_item.name, 0) <= float(inv_item.qty)
+					):
+						direct_invoice_assets[asset_record.name] = (
+							float(inv_item.base_net_amount or 0)
+							* float(asset_record.asset_quantity or 1)
+							/ float(inv_item.qty)
+						)
 	for report_row in data:
 		asset_id = report_row.get("asset")
 		if asset_id in direct_invoice_assets:

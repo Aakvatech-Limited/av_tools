@@ -53,7 +53,7 @@ web_include_css = "/assets/av_tools/css/theme.css"
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_js = {
-	"Asset": "public/js/asset_accounting_audit.js",
+	"Asset": ["public/js/asset_accounting_audit.js", "public/js/asset_lifecycle.js"],
 	"Sales Invoice": [
 		"weigh_bridge/doctype/sales_invoice_weighbridge_ticket.js",
 		"authotp/api/sales_invoice.js",
@@ -73,7 +73,10 @@ doctype_js = {
 		"av_tools/purchase_order.js",
 	],
 	"Stock Entry": "av_tools/stock_entry.js",
-	"Purchase Invoice": "weigh_bridge/doctype/purchase_invoice_weighbridge_ticket.js",
+	"Purchase Invoice": [
+		"weigh_bridge/doctype/purchase_invoice_weighbridge_ticket.js",
+		"public/js/purchase_invoice_assets.js",
+	],
 	"Purchase Receipt": "weigh_bridge/doctype/purchase_receipt_weighbridge_ticket.js",
 	"Material Request": "av_tools/material_request.js",
 	"Customer": [
@@ -231,7 +234,15 @@ doc_events = {
 			"av_tools.av_tools_hooks.purchase_order.target_warehouse_based_price_list",
 		]
 	},
-	"Purchase Invoice": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
+	"Purchase Invoice": {
+		"validate": [
+			"av_tools.weigh_bridge.validation.validate_weighbridge_ticket",
+			"av_tools.asset_reconciliation.purchase_assets.validate_purchase_invoice",
+		],
+		"on_submit": "av_tools.asset_reconciliation.purchase_assets.create_draft_assets",
+		"before_cancel": "av_tools.asset_reconciliation.purchase_assets.cancel_invoice_assets",
+	},
+	"Asset": {"before_validate": "av_tools.asset_reconciliation.purchase_assets.validate_asset_source"},
 	"Purchase Receipt": {"validate": "av_tools.weigh_bridge.validation.validate_weighbridge_ticket"},
 	"Stock Entry": {
 		"validate": "av_tools.av_tools_hooks.stock_entry.set_bom_guided_qty",
@@ -313,6 +324,9 @@ override_whitelisted_methods = {
 # ReportOverride subclasses frappe's own Report; this is the documented hook.
 # nosemgrep: frappe-semgrep-rules.rules.override-doctype-class
 override_doctype_class = {"Report": "av_tools.av_tools_hooks.report_override.ReportOverride"}
+extend_doctype_class = {
+	"Purchase Invoice": ["av_tools.asset_reconciliation.purchase_assets.NoTimeAppropriationPurchaseInvoice"],
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,

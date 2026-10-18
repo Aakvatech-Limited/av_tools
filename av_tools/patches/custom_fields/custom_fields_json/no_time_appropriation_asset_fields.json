@@ -1,0 +1,70 @@
+[
+  {
+    "fieldname": "av_nta_source_section",
+    "fieldtype": "Section Break",
+    "label": "No-Time-Appropriation Source",
+    "insert_after": "purchase_invoice_item",
+    "depends_on": "av_nta_purchase_invoice",
+    "name": "Asset-av_nta_source_section",
+    "dt": "Asset",
+    "doctype": "Custom Field",
+    "module": "Av Tools",
+    "read_only": 1,
+    "no_copy": 1
+  },
+  {
+    "fieldname": "av_nta_purchase_invoice",
+    "fieldtype": "Link",
+    "options": "Purchase Invoice",
+    "label": "Source Purchase Invoice",
+    "insert_after": "av_nta_source_section",
+    "search_index": 1,
+    "in_standard_filter": 1,
+    "name": "Asset-av_nta_purchase_invoice",
+    "dt": "Asset",
+    "doctype": "Custom Field",
+    "module": "Av Tools",
+    "read_only": 1,
+    "no_copy": 1
+  },
+  {
+    "fieldname": "av_nta_purchase_invoice_item",
+    "fieldtype": "Data",
+    "label": "Source Invoice Line",
+    "insert_after": "av_nta_purchase_invoice",
+    "hidden": 1,
+    "search_index": 1,
+    "name": "Asset-av_nta_purchase_invoice_item",
+    "dt": "Asset",
+    "doctype": "Custom Field",
+    "module": "Av Tools",
+    "read_only": 1,
+    "no_copy": 1
+  },
+  {
+    "fieldname": "av_nta_unit_number",
+    "fieldtype": "Int",
+    "label": "Source Line Unit",
+    "insert_after": "av_nta_purchase_invoice_item",
+    "name": "Asset-av_nta_unit_number",
+    "dt": "Asset",
+    "doctype": "Custom Field",
+    "module": "Av Tools",
+    "read_only": 1,
+    "no_copy": 1
+  },
+  {
+    "fieldname": "av_nta_unit_key",
+    "fieldtype": "Data",
+    "label": "Source Unit Key",
+    "insert_after": "av_nta_unit_number",
+    "hidden": 1,
+    "unique": 1,
+    "name": "Asset-av_nta_unit_key",
+    "dt": "Asset",
+    "doctype": "Custom Field",
+    "module": "Av Tools",
+    "read_only": 1,
+    "no_copy": 1
+  }
+]

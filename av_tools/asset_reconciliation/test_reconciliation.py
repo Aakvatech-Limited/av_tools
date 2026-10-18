@@ -192,10 +192,28 @@ class TestReconciliation(unittest.TestCase):
 		self.asset(purchase_invoice="PI-1", purchase_invoice_item="ITEM-1")
 		self.data["Purchase Invoice"] = [Row(name="PI-1", docstatus=1)]
 		self.data["Purchase Invoice Item"] = [
-			Row(name="ITEM-1", parent="PI-1", expense_account="Equipment - A", base_net_amount=100)
+			Row(name="ITEM-1", parent="PI-1", expense_account="Equipment - A", base_net_amount=100, qty=1)
 		]
 		self.assertEqual(self.report()[0]["mapped_cost"], 100)
 		self.assertEqual(self.report("Exceptions Only"), [])
+
+	def test_generated_source_links_cover_multiple_assets_without_multiplying_invoice_cost(self):
+		self.asset(
+			av_nta_purchase_invoice="PI-1",
+			av_nta_purchase_invoice_item="ITEM-1",
+			total_asset_cost=50,
+			asset_quantity=1,
+		)
+		second = Row(self.data["Asset"][0])
+		second.name = "AST-2"
+		self.data["Asset"].append(second)
+		self.data["Purchase Invoice"] = [Row(name="PI-1", docstatus=1)]
+		self.data["Purchase Invoice Item"] = [
+			Row(name="ITEM-1", parent="PI-1", expense_account="Equipment - A", base_net_amount=100, qty=2)
+		]
+		rows = self.report()
+		self.assertEqual(sum(row["mapped_cost"] for row in rows), 100)
+		self.assertTrue(all(row["purchase_invoice"] == "PI-1" for row in rows))
 
 	def test_scrapped_asset_and_scrap_journal_are_excluded(self):
 		self.asset(status="Scrapped", journal_entry_for_scrap="JE-SCRAP")

@@ -22,6 +22,11 @@ from av_tools.trade_in.utils import (
 
 
 class AVToolsSettings(Document):
+	def validate(self):
+		from av_tools.asset_reconciliation.purchase_assets import validate_settings
+
+		validate_settings(self)
+
 	def on_update(self):
 		self.manage_parallel_approval_functionality()
 		self.manage_trade_in_functionality()

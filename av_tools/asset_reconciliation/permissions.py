@@ -12,7 +12,7 @@ CHILD_PARENTS = {
 
 # Fail closed if a site moves any required accounting field to a higher permlevel.
 READ_FIELDS = {
-	"Asset": "asset_name asset_category total_asset_cost calculate_depreciation purchase_date available_for_use_date disposal_date status company journal_entry_for_scrap purchase_invoice purchase_invoice_item purchase_amount asset_quantity",
+	"Asset": "asset_name asset_category total_asset_cost calculate_depreciation purchase_date available_for_use_date disposal_date status company journal_entry_for_scrap purchase_invoice purchase_invoice_item purchase_amount asset_quantity av_nta_purchase_invoice av_nta_purchase_invoice_item",
 	"Asset Depreciation Schedule": "asset company",
 	"Depreciation Schedule": "schedule_date depreciation_amount journal_entry",
 	"GL Entry": "company posting_date is_cancelled voucher_no voucher_type account debit credit against_voucher",
@@ -23,7 +23,7 @@ READ_FIELDS = {
 	"Asset Reconciliation Asset": "asset allocated_amount",
 	"Asset Reconciliation Source": "gl_entry source_voucher_type source_voucher source_line allocated_amount",
 	"Purchase Invoice": "company",
-	"Purchase Invoice Item": "expense_account base_net_amount",
+	"Purchase Invoice Item": "expense_account base_net_amount qty",
 }
 
 
