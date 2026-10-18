@@ -1,0 +1,27 @@
+name: Asset reconciliation unit tests
+
+on:
+  pull_request:
+    paths:
+      - "av_tools/asset_reconciliation/**"
+      - "av_tools/av_tools/doctype/asset*reconciliation/**"
+      - "av_tools/av_tools/report/fixed_asset_financial_reconciliation/**"
+      - "av_tools/patches/v1_0/*asset_reconciliation.py"
+      - "av_tools/hooks.py"
+      - "av_tools/install.py"
+      - ".github/workflows/asset-reconciliation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run isolated financial and permission unit tests
+        run: python -m unittest av_tools.asset_reconciliation.test_reconciliation -v

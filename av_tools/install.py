@@ -23,6 +23,9 @@ def before_install():
 
 	On fresh sites where they do not exist yet, this is a no-op.
 	"""
+	from av_tools.patches.v1_0.prepare_asset_reconciliation import execute as prepare_asset_reconciliation
+
+	prepare_asset_reconciliation()
 	try:
 		modules = frappe.get_module_list("av_tools")
 	except Exception:

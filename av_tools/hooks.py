@@ -53,6 +53,7 @@ web_include_css = "/assets/av_tools/css/theme.css"
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_js = {
+	"Asset": "public/js/asset_accounting_audit.js",
 	"Sales Invoice": [
 		"weigh_bridge/doctype/sales_invoice_weighbridge_ticket.js",
 		"authotp/api/sales_invoice.js",
@@ -319,6 +320,11 @@ override_doctype_class = {"Report": "av_tools.av_tools_hooks.report_override.Rep
 # override_doctype_dashboards = {
 # 	"Task": "av_tools.task.get_dashboard_data"
 # }
+override_doctype_dashboards = {
+	"Asset": "av_tools.asset_reconciliation.dashboard.asset",
+	"Purchase Invoice": "av_tools.asset_reconciliation.dashboard.purchase_invoice",
+	"Journal Entry": "av_tools.asset_reconciliation.dashboard.journal_entry",
+}
 
 # exempt linked doctypes from being automatically cancelled
 #
