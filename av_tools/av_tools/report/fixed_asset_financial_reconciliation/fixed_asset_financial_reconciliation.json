@@ -1,0 +1,23 @@
+{
+  "doctype": "Report",
+  "name": "Fixed Asset Financial Reconciliation",
+  "report_name": "Fixed Asset Financial Reconciliation",
+  "module": "Av Tools",
+  "ref_doctype": "Asset",
+  "report_type": "Script Report",
+  "is_standard": "Yes",
+  "disabled": 0,
+  "prepared_report": 0,
+  "roles": [
+    {
+      "role": "System Manager"
+    },
+    {
+      "role": "Accounts Manager"
+    },
+    {
+      "role": "Accounts User"
+    }
+  ],
+  "modified": "2026-10-18 14:00:00"
+}

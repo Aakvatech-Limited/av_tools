@@ -1,0 +1,128 @@
+{
+  "doctype": "DocType",
+  "name": "Asset Capitalization Reconciliation",
+  "module": "Av Tools",
+  "custom": 0,
+  "autoname": "hash",
+  "istable": 0,
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "field_order": [
+    "company",
+    "reconciliation_date",
+    "status",
+    "basis",
+    "remarks",
+    "assets_section",
+    "assets",
+    "source_section",
+    "sources",
+    "totals_section",
+    "asset_total",
+    "source_total",
+    "variance"
+  ],
+  "fields": [
+    {
+      "label": "Company",
+      "fieldtype": "Link",
+      "fieldname": "company",
+      "reqd": 1,
+      "options": "Company",
+      "in_list_view": 1
+    },
+    {
+      "label": "Reconciliation Date",
+      "fieldtype": "Date",
+      "fieldname": "reconciliation_date",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "label": "Reconciliation Status",
+      "fieldtype": "Select",
+      "fieldname": "status",
+      "reqd": 1,
+      "options": "Draft\nUnder Review\nApproved",
+      "in_list_view": 1,
+      "default": "Draft"
+    },
+    {
+      "label": "Reconciliation Basis",
+      "fieldtype": "Select",
+      "fieldname": "basis",
+      "reqd": 1,
+      "options": "Historical Acquisition\nAdditional Capitalization\nMixed Capitalization\nOpening Balance\nAdjustment",
+      "in_list_view": 1
+    },
+    {
+      "label": "Reconciliation Evidence / Remarks",
+      "fieldtype": "Small Text",
+      "fieldname": "remarks"
+    },
+    {
+      "label": "Assets",
+      "fieldtype": "Section Break",
+      "fieldname": "assets_section"
+    },
+    {
+      "label": "Assets",
+      "fieldtype": "Table",
+      "fieldname": "assets",
+      "reqd": 1,
+      "options": "Asset Reconciliation Asset"
+    },
+    {
+      "label": "Capitalization Sources",
+      "fieldtype": "Section Break",
+      "fieldname": "source_section"
+    },
+    {
+      "label": "Sources",
+      "fieldtype": "Table",
+      "fieldname": "sources",
+      "reqd": 1,
+      "options": "Asset Reconciliation Source"
+    },
+    {
+      "label": "Reconciliation Totals",
+      "fieldtype": "Section Break",
+      "fieldname": "totals_section"
+    },
+    {
+      "label": "Allocated Asset Total",
+      "fieldtype": "Currency",
+      "fieldname": "asset_total",
+      "read_only": 1
+    },
+    {
+      "label": "Allocated Source Total",
+      "fieldtype": "Currency",
+      "fieldname": "source_total",
+      "read_only": 1
+    },
+    {
+      "label": "Variance",
+      "fieldtype": "Currency",
+      "fieldname": "variance",
+      "read_only": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "report": 1,
+      "export": 1,
+      "share": 1,
+      "print": 1,
+      "email": 1
+    }
+  ],
+  "sort_field": "creation",
+  "sort_order": "DESC",
+  "modified": "2026-10-18 14:00:00"
+}
