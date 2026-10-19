@@ -4,17 +4,31 @@
 
 The FULL ACCESS feature in AV Tools is a privileged implementation control. When enabled, AV Tools creates and continuously maintains a `FULL ACCESS` role across eligible non-Frappe DocTypes, Reports, Pages and Workspaces.
 
-This feature is intentionally locked. Only the authorized Lead Implementor, signed in as the `Administrator` user, may enable or disable it.
+Configuration is maintained in **Full Access Role Setup**, with one setup record per Company.
+
+> Important: the setup record is company-specific for governance and audit. Frappe Role permissions themselves are site-wide. Enabling FULL ACCESS for any Company activates the FULL ACCESS policy for eligible resources across the site. Company/User Permissions continue to control company-level data access.
 
 ## What the policy does
 
-When enabled, AV Tools automatically grants the `FULL ACCESS` role to all eligible resources whose owning app is not `frappe`.
+When at least one **Full Access Role Setup** is enabled, AV Tools automatically grants the `FULL ACCESS` role to eligible resources whose owning app is not `frappe`.
 
 For DocTypes, the role receives Read, Write, Create, Delete, Select, Report, Export, Import, Share, Print and Email. Submit, Cancel and Amend are added only for submittable DocTypes.
 
 For Reports, Pages and Workspaces, the role is added to their role access tables.
 
-Frappe Framework-owned DocTypes, Reports, Pages and Workspaces are excluded. If stale FULL ACCESS entries exist on Frappe-owned resources, the synchronizer removes them.
+### Frappe Framework exclusion
+
+AV Tools must never create FULL ACCESS `Custom DocPerm` records for DocTypes owned by the `frappe` app.
+
+Ownership is resolved using the DocType module and `frappe.get_module_app()`.
+
+During reconciliation:
+
+- Frappe-owned DocTypes are skipped for grant creation.
+- Any stale FULL ACCESS `Custom DocPerm` found on a Frappe-owned DocType is removed.
+- Non-Frappe DocTypes remain eligible.
+
+This exclusion is also enforced inside the permission creation function as a second safety check.
 
 ## Who is allowed to enable it
 
@@ -24,202 +38,196 @@ The user must be signed in as:
 
 `Administrator`
 
-The server rejects attempts by every other user, even if the field is made visible or an API request is attempted.
+All other users are rejected server-side when attempting to enable FULL ACCESS or accept the consent.
 
-## Why the setting is hidden and read-only
+## Create the company setup
 
-`AV Tools Settings.enable_full_access_role` ships with:
+1. Sign in as `Administrator`.
+2. Open **Full Access Role Setup**.
+3. Create a new record.
+4. Select the Company.
+5. Leave **Enable FULL ACCESS Role** unticked.
+6. Save the setup.
 
-- Hidden = Yes
-- Read Only = Yes
-- Default = No
+There can be one setup record per Company.
 
-The field must be deliberately unlocked with Property Setters before it can be changed. This prevents accidental activation through normal configuration work.
+The setup must be saved before FULL ACCESS can be enabled so the consent can be linked to a permanent auditable record.
 
 ## Enable FULL ACCESS
 
-### 1. Sign in as Administrator
+### 1. Open the saved company setup
 
-Do not use a normal System Manager or implementation user for this procedure.
+Open the required **Full Access Role Setup** record.
 
-### 2. Create or update the Hidden Property Setter
+### 2. Tick Enable FULL ACCESS Role
 
-Open **Property Setter** and set:
+Tick **Enable FULL ACCESS Role**.
 
-- DocType: `AV Tools Settings`
-- Field Name: `enable_full_access_role`
-- Property: `hidden`
-- Property Type: `Check`
-- Value: `0`
+AV Tools immediately resets the checkbox and displays the **FULL ACCESS Authorization** dialog.
 
-Save.
+### 3. Review the warning
 
-### 3. Create or update the Read Only Property Setter
+The warning explains that:
 
-Create another Property Setter:
+- the setup is recorded against the selected Company;
+- the FULL ACCESS role itself is site-wide;
+- broad access will be granted to eligible non-Frappe DocTypes, Reports, Pages and Workspaces;
+- only the authorized Lead Implementor using `Administrator` may proceed;
+- consent will be recorded in Activity Log.
 
-- DocType: `AV Tools Settings`
-- Field Name: `enable_full_access_role`
-- Property: `read_only`
-- Property Type: `Check`
-- Value: `0`
+### 4. Click I Accept
 
-Save.
+Click **I Accept** only if you intend to activate the policy.
 
-### 4. Reload AV Tools Settings
-
-Open **AV Tools Settings** and reload the form.
-
-The **Enable FULL ACCESS Role** checkbox should now be visible and editable.
-
-If it is still hidden or read-only, do not attempt to bypass the control. Verify the Property Setters and clear cache if required.
-
-### 5. Tick Enable FULL ACCESS Role
-
-Tick the checkbox.
-
-AV Tools immediately displays the **FULL ACCESS Authorization** consent dialog.
-
-Read the warning carefully.
-
-### 6. Click I Accept
-
-Click **I Accept** only if you intend to enable the FULL ACCESS policy.
-
-Acceptance does the following before the setting can be saved:
+Acceptance:
 
 - verifies that the current user is exactly `Administrator`;
-- verifies that the setting was deliberately unlocked;
-- records the consent in **Activity Log**;
+- confirms that the setup record already exists;
+- writes the consent to **Activity Log**;
+- records the Company and setup reference;
 - records the current user and available request IP context;
-- opens a short-lived authorization window for the settings save.
+- opens a short-lived authorization window for the save.
 
-If the consent is not accepted, the server will reject enabling the feature.
+### 5. Save the setup
 
-### 7. Save AV Tools Settings
-
-Save the document.
+After consent succeeds, the checkbox is set to enabled. Save the document.
 
 AV Tools then:
 
-- creates the `FULL ACCESS` role if it does not already exist;
+- creates the `FULL ACCESS` role if required;
 - synchronizes eligible DocTypes;
 - synchronizes eligible Reports;
 - synchronizes eligible Pages;
 - synchronizes eligible Workspaces;
-- removes stale FULL ACCESS access from Frappe Framework-owned resources;
+- removes stale FULL ACCESS permissions from Frappe Framework-owned resources;
 - clears relevant caches.
 
-### 8. Lock the field again
-
-Immediately return the two Property Setters to their protected values:
-
-**Hidden Property Setter**
-- Value: `1`
-
-**Read Only Property Setter**
-- Value: `1`
-
-Reload AV Tools Settings and verify that the setting is no longer visible/editable.
-
-Do not leave the field unlocked after the procedure.
+The setup record also stores the latest consent user and consent datetime.
 
 ## Verify the audit trail
 
 Open **Activity Log** and search for:
 
-`FULL ACCESS consent accepted`
+`FULL ACCESS consent accepted - <Company>`
 
-The record confirms that the privileged consent was accepted before activation.
+The record links back to **Full Access Role Setup**.
 
-The settings change itself is also traceable through normal Frappe document/version tracking where applicable.
+Verify:
+
+- User = `Administrator`
+- Reference DocType = `Full Access Role Setup`
+- Reference Name = the Company setup
+- Company appears in the consent content
+- request IP is present when available
 
 ## Verify the FULL ACCESS role
 
 Open **Role** and confirm that `FULL ACCESS` exists.
 
-Then spot-check representative business DocTypes, Reports, Pages and Workspaces.
+Then spot-check:
 
-Do not expect Frappe Framework-owned resources to contain FULL ACCESS. They are deliberately excluded.
+- an ERPNext business DocType;
+- an AV Tools DocType;
+- a custom/client app DocType;
+- a non-Frappe Report;
+- a non-Frappe Page;
+- a non-Frappe Workspace.
 
-## Automatic maintenance after activation
+Also spot-check one Frappe Framework DocType and confirm that no FULL ACCESS `Custom DocPerm` exists for it.
 
-Once enabled, AV Tools continuously reconciles the policy.
+## New apps and new DocTypes
 
-It runs when:
+Once the policy is active, AV Tools automatically reconciles after:
 
-- `bench migrate` completes;
-- a new app is installed;
-- a DocType is inserted or updated;
-- a Report is inserted or updated;
-- a Page is inserted or updated;
-- a Workspace is inserted or updated.
+- `bench migrate`;
+- installation of a new app;
+- creation/update of a DocType;
+- creation/update of a Report;
+- creation/update of a Page;
+- creation/update of a Workspace.
 
-This means a future installed app does not need to be manually added to an allow-list. Its eligible resources receive FULL ACCESS automatically unless they belong to the `frappe` app.
+New apps do not require an allow-list.
 
-Likewise, new DocTypes introduced later by ERPNext, HRMS, AV Tools, client apps or other installed apps are automatically reconciled.
+If a new DocType belongs to the `frappe` app, it remains excluded.
+
+If a new DocType belongs to ERPNext, HRMS, AV Tools or another non-Frappe app, it is eligible for FULL ACCESS.
+
+## Multiple Companies
+
+Each Company may have its own **Full Access Role Setup** record for governance and implementation tracking.
+
+However, because Frappe role permissions are site-wide:
+
+- if **any** company setup has FULL ACCESS enabled, the site-wide FULL ACCESS policy remains active;
+- disabling one Company setup does not stop the policy if another Company setup remains enabled;
+- Company/User Permissions remain responsible for restricting data by Company.
+
+Do not interpret the setup as creating company-specific Role Permission Manager rules.
 
 ## Disabling FULL ACCESS management
 
-Disabling the switch stops AV Tools from automatically maintaining the FULL ACCESS policy.
-
-It does not automatically remove all permissions already granted. This is intentional to prevent an accidental checkbox change from causing a site-wide access outage.
-
-Disabling the setting requires the same controlled procedure:
+To stop automatic FULL ACCESS synchronization:
 
 1. sign in as `Administrator`;
-2. unlock the field with the two Property Setters;
-3. change the setting;
-4. save;
-5. lock the field again.
+2. open each enabled **Full Access Role Setup**;
+3. untick **Enable FULL ACCESS Role**;
+4. save.
 
-Only the authorized Lead Implementor is permitted to perform this operation.
+When no setup records remain enabled, AV Tools stops maintaining the policy.
+
+Disabling management does **not** automatically remove permissions already granted. This avoids accidental site-wide loss of access.
+
+If complete permission removal is required, perform a separately reviewed cleanup procedure.
 
 ## Important security notes
 
-- Do not assign the `Administrator` account to normal users.
-- Do not leave the FULL ACCESS setting visible or editable after use.
-- Do not bypass the consent endpoint with scripts or API calls.
-- Do not manually grant FULL ACCESS to Frappe Framework-owned resources.
-- FULL ACCESS is broad application access, but it does not deliberately bypass application-level `has_permission`, permission query conditions, workflows, User Permissions or server-side business validations.
-- Review Error Log if synchronization reports a failure.
+- Only `Administrator` may enable/disable this configuration.
+- Do not assign the Administrator account to normal users.
+- Do not manually create FULL ACCESS Custom DocPerm records on Frappe-owned DocTypes.
+- FULL ACCESS does not deliberately bypass application-level `has_permission`, permission query conditions, workflows, User Permissions or server-side business validations.
+- Review Error Log if synchronization reports failures.
+- Remember that the configuration record is company-scoped but the Role permission effect is site-wide.
 
 ## Troubleshooting
 
-### The checkbox does not appear
+### I cannot create or change the setup
 
-Confirm both Property Setters exist and are set to `0`, then reload the form.
+Confirm you are signed in as exactly `Administrator`.
 
 ### I Accept is rejected
 
 Confirm:
 
-- you are logged in as exactly `Administrator`;
-- both Property Setters have successfully made the field visible and editable;
-- the page was reloaded after creating the Property Setters.
+- you are signed in as `Administrator`;
+- the Full Access Role Setup has already been saved;
+- the record still exists.
 
 ### Saving says consent is required
 
-The consent authorization is intentionally short-lived. Tick the field again, review the warning and click **I Accept**, then save promptly.
+The consent authorization is intentionally short-lived. Tick the field again, review the warning, click **I Accept**, then save promptly.
 
 ### A new app did not receive FULL ACCESS
 
-Run `bench migrate` and review **Error Log**. The `after_app_install` hook should normally handle new installations immediately, while `after_migrate` acts as the authoritative reconciliation safety net.
+Confirm at least one **Full Access Role Setup** is enabled.
+
+Then run `bench migrate` and review **Error Log**.
 
 ### A Frappe Framework DocType has FULL ACCESS
 
-Run a migration or trigger the FULL ACCESS synchronization. The policy removes stale FULL ACCESS permissions from Frappe-owned resources.
+Run synchronization or `bench migrate`.
+
+The policy removes stale FULL ACCESS permissions from Frappe-owned DocTypes and never creates new ones there.
 
 ## Lead Implementor completion checklist
 
 Before leaving the site:
 
-- FULL ACCESS policy status is intentional.
+- Full Access Role Setup exists for the intended Company.
+- The site-wide effect of FULL ACCESS has been understood.
 - Consent was recorded in Activity Log.
+- Latest consent user/date are recorded on the setup.
 - FULL ACCESS role exists when enabled.
-- Representative non-Frappe business resources were verified.
-- Frappe-owned resources were verified as excluded.
-- Hidden Property Setter is restored to `1`.
-- Read Only Property Setter is restored to `1`.
-- AV Tools Settings field is no longer normally editable.
+- Representative non-Frappe resources were verified.
+- Frappe-owned DocTypes were verified as having no FULL ACCESS Custom DocPerm.
+- All Company/User Permissions remain appropriate.
 - Error Log contains no unresolved FULL ACCESS synchronization errors.
