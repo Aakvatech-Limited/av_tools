@@ -2,17 +2,16 @@ import frappe
 
 
 FULL_ACCESS_ROLE = "FULL ACCESS"
-SETTINGS_DOCTYPE = "AV Tools Settings"
-SETTING_FIELD = "enable_full_access_role"
+SETUP_DOCTYPE = "Full Access Role Setup"
 ROLE_CHILD_DOCTYPE = "Has Role"
 ROLE_PARENT_FIELD = "roles"
 
 
 def is_full_access_enabled():
 	try:
-		return bool(frappe.db.get_single_value(SETTINGS_DOCTYPE, SETTING_FIELD))
+		return bool(frappe.db.exists(SETUP_DOCTYPE, {"enable_full_access_role": 1}))
 	except Exception:
-		# Hooks can load before a migration has added the setting column.
+		# Hooks can load before migration has created the setup DocType/table.
 		# Fail closed and let after_migrate reconcile once schema sync is complete.
 		return False
 
@@ -141,6 +140,11 @@ def sync_doctype(doc):
 
 
 def ensure_doctype_permission(doc):
+	# Defense in depth: never create FULL ACCESS Custom DocPerm on Frappe Framework DocTypes.
+	if is_frappe_module(doc.get("module")):
+		remove_doctype_permission(doc.name)
+		return
+
 	existing = frappe.get_all(
 		"Custom DocPerm",
 		filters={

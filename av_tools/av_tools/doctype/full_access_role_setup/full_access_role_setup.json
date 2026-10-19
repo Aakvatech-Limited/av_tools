@@ -1,0 +1,80 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:company",
+ "creation": "2026-10-19 16:12:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "enable_full_access_role",
+  "warning_section",
+  "policy_warning",
+  "audit_section",
+  "consent_accepted_by",
+  "consent_accepted_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "0",
+   "description": "Activates the site-wide FULL ACCESS role policy. The setup record is company-specific, but Frappe role permissions are site-wide.",
+   "fieldname": "enable_full_access_role",
+   "fieldtype": "Check",
+   "label": "Enable FULL ACCESS Role"
+  },
+  {
+   "fieldname": "warning_section",
+   "fieldtype": "Section Break",
+   "label": "Important"
+  },
+  {
+   "fieldname": "policy_warning",
+   "fieldtype": "HTML",
+   "options": "<div class=\"alert alert-warning\"><strong>Site-wide permission policy:</strong> This setup is recorded against a Company for implementation governance, but the FULL ACCESS role itself is site-wide. Enabling it grants role access to eligible non-Frappe resources across the site. Company/User Permissions continue to govern company-level data access.</div>"
+  },
+  {
+   "fieldname": "audit_section",
+   "fieldtype": "Section Break",
+   "label": "Latest Consent"
+  },
+  {
+   "fieldname": "consent_accepted_by",
+   "fieldtype": "Link",
+   "label": "Consent Accepted By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "consent_accepted_on",
+   "fieldtype": "Datetime",
+   "label": "Consent Accepted On",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "module": "Av Tools",
+ "name": "Full Access Role Setup",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "Administrator",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
