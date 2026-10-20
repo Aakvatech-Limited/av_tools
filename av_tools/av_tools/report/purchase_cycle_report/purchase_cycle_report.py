@@ -63,38 +63,30 @@ def get_columns():
 
 
 def get_data(filters):
-	conditions = ""
-	if filters.get("from_date"):
-		conditions += " and po.transaction_date >= %(from_date)s"
-	if filters.get("to_date"):
-		conditions += " and po.transaction_date <= %(to_date)s"
-
-	data = frappe.db.sql(
-		f"""
-        SELECT
-            po.name as purchase_order,
-            po.supplier,
-            poi.item_code,
-            poi.warehouse,
-            po.status,
-
-            poi.qty as qty,
-            poi.received_qty as received_qty,
-            (poi.qty - poi.received_qty) as pending_qty,
-                -- Removed billed_qty and qty_to_bill as billed_qty does not exist
-
-            poi.amount as amount,
-            poi.billed_amt as billed_amount,
-            (poi.amount - poi.billed_amt) as pending_amount,
-            (poi.received_qty * poi.rate) as received_qty_amount
-
-        FROM `tabPurchase Order Item` poi
-        JOIN `tabPurchase Order` po ON poi.parent = po.name
-        WHERE po.docstatus = 1 {conditions}
-        ORDER BY po.status, po.name
-    """,
-		filters,
-		as_dict=True,
+	Order = frappe.qb.DocType("Purchase Order")
+	Item = frappe.qb.DocType("Purchase Order Item")
+	query = (
+		frappe.qb.from_(Item)
+		.join(Order)
+		.on(Item.parent == Order.name)
+		.select(
+			Order.name.as_("purchase_order"),
+			Order.supplier,
+			Item.item_code,
+			Item.warehouse,
+			Order.status,
+			Item.qty,
+			Item.received_qty,
+			(Item.qty - Item.received_qty).as_("pending_qty"),
+			Item.amount,
+			Item.billed_amt.as_("billed_amount"),
+			(Item.amount - Item.billed_amt).as_("pending_amount"),
+			(Item.received_qty * Item.rate).as_("received_qty_amount"),
+		)
+		.where(Order.docstatus == 1)
 	)
-
-	return data
+	if filters.get("from_date"):
+		query = query.where(Order.transaction_date >= filters.get("from_date"))
+	if filters.get("to_date"):
+		query = query.where(Order.transaction_date <= filters.get("to_date"))
+	return query.orderby(Order.status).orderby(Order.name).run(as_dict=True)
