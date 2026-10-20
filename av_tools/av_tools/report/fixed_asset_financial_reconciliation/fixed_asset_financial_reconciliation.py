@@ -162,6 +162,7 @@ def execute(filters=None):
 		.where(GL.account.like("%depreciation%")),
 		"GL Entry",
 		permission_cache,
+		permission_filters={"company": company, "posting_date": ["<=", as_on], "is_cancelled": 0, "voucher_type": "Journal Entry", "account": ["like", "%depreciation%"]},
 	)
 	gl_map = {}
 	for g in gl_rows:
@@ -301,6 +302,7 @@ def execute(filters=None):
 			.where(GL.account.isin(capital_accounts)),
 			"GL Entry",
 			permission_cache,
+			permission_filters={"company": company, "posting_date": ["<=", as_on], "is_cancelled": 0, "account": ["in", list(capital_accounts)]},
 		)
 	capital_vouchers = {}
 	for g in capital_rows:
