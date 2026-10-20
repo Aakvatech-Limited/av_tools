@@ -2,14 +2,13 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe import _
-
 from erpnext.accounts.report.accounts_payable_summary.accounts_payable_summary import (
 	execute as execute_payable_summary,
 )
 from erpnext.accounts.report.accounts_receivable_summary.accounts_receivable_summary import (
 	execute as execute_receivable_summary,
 )
+from frappe import _
 
 from av_tools.av_tools.report.financial_master_summary.providers import (
 	get_master_summary,
@@ -49,12 +48,12 @@ def _validate_filters(filters):
 		if not filters.get(fieldname):
 			frappe.throw(_("{0} is required").format(frappe.unscrub(fieldname)))
 
-	account = frappe.get_cached_value(
-		"Account", filters.account, ["company", "is_group"], as_dict=True
-	)
+	account = frappe.get_cached_value("Account", filters.account, ["company", "is_group"], as_dict=True)
 	if not account:
 		frappe.throw(_("Account {0} does not exist.").format(filters.account))
 	if account.company != filters.company:
-		frappe.throw(_("Account {0} does not belong to company {1}.").format(filters.account, filters.company))
+		frappe.throw(
+			_("Account {0} does not belong to company {1}.").format(filters.account, filters.company)
+		)
 	if account.is_group:
 		frappe.throw(_("Select a ledger account before opening the master summary."))
