@@ -1,3 +1,4 @@
+import re
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -22,52 +23,42 @@ class TestItemSearch(TestCase):
 			"frappe.desk.search.search_widget",
 		)
 
-	def test_item_query_builds_multi_term_conditions(self):
-		class Meta:
-			def get_search_fields(self):
-				return ["item_name", "description"]
-
-		captured = {}
-
-		class FakeDB:
-			def exists(self, doctype, name):
-				return True
-
-			def count(self, doctype, cache=True):
-				return 10
-
-			def sql(self, query, values, as_dict=False):
-				captured["query"] = query
-				captured["values"] = values
-				captured["as_dict"] = as_dict
-				return []
-
+	def run_item_query(self, txt, match_condition=""):
+		database = item_search.frappe.db
 		with (
-			patch.object(item_search.frappe, "get_meta", return_value=Meta()),
-			patch.object(item_search.frappe, "db", FakeDB()),
-			patch.object(item_search, "get_filters_cond", return_value=""),
-			patch.object(item_search, "get_match_cond", return_value=""),
-			patch.object(
-				item_search,
-				"nowdate",
-				return_value="2026-05-13",
-			),
+			patch.object(database, "count", return_value=10),
+			patch.object(database, "sql", wraps=database.sql) as sql_spy,
+			patch.object(item_search, "build_match_conditions", return_value=match_condition),
 		):
 			item_search.item_query.__wrapped__(
 				doctype="Item",
-				txt="blue chair",
+				txt=txt,
 				searchfield="name",
 				start=0,
 				page_len=20,
 				filters={},
 			)
 
-		self.assertIn("item_name like %(txt_0)s and item_name like %(txt_1)s", captured["query"])
-		self.assertIn(
-			"tabItem.description like %(txt_0)s and tabItem.description like %(txt_1)s",
-			captured["query"],
+		query, values = next(
+			(call.args[0], call.args[1])
+			for call in sql_spy.call_args_list
+			if "FROM `tabItem`" in str(call.args[0])
 		)
-		self.assertEqual(captured["values"]["txt"], "%blue%chair%")
-		self.assertEqual(captured["values"]["_txt"], "blue")
-		self.assertEqual(captured["values"]["txt_0"], "%blue%")
-		self.assertEqual(captured["values"]["txt_1"], "%chair%")
+		return query, values
+
+	def test_item_query_builds_multi_term_conditions(self):
+		query, values = self.run_item_query("blue chair")
+		params = {f"%({key})s": value for key, value in values.items()}
+
+		for field in ("`item_name`", "`description`"):
+			match = re.search(rf"{field} LIKE (%\(\w+\)s) AND {field} LIKE (%\(\w+\)s)", query)
+			self.assertIsNotNone(match, field)
+			self.assertEqual([params[match.group(1)], params[match.group(2)]], ["%blue%", "%chair%"])
+		self.assertIn("%blue%chair%", values.values())
+
+	def test_item_query_applies_user_permission_condition(self):
+		condition = "`tabItem`.`item_group` in ('Allowed Group')"
+
+		query, _values = self.run_item_query("chair", match_condition=condition)
+
+		self.assertIn(f"({condition})", query)
