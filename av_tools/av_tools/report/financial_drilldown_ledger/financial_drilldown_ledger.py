@@ -2,10 +2,9 @@
 # For license information, please see license.txt
 
 import frappe
+from erpnext.accounts.report.general_ledger import general_ledger
 from frappe import _
 from frappe.utils import getdate
-
-from erpnext.accounts.report.general_ledger import general_ledger
 
 from av_tools.av_tools.report.financial_master_summary.providers import (
 	filter_general_ledger_by_vouchers,
