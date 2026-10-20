@@ -1,8 +1,8 @@
 import frappe
-from frappe.utils import flt
 from frappe.query_builder.functions import Coalesce
-from pypika.terms import ValueWrapper
+from frappe.utils import flt
 from pypika import Case
+from pypika.terms import ValueWrapper
 
 
 def execute(filters=None):
@@ -196,15 +196,20 @@ def _sales_rows(filters, company_currency, doctype, tax=False):
 		amount = Case().when(doc.status == "Closed", amount * factor).else_(amount)
 		base_amount = Case().when(doc.status == "Closed", base_amount * factor).else_(base_amount)
 	query = query.select(
-		doc.customer.as_("customer"), ValueWrapper(doctype).as_("doc_type"),
-		doc.name.as_("doc_no"), doc.status,
-		doc[date_field].as_("posting_date"), doc.currency,
-		ValueWrapper(company_currency).as_("company_currency"), doc.conversion_rate.as_("exchange_rate"),
+		doc.customer.as_("customer"),
+		ValueWrapper(doctype).as_("doc_type"),
+		doc.name.as_("doc_no"),
+		doc.status,
+		doc[date_field].as_("posting_date"),
+		doc.currency,
+		ValueWrapper(company_currency).as_("company_currency"),
+		doc.conversion_rate.as_("exchange_rate"),
 		(ValueWrapper(None) if tax else child.item_code).as_("item_code"),
 		(ValueWrapper("TOTAL TAXES AND CHARGES") if tax else child.item_name).as_("item_name"),
 		(amount if is_order else ValueWrapper(0)).as_("ordered_amount"),
 		(base_amount if is_order else ValueWrapper(0)).as_("ordered_amount_company"),
-		ValueWrapper(0).as_("received_amount"), ValueWrapper(0).as_("received_amount_company"),
+		ValueWrapper(0).as_("received_amount"),
+		ValueWrapper(0).as_("received_amount_company"),
 		(amount if not is_order else ValueWrapper(0)).as_("billed_amount"),
 		(base_amount if not is_order else ValueWrapper(0)).as_("billed_amount_company"),
 	).where(doc.docstatus == 1)
@@ -230,18 +235,27 @@ def get_sales_invoice_tax_rows(filters, company_currency):
 def get_payment_rows(filters, company_currency):
 	pe = frappe.qb.DocType("Payment Entry")
 	ref = frappe.qb.DocType("Payment Entry Reference")
-	signed = Case().when(pe.payment_type == "Receive", ref.allocated_amount).when(
-		pe.payment_type == "Pay", -ref.allocated_amount
-	).else_(0)
+	signed = (
+		Case()
+		.when(pe.payment_type == "Receive", ref.allocated_amount)
+		.when(pe.payment_type == "Pay", -ref.allocated_amount)
+		.else_(0)
+	)
 	query = (
-		frappe.qb.from_(pe).join(ref).on(ref.parent == pe.name)
+		frappe.qb.from_(pe)
+		.join(ref)
+		.on(ref.parent == pe.name)
 		.select(
-			pe.party.as_("customer"), ValueWrapper("Payment Entry").as_("doc_type"),
-			pe.name.as_("doc_no"), pe.status, pe.posting_date,
+			pe.party.as_("customer"),
+			ValueWrapper("Payment Entry").as_("doc_type"),
+			pe.name.as_("doc_no"),
+			pe.status,
+			pe.posting_date,
 			pe.paid_from_account_currency.as_("currency"),
 			ValueWrapper(company_currency).as_("company_currency"),
 			pe.source_exchange_rate.as_("exchange_rate"),
-			ValueWrapper(None).as_("item_code"), ValueWrapper(None).as_("item_name"),
+			ValueWrapper(None).as_("item_code"),
+			ValueWrapper(None).as_("item_name"),
 			ValueWrapper(0).as_("ordered_amount"),
 			ValueWrapper(0).as_("ordered_amount_company"),
 			signed.as_("received_amount"),
@@ -249,7 +263,9 @@ def get_payment_rows(filters, company_currency):
 			ValueWrapper(0).as_("billed_amount"),
 			ValueWrapper(0).as_("billed_amount_company"),
 		)
-		.where((pe.docstatus == 1) & (pe.party_type == "Customer") & (ref.reference_doctype == "Sales Invoice"))
+		.where(
+			(pe.docstatus == 1) & (pe.party_type == "Customer") & (ref.reference_doctype == "Sales Invoice")
+		)
 		.where(pe.posting_date.between(filters.from_date, filters.to_date))
 	)
 	if filters.get("customer"):
