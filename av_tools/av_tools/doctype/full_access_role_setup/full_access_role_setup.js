@@ -20,9 +20,13 @@ frappe.ui.form.on("Full Access Role Setup", {
 					options: `
 						<div class="alert alert-danger">
 							<strong>${__("Privileged site-wide access warning")}</strong><br><br>
-							${__("This setup is recorded against Company {0}, but the FULL ACCESS role is site-wide.", [frm.doc.company])}
+							${__("This setup is recorded against Company {0}, but the FULL ACCESS role is site-wide.", [
+								frm.doc.company,
+							])}
 							<br><br>
-							${__("Enabling it grants broad access to eligible non-Frappe DocTypes, Reports, Pages and Workspaces. Only the authorized Lead Implementor using Administrator may proceed.")}
+							${__(
+								"Enabling it grants broad access to eligible non-Frappe DocTypes, Reports, Pages and Workspaces. Only the authorized Lead Implementor using Administrator may proceed."
+							)}
 							<br><br>
 							${__("Your acceptance will be written to Activity Log.")}
 						</div>
