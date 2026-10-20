@@ -2,6 +2,10 @@ import frappe
 
 
 def execute():
-	frappe.db.sql(
-		"DELETE FROM `tabCustom DocPerm` WHERE name != 'a' AND parent in ('DocType', 'Patch Log', 'Module Def', 'Transaction Log')"
+	frappe.db.delete(
+		"Custom DocPerm",
+		filters={
+			"parent": ["in", ("DocType", "Patch Log", "Module Def", "Transaction Log")],
+			"name": ["!=", "a"],
+		},
 	)
