@@ -1,6 +1,5 @@
 import frappe
 
-
 RULE_TARGETS = {
 	"Receivable Account Summary": ("Financial Account Summary", "Financial Master Summary"),
 	"Payable Account Summary": ("Financial Account Summary", "Financial Master Summary"),
