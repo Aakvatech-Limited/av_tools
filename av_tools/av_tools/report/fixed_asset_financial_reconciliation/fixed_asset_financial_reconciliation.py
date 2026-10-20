@@ -10,6 +10,27 @@ def execute(filters=None):
 	if not filters.get("company"):
 		frappe.throw("Company is required.")
 	frappe.get_doc("Company", filters.company).check_permission("read")
+	group_name = filters.get("depreciation_group_account")
+	if not group_name:
+		frappe.throw("Depreciation Group Account is required.")
+	group_account = frappe.get_doc("Account", group_name)
+	group_account.check_permission("read")
+	if group_account.company != filters.company or not group_account.is_group:
+		frappe.throw("Select a group Account belonging to the selected company.")
+	# Nested-set boundaries include descendants at every depth.
+	depreciation_accounts = frappe.get_list(
+		"Account",
+		filters={
+			"company": filters.company,
+			"lft": [">", group_account.lft],
+			"rgt": ["<", group_account.rgt],
+			"is_group": 0,
+		},
+		pluck="name",
+		limit_page_length=0,
+	)
+	if not depreciation_accounts:
+		frappe.throw("The selected Depreciation Group Account has no accessible ledger accounts.")
 	permission_cache = {}
 	company = filters.get("company") or frappe.defaults.get_user_default("Company")
 	as_on = filters.get("as_on") or frappe.utils.today()
@@ -159,18 +180,16 @@ def execute(filters=None):
 		.where(GL.posting_date <= as_on)
 		.where(GL.is_cancelled == 0)
 		.where(GL.voucher_type == "Journal Entry")
-		.where(GL.account.like("%depreciation%")),
+		.where(GL.account.isin(depreciation_accounts)),
 		"GL Entry",
 		permission_cache,
-		permission_filters={"company": company, "posting_date": ["<=", as_on], "is_cancelled": 0, "voucher_type": "Journal Entry", "account": ["like", "%depreciation%"]},
+		permission_filters={"company": company, "posting_date": ["<=", as_on], "is_cancelled": 0, "voucher_type": "Journal Entry", "account": ["in", depreciation_accounts]},
 	)
 	gl_map = {}
 	for g in gl_rows:
 		if g.against_voucher in scrapped_asset_ids or g.voucher_no in scrap_journals:
 			continue
 		account = (g.account or "").lower()
-		if "depreciation" not in account:
-			continue
 		if g.voucher_type != "Journal Entry":
 			continue
 		if g.voucher_no not in gl_map:
