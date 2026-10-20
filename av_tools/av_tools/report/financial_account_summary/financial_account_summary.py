@@ -1,12 +1,11 @@
 # Copyright (c) 2026, Aakvatech and contributors
 # For license information, please see license.txt
 
-import frappe
-from frappe import _
-
 import erpnext
+import frappe
 from erpnext.accounts.report.trial_balance import trial_balance
 from erpnext.accounts.utils import get_fiscal_year
+from frappe import _
 from frappe.utils import add_days, getdate
 
 
@@ -34,7 +33,9 @@ def _validate_filters(filters):
 
 	account_company = frappe.get_cached_value("Account", filters.account, "company")
 	if account_company != filters.company:
-		frappe.throw(_("Account {0} does not belong to company {1}.").format(filters.account, filters.company))
+		frappe.throw(
+			_("Account {0} does not belong to company {1}.").format(filters.account, filters.company)
+		)
 
 
 def _set_trial_balance_defaults(filters):
@@ -52,9 +53,7 @@ def _get_trial_balance_rows(filters, allowed_accounts):
 	to_date = getdate(filters.to_date)
 
 	while current_date <= to_date:
-		fiscal_year, year_start_date, year_end_date = get_fiscal_year(
-			current_date, company=filters.company
-		)
+		fiscal_year, _year_start_date, year_end_date = get_fiscal_year(current_date, company=filters.company)
 		segment_end = min(getdate(year_end_date), to_date)
 		segment_filters = frappe._dict(filters.copy())
 		segment_filters.fiscal_year = fiscal_year
@@ -94,9 +93,7 @@ def _merge_segment_rows(merged, segment_data, allowed_accounts):
 
 
 def _get_leaf_accounts(account, company):
-	lft, rgt, is_group = frappe.get_cached_value(
-		"Account", account, ["lft", "rgt", "is_group"]
-	)
+	lft, rgt, is_group = frappe.get_cached_value("Account", account, ["lft", "rgt", "is_group"])
 
 	if not is_group:
 		return [account]
