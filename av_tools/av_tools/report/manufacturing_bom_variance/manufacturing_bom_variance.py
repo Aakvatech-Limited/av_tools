@@ -2,7 +2,6 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, flt, getdate, today
 
-
 DEFAULT_DAYS = 30
 SUPPORTED_PURPOSES = ("Manufacture", "Repack")
 
@@ -91,7 +90,11 @@ def get_detail_data(filters=None):
 
 	for row in rows:
 		actual = flt(row.actual_qty)
-		guided = flt(row.get("bom_guided_stock_qty") if row.get("bom_guided_stock_qty") is not None else row.bom_guided_qty)
+		guided = flt(
+			row.get("bom_guided_stock_qty")
+			if row.get("bom_guided_stock_qty") is not None
+			else row.bom_guided_qty
+		)
 		row.row_category = (
 			"Finished Goods"
 			if row.is_finished_item or row.secondary_item_type == "Additional Finished Good"
@@ -122,7 +125,11 @@ def get_item_summary(filters=None):
 	grouped = {}
 
 	for row in rows:
-		key = (getattr(row, "row_category", "Consumption"), row.item_code, getattr(row, "stock_uom", None) or row.uom)
+		key = (
+			getattr(row, "row_category", "Consumption"),
+			row.item_code,
+			getattr(row, "stock_uom", None) or row.uom,
+		)
 		summary = grouped.setdefault(
 			key,
 			frappe._dict(
@@ -141,7 +148,11 @@ def get_item_summary(filters=None):
 		)
 
 		summary.actual_qty += flt(row.actual_qty)
-		summary.bom_guided_qty += flt(row.get("bom_guided_stock_qty") if row.get("bom_guided_stock_qty") is not None else row.bom_guided_qty)
+		summary.bom_guided_qty += flt(
+			row.get("bom_guided_stock_qty")
+			if row.get("bom_guided_stock_qty") is not None
+			else row.bom_guided_qty
+		)
 		summary.absolute_variance_qty += abs(flt(row.variance_qty))
 		summary.entry_names.add(row.stock_entry)
 
@@ -161,9 +172,7 @@ def get_item_summary(filters=None):
 			summary.variance_qty / summary.bom_guided_qty * 100 if summary.bom_guided_qty else 0
 		)
 		summary.absolute_variance_percent = (
-			summary.absolute_variance_qty / summary.bom_guided_qty * 100
-			if summary.bom_guided_qty
-			else 0
+			summary.absolute_variance_qty / summary.bom_guided_qty * 100 if summary.bom_guided_qty else 0
 		)
 		summary.consumption_index_percent = (
 			summary.actual_qty / summary.bom_guided_qty * 100 if summary.bom_guided_qty else 0
@@ -183,13 +192,22 @@ def get_monthly_summary(filters=None):
 
 	for row in rows:
 		month = row.posting_date.strftime("%Y-%m")
-		key = (month, getattr(row, "row_category", "Consumption"), row.item_code, getattr(row, "stock_uom", None) or row.uom)
+		key = (
+			month,
+			getattr(row, "row_category", "Consumption"),
+			row.item_code,
+			getattr(row, "stock_uom", None) or row.uom,
+		)
 		summary = grouped.setdefault(
 			key,
 			{"month": month, "actual": 0.0, "guided": 0.0, "absolute_variance": 0.0},
 		)
 		summary["actual"] += flt(row.actual_qty)
-		summary["guided"] += flt(row.get("bom_guided_stock_qty") if row.get("bom_guided_stock_qty") is not None else row.bom_guided_qty)
+		summary["guided"] += flt(
+			row.get("bom_guided_stock_qty")
+			if row.get("bom_guided_stock_qty") is not None
+			else row.bom_guided_qty
+		)
 		summary["absolute_variance"] += abs(flt(row.variance_qty))
 
 	monthly = {}
@@ -201,9 +219,7 @@ def get_monthly_summary(filters=None):
 		if values["actual"]:
 			stats["efficiency_values"].append(values["guided"] / values["actual"] * 100)
 		if values["guided"]:
-			stats["absolute_variance_values"].append(
-				values["absolute_variance"] / values["guided"] * 100
-			)
+			stats["absolute_variance_values"].append(values["absolute_variance"] / values["guided"] * 100)
 			stats["consumption_values"].append(values["actual"] / values["guided"] * 100)
 
 	result = []
@@ -320,13 +336,29 @@ def get_columns():
 		},
 		{"label": _("Item Name"), "fieldname": "item_name", "fieldtype": "Data", "width": 180},
 		{"label": _("Row UOM"), "fieldname": "uom", "fieldtype": "Link", "options": "UOM", "width": 80},
-		{"label": _("Stock UOM"), "fieldname": "stock_uom", "fieldtype": "Link", "options": "UOM", "width": 90},
+		{
+			"label": _("Stock UOM"),
+			"fieldname": "stock_uom",
+			"fieldtype": "Link",
+			"options": "UOM",
+			"width": 90,
+		},
 		{"label": _("Category"), "fieldname": "row_category", "fieldtype": "Data", "width": 140},
 		{"label": _("BOM Guided Qty"), "fieldname": "bom_guided_qty", "fieldtype": "Float", "width": 120},
-		{"label": _("BOM Guided Stock Qty"), "fieldname": "bom_guided_stock_qty", "fieldtype": "Float", "width": 155},
+		{
+			"label": _("BOM Guided Stock Qty"),
+			"fieldname": "bom_guided_stock_qty",
+			"fieldtype": "Float",
+			"width": 155,
+		},
 		{"label": _("Actual Qty"), "fieldname": "actual_transaction_qty", "fieldtype": "Float", "width": 110},
 		{"label": _("Actual Stock Qty"), "fieldname": "actual_qty", "fieldtype": "Float", "width": 145},
-		{"label": _("Transaction Variance Qty"), "fieldname": "transaction_variance_qty", "fieldtype": "Float", "width": 145},
+		{
+			"label": _("Transaction Variance Qty"),
+			"fieldname": "transaction_variance_qty",
+			"fieldtype": "Float",
+			"width": 145,
+		},
 		{"label": _("Variance Qty"), "fieldname": "variance_qty", "fieldtype": "Float", "width": 110},
 		{"label": _("Variance %"), "fieldname": "variance_percent", "fieldtype": "Percent", "width": 100},
 		{
