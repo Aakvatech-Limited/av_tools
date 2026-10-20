@@ -144,16 +144,6 @@ def execute(filters=None):
 	)
 	scrapped_asset_ids = {a.name for a in scrapped_assets}
 	scrap_journals = {a.journal_entry_for_scrap for a in scrapped_assets if a.journal_entry_for_scrap}
-	Account = frappe.qb.DocType("Account")
-	depreciation_accounts = run_permitted(
-		frappe.qb.from_(Account)
-		.select(Account.name)
-		.where(Account.company == company)
-		.where(Account.name.like("%depreciation%")),
-		"Account",
-		permission_cache,
-	)
-	depreciation_account_names = [account.name for account in depreciation_accounts]
 	gl_rows = run_permitted(
 		frappe.qb.from_(GL)
 		.select(
@@ -169,10 +159,10 @@ def execute(filters=None):
 		.where(GL.posting_date <= as_on)
 		.where(GL.is_cancelled == 0)
 		.where(GL.voucher_type == "Journal Entry")
-		.where(GL.account.isin(depreciation_account_names)),
+		.where(GL.account.like("%depreciation%")),
 		"GL Entry",
 		permission_cache,
-	) if depreciation_account_names else []
+	)
 	gl_map = {}
 	for g in gl_rows:
 		if g.against_voucher in scrapped_asset_ids or g.voucher_no in scrap_journals:
