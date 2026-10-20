@@ -21,7 +21,6 @@ from av_tools.trade_in.utils import (
 )
 
 
-
 class AVToolsSettings(Document):
 	def on_update(self):
 		self.manage_parallel_approval_functionality()
@@ -83,4 +82,3 @@ class AVToolsSettings(Document):
 			except Exception as e:
 				frappe.log_error(f"Parallel Approval: delete fields on '{dt}': {e}", "Parallel Approval")
 				frappe.msgprint(_("Could not remove approver fields from {0}: {1}").format(dt, str(e)))
-
