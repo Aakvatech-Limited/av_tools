@@ -12,9 +12,7 @@ class TestAssetCleanupLinks(FrappeTestCase):
 	@patch("frappe.desk.form.linked_with.get_references_across_doctypes")
 	@patch("frappe.get_hooks", return_value=[])
 	def test_scopes_reference_discovery_to_owned_types(self, _hooks, references, documents):
-		references.return_value = {
-			"Asset": [{"doctype": "Asset Movement Detail", "fieldname": "asset"}]
-		}
+		references.return_value = {"Asset": [{"doctype": "Asset Movement Detail", "fieldname": "asset"}]}
 		documents.return_value = {
 			"Asset Movement": ["MOVE-0001"],
 			"Unrelated DocType": ["OTHER-0001"],
@@ -22,9 +20,7 @@ class TestAssetCleanupLinks(FrappeTestCase):
 
 		result = incoming("Asset", "ASSET-0001")
 
-		references.assert_called_once_with(
-			to_doctypes=["Asset"], limit_link_doctypes=sorted(OWNED_TYPES)
-		)
+		references.assert_called_once_with(to_doctypes=["Asset"], limit_link_doctypes=sorted(OWNED_TYPES))
 		self.assertEqual(result, {("Asset Movement", "MOVE-0001")})
 
 	@patch("frappe.desk.form.linked_with.get_referencing_documents")
