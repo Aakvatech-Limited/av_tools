@@ -7,7 +7,6 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
-
 _PLACEHOLDER = re.compile(r"^\{(ctx|row)\.([A-Za-z0-9_]+)(\?)?\}$")
 _INLINE_PLACEHOLDER = re.compile(r"\{(ctx|row)\.([A-Za-z0-9_]+)(\?)?\}")
 _OMIT = object()
@@ -18,7 +17,7 @@ class FinancialDrilldownRule(Document):
 		try:
 			template = frappe.parse_json(self.base_filter_template or "{}")
 		except Exception as exc:
-			frappe.throw(_("Base Filter Template must be valid JSON: {0}").format(exc))
+			frappe.throw(_("Base Filter Template must be valid JSON: {0}").format(str(exc)))
 
 		if not isinstance(template, dict):
 			frappe.throw(_("Base Filter Template must be a JSON object."))
@@ -75,9 +74,7 @@ def _resolve_value(value, context):
 		if resolved_value in (None, ""):
 			if optional_marker:
 				return ""
-			frappe.throw(
-				_("Missing required drill-down filter value for {0}.{1}").format(source, fieldname)
-			)
+			frappe.throw(_("Missing required drill-down filter value for {0}.{1}").format(source, fieldname))
 		return str(resolved_value)
 
 	return _INLINE_PLACEHOLDER.sub(replace, value)
