@@ -15,13 +15,16 @@ def set_bom_guided_qty(doc, method=None):
 		return
 
 	def bom_quantities(**kwargs):
-		items = get_bom_items_as_dict(
-			doc.bom_no,
-			doc.company,
-			qty=doc.fg_completed_qty,
-			fetch_qty_in_stock_uom=True,
-			**kwargs,
-		) or {}
+		items = (
+			get_bom_items_as_dict(
+				doc.bom_no,
+				doc.company,
+				qty=doc.fg_completed_qty,
+				fetch_qty_in_stock_uom=True,
+				**kwargs,
+			)
+			or {}
+		)
 		quantities = {}
 		for item in items.values():
 			quantities[item.item_code] = quantities.get(item.item_code, 0.0) + flt(item.qty)
@@ -36,9 +39,7 @@ def set_bom_guided_qty(doc, method=None):
 		factor = flt(row.get("conversion_factor"))
 		if factor <= 0:
 			frappe.throw(
-				"Valid conversion factor required for BOM guidance on row {0} ({1})".format(
-					row.idx, row.item_code
-				)
+				f"Valid conversion factor required for BOM guidance on row {row.idx} ({row.item_code})"
 			)
 
 		if row.get("is_finished_item"):
@@ -49,9 +50,7 @@ def set_bom_guided_qty(doc, method=None):
 			# v16 identifies BOM secondary lines through bom_secondary_item; retain
 			# is_scrap_item compatibility for older Stock Entry Detail customizations.
 			quantities = (
-				secondary_qty
-				if row.get("is_scrap_item") or row.get("bom_secondary_item")
-				else raw_qty
+				secondary_qty if row.get("is_scrap_item") or row.get("bom_secondary_item") else raw_qty
 			)
 			stock_guided = quantities.get(lookup_item, 0.0)
 
