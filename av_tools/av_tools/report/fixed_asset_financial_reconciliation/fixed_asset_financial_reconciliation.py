@@ -124,10 +124,7 @@ def execute(filters=None):
 			"Depreciation Schedule",
 			permission_cache,
 		)
-	journal_names = []
-	for d in details:
-		if d.journal_entry and d.journal_entry not in journal_names:
-			journal_names.append(d.journal_entry)
+	journal_names = list({d.journal_entry for d in details if d.journal_entry})
 	journal_status = {}
 	if journal_names:
 		journals = run_permitted(
@@ -145,8 +142,18 @@ def execute(filters=None):
 		"Asset",
 		permission_cache,
 	)
-	scrapped_asset_ids = [a.name for a in scrapped_assets]
-	scrap_journals = [a.journal_entry_for_scrap for a in scrapped_assets if a.journal_entry_for_scrap]
+	scrapped_asset_ids = {a.name for a in scrapped_assets}
+	scrap_journals = {a.journal_entry_for_scrap for a in scrapped_assets if a.journal_entry_for_scrap}
+	Account = frappe.qb.DocType("Account")
+	depreciation_accounts = run_permitted(
+		frappe.qb.from_(Account)
+		.select(Account.name)
+		.where(Account.company == company)
+		.where(Account.name.like("%depreciation%")),
+		"Account",
+		permission_cache,
+	)
+	depreciation_account_names = [account.name for account in depreciation_accounts]
 	gl_rows = run_permitted(
 		frappe.qb.from_(GL)
 		.select(
@@ -160,10 +167,12 @@ def execute(filters=None):
 		)
 		.where(GL.company == company)
 		.where(GL.posting_date <= as_on)
-		.where(GL.is_cancelled == 0),
+		.where(GL.is_cancelled == 0)
+		.where(GL.voucher_type == "Journal Entry")
+		.where(GL.account.isin(depreciation_account_names)),
 		"GL Entry",
 		permission_cache,
-	)
+	) if depreciation_account_names else []
 	gl_map = {}
 	for g in gl_rows:
 		if g.against_voucher in scrapped_asset_ids or g.voucher_no in scrap_journals:
@@ -193,7 +202,7 @@ def execute(filters=None):
 		if s.asset not in schedule_by_asset:
 			schedule_by_asset[s.asset] = []
 		schedule_by_asset[s.asset].append(s)
-	linked_journals = []
+	linked_journals = set()
 	data = []
 	for a in assets:
 		linked = schedule_by_asset.get(a.name, [])
@@ -211,7 +220,7 @@ def execute(filters=None):
 					if d.journal_entry and journal_status.get(d.journal_entry) == 1:
 						booked = booked + float(d.depreciation_amount or 0)
 						if d.journal_entry not in linked_journals:
-							linked_journals.append(d.journal_entry)
+							linked_journals.add(d.journal_entry)
 							v = gl_map.get(d.journal_entry, {})
 							debit = debit + float(v.get("debit", 0))
 							credit = credit + float(v.get("credit", 0))
@@ -257,6 +266,7 @@ def execute(filters=None):
 			data.append(
 				{
 					"status": "Unmatched depreciation GL",
+					"_voucher_key": "Journal Entry|" + je_name,
 					"asset": "",
 					"asset_name": "",
 					"asset_category": "",
@@ -275,7 +285,7 @@ def execute(filters=None):
 			)
 	Category = frappe.qb.DocType("Asset Category")
 	CA = frappe.qb.DocType("Asset Category Account")
-	capital_accounts = []
+	capital_accounts = set()
 	ca_rows = run_permitted(
 		frappe.qb.from_(Category)
 		.join(CA)
@@ -289,8 +299,7 @@ def execute(filters=None):
 	for c in ca_rows:
 		if c.fixed_asset_account:
 			account_by_category[c.name] = c.fixed_asset_account
-			if c.fixed_asset_account not in capital_accounts:
-				capital_accounts.append(c.fixed_asset_account)
+			capital_accounts.add(c.fixed_asset_account)
 	capital_rows = []
 	if capital_accounts:
 		capital_rows = run_permitted(
@@ -408,6 +417,7 @@ def execute(filters=None):
 			data.append(
 				{
 					"status": "Capital GL reference for review",
+					"_voucher_key": key,
 					"asset": "",
 					"asset_name": "",
 					"asset_category": "",
@@ -472,22 +482,24 @@ def execute(filters=None):
 			group_asset_sum[a.parent] = group_asset_sum.get(a.parent, 0) + float(a.allocated_amount or 0)
 		for s in alloc_sources:
 			group_source_sum[s.parent] = group_source_sum.get(s.parent, 0) + float(s.allocated_amount or 0)
-		balanced_groups = []
+		balanced_groups = set()
 		for g in groups:
 			if (
 				group_asset_sum.get(g.name, 0) > 0
 				and abs(group_asset_sum.get(g.name, 0) - group_source_sum.get(g.name, 0)) <= tolerance
 			):
-				balanced_groups.append(g.name)
+				balanced_groups.add(g.name)
 		for a in alloc_assets:
 			if a.parent in balanced_groups:
 				mapped_assets[a.asset] = mapped_assets.get(a.asset, 0) + float(a.allocated_amount or 0)
 		PIItem = frappe.qb.DocType("Purchase Invoice Item")
-		invoice_names = []
-		for source in alloc_sources:
-			if source.parent in balanced_groups and source.source_voucher_type == "Purchase Invoice":
-				if source.source_voucher and source.source_voucher not in invoice_names:
-					invoice_names.append(source.source_voucher)
+		invoice_names = {
+			source.source_voucher
+			for source in alloc_sources
+			if source.parent in balanced_groups
+			and source.source_voucher_type == "Purchase Invoice"
+			and source.source_voucher
+		}
 		item_accounts = {}
 		if invoice_names:
 			invoice_items = run_permitted(
@@ -537,23 +549,16 @@ def execute(filters=None):
 				)
 				row["notes"] = (row.get("notes") or "") + "; Approved allocation " + str(mapped_amount)
 		if row.get("status") == "Capital GL reference for review":
-			note = row.get("notes") or ""
-			pieces = note.split(" in ")
-			if len(pieces) > 1:
-				entry = pieces[1].split(";")[0].strip()
-				types = ["Journal Entry", "Purchase Invoice", "Purchase Receipt", "Asset"]
-				for t in types:
-					if entry.startswith(t + " "):
-						key = t + "|" + entry[len(t) + 1 :]
-						amt = mapped_vouchers.get(key, 0)
-						row["unallocated_capital"] = float(row.get("capital_gl") or 0) - amt
-						if amt > 0:
-							row["status"] = (
-								"Capital GL matched by mapping"
-								if abs(row["unallocated_capital"]) <= tolerance
-								else "Partially reconciled capital GL"
-							)
-						break
+			key = row.get("_voucher_key")
+			if key:
+				amt = mapped_vouchers.get(key, 0)
+				row["unallocated_capital"] = float(row.get("capital_gl") or 0) - amt
+				if amt > 0:
+					row["status"] = (
+						"Capital GL matched by mapping"
+						if abs(row["unallocated_capital"]) <= tolerance
+						else "Partially reconciled capital GL"
+					)
 	all_maps = run_permitted(
 		frappe.qb.from_(Map).select(Map.name, Map.status).where(Map.company == company),
 		"Asset Capitalization Reconciliation",
@@ -562,6 +567,8 @@ def execute(filters=None):
 	all_map_names = [m.name for m in all_maps]
 	asset_references = {}
 	voucher_references = {}
+	asset_reference_seen = {}
+	voucher_reference_seen = {}
 	if all_map_names:
 		all_map_assets = run_permitted(
 			frappe.qb.from_(MapAsset)
@@ -584,15 +591,19 @@ def execute(filters=None):
 			if a.asset:
 				if a.asset not in asset_references:
 					asset_references[a.asset] = []
-				if a.parent not in asset_references[a.asset]:
+				seen = asset_reference_seen.setdefault(a.asset, set())
+				if a.parent not in seen:
 					asset_references[a.asset].append(a.parent)
+					seen.add(a.parent)
 		for v in all_map_sources:
 			if v.source_voucher_type and v.source_voucher:
 				key = v.source_voucher_type + "|" + v.source_voucher
 				if key not in voucher_references:
 					voucher_references[key] = []
-				if v.parent not in voucher_references[key]:
+				seen = voucher_reference_seen.setdefault(key, set())
+				if v.parent not in seen:
 					voucher_references[key].append(v.parent)
+					seen.add(v.parent)
 	for row in data:
 		refs = []
 		if row.get("asset"):
@@ -604,11 +615,9 @@ def execute(filters=None):
 			"Capital GL matched by mapping",
 			"Partially reconciled capital GL",
 		]:
-			for key in voucher_references:
-				if key.split("|")[0] != "Purchase Invoice" and key.split("|")[1] in (row.get("notes") or ""):
-					for reference in voucher_references[key]:
-						if reference not in refs:
-							refs.append(reference)
+			voucher_key = row.get("_voucher_key")
+			if voucher_key:
+				refs = voucher_references.get(voucher_key, [])
 		if refs:
 			row["reconciliation"] = refs[0]
 			row["reconciliation_status"] = map_status.get(refs[0]) or ""
@@ -685,6 +694,10 @@ def execute(filters=None):
 		voucher_key = (gl_row.voucher_type or "") + "|" + (gl_row.voucher_no or "")
 		if voucher_key not in voucher_dates or str(gl_row.posting_date) < str(voucher_dates[voucher_key]):
 			voucher_dates[voucher_key] = gl_row.posting_date
+	depreciation_voucher_dates = {}
+	for gl_row in gl_rows:
+		if gl_row.voucher_no not in depreciation_voucher_dates or gl_row.posting_date < depreciation_voucher_dates[gl_row.voucher_no]:
+			depreciation_voucher_dates[gl_row.voucher_no] = gl_row.posting_date
 	for result_row in data:
 		if result_row.get("asset"):
 			result_row["reference_date"] = asset_dates.get(result_row["asset"])
@@ -693,19 +706,11 @@ def execute(filters=None):
 				"Purchase Invoice|" + result_row["purchase_invoice"]
 			)
 		elif result_row.get("status") == "Unmatched depreciation GL":
-			for gl_row in gl_rows:
-				if gl_row.voucher_type == "Journal Entry" and gl_row.voucher_no in (
-					result_row.get("notes") or ""
-				):
-					result_row["reference_date"] = gl_row.posting_date
-					break
+			result_row["reference_date"] = depreciation_voucher_dates.get(
+				(result_row.get("_voucher_key") or "").partition("|")[2]
+			)
 		else:
-			for voucher_key in voucher_dates:
-				if voucher_key.split("|")[0] == "Journal Entry" and voucher_key.split("|")[1] in (
-					result_row.get("notes") or ""
-				):
-					result_row["reference_date"] = voucher_dates[voucher_key]
-					break
+			result_row["reference_date"] = voucher_dates.get(result_row.get("_voucher_key"))
 	if (filters.get("view_mode") or "Exceptions Only") == "Exceptions Only":
 		filtered_data = []
 		for row in data:
@@ -729,4 +734,6 @@ def execute(filters=None):
 				row["capital_gl"] = outstanding
 			filtered_data.append(row)
 		data = filtered_data
+	for row in data:
+		row.pop("_voucher_key", None)
 	return (columns, data)
