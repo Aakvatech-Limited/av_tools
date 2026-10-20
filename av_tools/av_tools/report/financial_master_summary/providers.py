@@ -538,7 +538,7 @@ def _get_gl_value(filters, balance=True):
 	gl_filters.categorize_by = ""
 	gl_filters.setdefault("include_default_book_entries", 1)
 	_, rows = general_ledger.execute(gl_filters)
-	labels = general_ledger.get_translated_labels_for_totals()
+	labels = {key: row.account for key, row in general_ledger.get_totals_dict().items()}
 	target = labels["closing"] if balance else labels["total"]
 	row = next((row for row in rows if row.get("account") == target), frappe._dict())
 	return flt(row.get("debit")) - flt(row.get("credit"))

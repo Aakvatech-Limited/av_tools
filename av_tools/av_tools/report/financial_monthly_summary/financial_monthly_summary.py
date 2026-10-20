@@ -90,7 +90,7 @@ def _get_general_ledger_filters(filters, period):
 
 
 def _get_month_row(period, gl_data, currency):
-	labels = general_ledger.get_translated_labels_for_totals()
+	labels = {key: row.account for key, row in general_ledger.get_totals_dict().items()}
 	rows_by_label = {row.get("account"): row for row in gl_data if row.get("account") in labels.values()}
 	opening = rows_by_label.get(labels["opening"], frappe._dict())
 	total = rows_by_label.get(labels["total"], frappe._dict())
