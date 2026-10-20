@@ -19,12 +19,17 @@ DELETE_ORDER = {
 def incoming(doctype, name):
 	from frappe.desk.form.linked_with import get_references_across_doctypes, get_referencing_documents
 
-	references = get_references_across_doctypes(to_doctypes=[doctype])
+	# Restrict both metadata discovery and dynamic-link queries to cleanup-owned
+	# DocTypes (and their child tables). Unrestricted discovery scans every app
+	# and may fail on unrelated virtual or custom Dynamic Link implementations.
+	references = get_references_across_doctypes(
+		to_doctypes=[doctype], limit_link_doctypes=sorted(OWNED_TYPES)
+	)
 	result = set()
 	ignored = set(frappe.get_hooks("ignore_links_on_delete"))
 	for reference in references.get(doctype, []):
 		for parenttype, names in (get_referencing_documents(doctype, [name], reference) or {}).items():
-			if parenttype not in ignored:
+			if parenttype in OWNED_TYPES and parenttype not in ignored:
 				result.update((parenttype, parent) for parent in names)
 	return result
 
