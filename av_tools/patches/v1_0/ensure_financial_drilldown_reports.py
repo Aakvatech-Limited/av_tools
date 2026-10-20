@@ -1,6 +1,5 @@
 import frappe
 
-
 REPORTS = (
 	"financial_account_summary",
 	"financial_master_summary",
@@ -19,6 +18,4 @@ def execute():
 		if not frappe.db.exists("Report", report.replace("_", " ").title())
 	]
 	if missing:
-		frappe.throw(
-			"Failed to create Financial Drill-down Reports: {0}".format(", ".join(missing))
-		)
+		frappe.throw("Failed to create Financial Drill-down Reports: {}".format(", ".join(missing)))

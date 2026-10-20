@@ -2,15 +2,13 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe import _
-from frappe.utils import flt
-from frappe.utils.nestedset import get_descendants_of
-
 from erpnext.accounts.report.asset_depreciations_and_balances import asset_depreciations_and_balances
 from erpnext.accounts.report.general_ledger import general_ledger
 from erpnext.stock.doctype.warehouse.warehouse import get_warehouses_based_on_account
 from erpnext.stock.report.stock_balance import stock_balance
-
+from frappe import _
+from frappe.utils import flt
+from frappe.utils.nestedset import get_descendants_of
 
 ASSET_ACCOUNT_FIELDS = {
 	"Fixed Asset": "fixed_asset_account",
@@ -33,8 +31,9 @@ def get_master_summary(filters, account_type):
 		return get_stock_master_summary(filters)
 	if provider == "Asset":
 		return get_asset_master_summary(filters, account_type)
-	frappe.throw(_("No non-party drill-down provider is configured for account type {0}.").format(account_type))
-
+	frappe.throw(
+		_("No non-party drill-down provider is configured for account type {0}.").format(account_type)
+	)
 
 
 def _get_account_warehouses(account, company):
@@ -113,9 +112,7 @@ def get_stock_master_summary(filters):
 				)
 			)
 
-			items = sorted(
-				key for key in item_totals if key[0] == warehouse and key[1] == item_group
-			)
+			items = sorted(key for key in item_totals if key[0] == warehouse and key[1] == item_group)
 			for _, _, item_code in items:
 				rows.append(
 					_make_master_row(
@@ -145,7 +142,7 @@ def get_asset_master_summary(filters, account_type):
 		group_by="Asset",
 		finance_book=filters.get("finance_book"),
 	)
-	_, asset_rows = asset_depreciations_and_balances.execute(report_filters)
+	_columns, asset_rows = asset_depreciations_and_balances.execute(report_filters)
 	asset_names = [row.get("name") or row.get("asset") for row in asset_rows]
 	asset_category_map = {
 		row.name: row.asset_category
@@ -297,7 +294,7 @@ def get_stock_voucher_scope(filters):
 	if filters.get("item"):
 		sle_filters["item_code"] = filters.item
 	elif filters.get("item_group"):
-		groups = [filters.item_group] + get_descendants_of("Item Group", filters.item_group)
+		groups = [filters.item_group, *get_descendants_of("Item Group", filters.item_group)]
 		items = frappe.get_all("Item", filters={"item_group": ("in", groups)}, pluck="name")
 		sle_filters["item_code"] = ("in", items or ["__no_item__"])
 
@@ -537,9 +534,7 @@ def _get_asset_reconciliation(filters, rows, account_type):
 def _get_gl_value(filters, balance=True):
 	gl_filters = frappe._dict(filters.copy())
 	gl_filters.account = [_single_account(filters.account)]
-	gl_filters.presentation_currency = frappe.get_cached_value(
-		"Company", filters.company, "default_currency"
-	)
+	gl_filters.presentation_currency = frappe.get_cached_value("Company", filters.company, "default_currency")
 	gl_filters.categorize_by = ""
 	gl_filters.setdefault("include_default_book_entries", 1)
 	_, rows = general_ledger.execute(gl_filters)
