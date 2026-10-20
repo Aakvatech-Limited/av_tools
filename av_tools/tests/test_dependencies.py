@@ -1,10 +1,10 @@
 # Copyright (c) 2026, Aakvatech and Contributors
 # See license.txt
 
-import tomllib
 from pathlib import Path
 from unittest import TestCase
 
+import tomllib
 from packaging.requirements import Requirement
 from packaging.version import Version
 
@@ -17,8 +17,7 @@ class TestDependencies(TestCase):
 			project = tomllib.load(pyproject_file)["project"]
 
 		cls.dependencies = {
-			Requirement(dependency).name: Requirement(dependency)
-			for dependency in project["dependencies"]
+			Requirement(dependency).name: Requirement(dependency) for dependency in project["dependencies"]
 		}
 
 	def test_openai_dependency_supports_raven_minimum(self):
