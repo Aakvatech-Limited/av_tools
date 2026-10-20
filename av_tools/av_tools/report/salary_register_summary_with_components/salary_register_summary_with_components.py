@@ -127,30 +127,6 @@ def get_ss_ded_map(salary_slips, currency, company_currency):
 	return _component_totals(salary_slips, "deductions", negative=True)
 
 
-def get_conditions(filters, company_currency):
-	conditions = ""
-	doc_status = {"Draft": 0, "Submitted": 1, "Cancelled": 2}
-
-	if filters.get("docstatus"):
-		conditions += "docstatus = {}".format(doc_status[filters.get("docstatus")])
-
-	if filters.get("from_date"):
-		conditions += " and start_date >= %(from_date)s"
-	if filters.get("to_date"):
-		conditions += " and end_date <= %(to_date)s"
-	if filters.get("company"):
-		conditions += " and company = %(company)s"
-	if filters.get("employee"):
-		conditions += " and employee = %(employee)s"
-	if filters.get("currency") and filters.get("currency") != company_currency:
-		conditions += " and currency = %(currency)s"
-	if filters.get("department") and filters.get("company"):
-		department_list = get_departments(filters.get("department"), filters.get("company"))
-		conditions += "and department in (" + ",".join("'" + n + "'" for n in department_list) + ")"
-
-	return conditions, filters
-
-
 def get_departments(department, company):
 	departments_list = get_descendants_of("Department", department)
 	departments_list.append(department)

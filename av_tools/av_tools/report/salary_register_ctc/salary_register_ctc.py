@@ -175,7 +175,6 @@ def get_columns(salary_slips):
 
 def get_salary_slips(filters, company_currency):
 	filters.update({"from_date": filters.get("from_date"), "to_date": filters.get("to_date")})
-	_conditions, filters = get_conditions(filters, company_currency)
 	Slip = frappe.qb.DocType("Salary Slip")
 	query = frappe.qb.from_(Slip).select(Slip.star)
 	if filters.get("docstatus"):
@@ -197,36 +196,12 @@ def get_salary_slips(filters, company_currency):
 			Slip.department.isin(get_departments(filters.get("department"), filters.get("company")))
 		)
 	if filters.get("workflow_state"):
+		if not frappe.db.has_column("Salary Slip", "workflow_state"):
+			frappe.throw(_("Salary Slip has no workflow, so the Workflow filter cannot be used."))
 		query = query.where(Slip.workflow_state == filters.get("workflow_state"))
 	salary_slips = query.orderby(Slip.employee).run(as_dict=True)
 
 	return salary_slips or []
-
-
-def get_conditions(filters, company_currency):
-	conditions = ""
-	doc_status = {"Draft": 0, "Submitted": 1, "Cancelled": 2}
-
-	if filters.get("docstatus"):
-		conditions += "docstatus = {}".format(doc_status[filters.get("docstatus")])
-
-	if filters.get("from_date"):
-		conditions += " and start_date >= %(from_date)s"
-	if filters.get("to_date"):
-		conditions += " and end_date <= %(to_date)s"
-	if filters.get("company"):
-		conditions += " and company = %(company)s"
-	if filters.get("employee"):
-		conditions += " and employee = %(employee)s"
-	if filters.get("currency") and filters.get("currency") != company_currency:
-		conditions += " and currency = %(currency)s"
-	if filters.get("department") and filters.get("company"):
-		department_list = get_departments(filters.get("department"), filters.get("company"))
-		conditions += "and department in (" + ",".join("'" + n + "'" for n in department_list) + ")"
-	if filters.get("workflow_state"):
-		conditions += " and workflow_state = %(workflow_state)s"
-
-	return conditions, filters
 
 
 def get_employee_doj_map():

@@ -14,8 +14,6 @@ from pypika import CustomFunction
 
 
 def execute(filters=None):
-	conditions, filters = get_conditions(filters)
-
 	columns = get_columns(filters)
 
 	chift_type_details = frappe.get_all(
@@ -25,8 +23,8 @@ def execute(filters=None):
 	)
 
 	data = []
-	checkin_records = get_checkin_data(conditions, filters, chift_type_details)
-	checkout_records = get_checkout_data(conditions, filters, chift_type_details)
+	checkin_records = get_checkin_data(filters, chift_type_details)
+	checkout_records = get_checkout_data(filters, chift_type_details)
 
 	if checkin_records and checkout_records:
 		# Create dataframes for merging
@@ -126,31 +124,15 @@ def get_columns(filters):
 	return columns
 
 
-def get_conditions(filters):
-	conditions = ""
-	if filters.get("from_date"):
-		conditions += " AND DATE(chec.time) >= %(from_date)s"
-	if filters.get("to_date"):
-		conditions += " AND DATE(chec.time) <= %(to_date)s"
-	if filters.get("company"):
-		conditions += " AND emp.company = %(company)s"
-	if filters.get("department") and filters.get("company"):
-		department_list = get_department(filters.get("department"), filters.get("company"))
-		conditions += "AND emp.department in (" + ", ".join("'" + d + "'" for d in department_list) + ")"
-	if filters.get("employee"):
-		conditions += " AND chec.employee = %(employee)s"
-	return conditions, filters
-
-
 def get_department(department, company):
 	department_list = get_descendants_of("Department", department)
 	department_list.append(department)
 	return department_list
 
 
-def get_checkin_data(conditions, filters, chift_type_details):
+def get_checkin_data(filters, chift_type_details):
 	checkin_data = []
-	checkin_details = get_checkin_details(conditions, filters)
+	checkin_details = get_checkin_details(filters)
 
 	for checkin_d in checkin_details:
 		if checkin_d.default_shift and checkin_d.shift_type:
@@ -221,9 +203,9 @@ def get_checkin_data(conditions, filters, chift_type_details):
 	return checkin_data
 
 
-def get_checkout_data(conditions, filters, chift_type_details):
+def get_checkout_data(filters, chift_type_details):
 	checkout_data = []
-	checkout_details = get_checkout_details(conditions, filters)
+	checkout_details = get_checkout_details(filters)
 
 	for checkout_d in checkout_details:
 		if checkout_d.default_shift and checkout_d.shift_type:
@@ -340,11 +322,11 @@ def _query_checkin_details(filters, log_type):
 	return query.groupby(Checkin.employee, date).orderby(date).orderby(Checkin.employee).run(as_dict=True)
 
 
-def get_checkin_details(conditions, filters):
+def get_checkin_details(filters):
 	return _query_checkin_details(filters, "IN")
 
 
-def get_checkout_details(conditions, filters):
+def get_checkout_details(filters):
 	return _query_checkin_details(filters, "OUT")
 
 

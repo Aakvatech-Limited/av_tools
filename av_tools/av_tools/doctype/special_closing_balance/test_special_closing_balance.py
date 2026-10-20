@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from frappe.tests import IntegrationTestCase
 
+from av_tools.av_tools.doctype.special_closing_balance import special_closing_balance
 from av_tools.av_tools.doctype.special_closing_balance.special_closing_balance import get_items
 
 
@@ -15,8 +16,9 @@ class TestSpecialClosingBalance(IntegrationTestCase):
 				"av_tools.av_tools.doctype.special_closing_balance.special_closing_balance.frappe.db.get_value",
 				side_effect=[(1, 2), 0],
 			),
-			patch(
-				"av_tools.av_tools.doctype.special_closing_balance.special_closing_balance.frappe.db.sql",
+			patch.object(
+				special_closing_balance.frappe.db,
+				"sql",
 				return_value=[["ITEM-001", "Test Item", "Nos", "Main Stores - A"]],
 			),
 			patch(
@@ -24,7 +26,12 @@ class TestSpecialClosingBalance(IntegrationTestCase):
 				return_value=(5, 12),
 			),
 		):
-			rows = get_items("Main Stores - A", "2026-03-10", "08:00:00", "Rubis Technical Services Limited")
+			rows = get_items(
+				warehouse="Main Stores - A",
+				posting_date="2026-03-10",
+				posting_time="08:00:00",
+				company="Rubis Technical Services Limited",
+			)
 
 		self.assertEqual(len(rows), 1)
 		self.assertEqual(rows[0]["item"], "ITEM-001")
