@@ -111,7 +111,9 @@ class TestReconciliation(unittest.TestCase):
 			self.frappe,
 			{permissions.__name__: permissions},
 		)
-		with patch.object(self.frappe, "get_doc", return_value=Mock(company="ACME", is_group=1, lft=1, rgt=10)):
+		with patch.object(
+			self.frappe, "get_doc", return_value=Mock(company="ACME", is_group=1, lft=1, rgt=10)
+		):
 			with patch.object(self.frappe, "get_list", return_value=["Depreciation Expense - A"]):
 				return module.execute(
 					{
