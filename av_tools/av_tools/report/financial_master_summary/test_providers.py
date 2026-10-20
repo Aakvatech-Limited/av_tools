@@ -1,9 +1,14 @@
+from unittest.mock import patch
+
+import frappe
 from frappe import _dict
 from frappe.tests.utils import FrappeTestCase
 
+from av_tools.av_tools.report.financial_master_summary import providers
 from av_tools.av_tools.report.financial_master_summary.providers import (
 	_asset_values,
 	_make_master_row,
+	get_asset_master_summary,
 	get_provider,
 )
 
@@ -63,3 +68,9 @@ class TestFinancialDrilldownProviders(FrappeTestCase):
 		self.assertEqual(fixed_asset["closing_value"], 1170)
 		self.assertEqual(accumulated["closing_value"], 270)
 		self.assertEqual(depreciation["increase_value"], 80)
+
+	def test_asset_summary_without_category_shows_message(self):
+		filters = _dict(company="Test Company", account="Fixed Assets - TC")
+		with patch.object(providers, "get_asset_categories_for_account", return_value=[]):
+			with self.assertRaisesRegex(frappe.ValidationError, "No Asset Category is mapped"):
+				get_asset_master_summary(filters, "Fixed Asset")
