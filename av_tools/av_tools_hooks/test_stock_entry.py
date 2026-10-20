@@ -97,18 +97,49 @@ class TestStockEntryBomGuidedQty(FrappeTestCase):
 		self.assertEqual(doc.items[0].qty, 8)
 
 	def test_guidance_uses_stock_uom_and_keeps_transaction_uom(self):
-		doc = frappe._dict({
-			"bom_no": "BOM-TEST-001", "company": "Test Company",
-			"fg_completed_qty": 10, "use_multi_level_bom": 0,
-			"items": [
-				frappe._dict({"idx": 1, "item_code": "RM-001", "qty": 22, "transfer_qty": 550,
-					"conversion_factor": 25, "is_finished_item": 0, "is_scrap_item": 0}),
-				frappe._dict({"idx": 2, "item_code": "FG-001", "qty": 10, "transfer_qty": 10,
-					"conversion_factor": 1, "is_finished_item": 1, "is_scrap_item": 0}),
-				frappe._dict({"idx": 3, "item_code": "SCR-001", "qty": 3, "transfer_qty": 3,
-					"conversion_factor": 1, "is_finished_item": 0, "is_scrap_item": 1}),
-			]
-		})
+		doc = frappe._dict(
+			{
+				"bom_no": "BOM-TEST-001",
+				"company": "Test Company",
+				"fg_completed_qty": 10,
+				"use_multi_level_bom": 0,
+				"items": [
+					frappe._dict(
+						{
+							"idx": 1,
+							"item_code": "RM-001",
+							"qty": 22,
+							"transfer_qty": 550,
+							"conversion_factor": 25,
+							"is_finished_item": 0,
+							"is_scrap_item": 0,
+						}
+					),
+					frappe._dict(
+						{
+							"idx": 2,
+							"item_code": "FG-001",
+							"qty": 10,
+							"transfer_qty": 10,
+							"conversion_factor": 1,
+							"is_finished_item": 1,
+							"is_scrap_item": 0,
+						}
+					),
+					frappe._dict(
+						{
+							"idx": 3,
+							"item_code": "SCR-001",
+							"qty": 3,
+							"transfer_qty": 3,
+							"conversion_factor": 1,
+							"is_finished_item": 0,
+							"is_scrap_item": 1,
+						}
+					),
+				],
+			}
+		)
 		raw = {"RM-001": frappe._dict({"item_code": "RM-001", "qty": 500})}
 		scrap = {"SCR-001": frappe._dict({"item_code": "SCR-001", "qty": 2})}
 		with patch(

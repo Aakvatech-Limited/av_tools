@@ -14,7 +14,9 @@ class FullAccessRoleSetup(Document):
 	def validate(self):
 		if self.is_new() and self.enable_full_access_role:
 			frappe.throw(
-				_("Save the company setup first, then enable FULL ACCESS and accept the authorization warning.")
+				_(
+					"Save the company setup first, then enable FULL ACCESS and accept the authorization warning."
+				)
 			)
 
 		if not self.has_value_changed("enable_full_access_role"):
@@ -27,7 +29,9 @@ class FullAccessRoleSetup(Document):
 			consent = _get_consent(self.name)
 			if not consent:
 				frappe.throw(
-					_("You must review the FULL ACCESS warning and click I Accept before enabling this setup.")
+					_(
+						"You must review the FULL ACCESS warning and click I Accept before enabling this setup."
+					)
 				)
 
 			self.consent_accepted_by = frappe.session.user

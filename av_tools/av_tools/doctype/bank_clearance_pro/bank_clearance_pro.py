@@ -6,9 +6,9 @@ import frappe
 from frappe import _, msgprint
 from frappe.model.document import Document
 from frappe.query_builder.functions import Coalesce, Sum
-from pypika.terms import ValueWrapper
-from pypika import Case, Order
 from frappe.utils import flt, fmt_money, getdate, nowdate
+from pypika import Case, Order
+from pypika.terms import ValueWrapper
 
 form_grid_templates = {"journal_entries": "templates/form_grid/bank_reconciliation_grid.html"}
 
@@ -45,13 +45,18 @@ class BankClearancePro(Document):
 
 		journal_entries = (
 			frappe.qb.from_(je)
-			.join(jea).on(jea.parent == je.name)
+			.join(jea)
+			.on(jea.parent == je.name)
 			.select(
 				ValueWrapper("Journal Entry").as_("payment_document"),
-				je.name.as_("payment_entry"), je.cheque_no.as_("cheque_number"),
-				je.cheque_date, Sum(jea.debit_in_account_currency).as_("debit"),
+				je.name.as_("payment_entry"),
+				je.cheque_no.as_("cheque_number"),
+				je.cheque_date,
+				Sum(jea.debit_in_account_currency).as_("debit"),
 				Sum(jea.credit_in_account_currency).as_("credit"),
-				je.posting_date, jea.against_account, je.clearance_date,
+				je.posting_date,
+				jea.against_account,
+				je.clearance_date,
 				jea.account_currency,
 			)
 			.where(condition_je)
@@ -70,9 +75,14 @@ class BankClearancePro(Document):
 				Case().when(pe.paid_from == self.account, pe.paid_amount).else_(0).as_("credit"),
 				Case().when(pe.paid_from == self.account, 0).else_(pe.received_amount).as_("debit"),
 				pe.posting_date,
-				Coalesce(pe.party_name, Case().when(pe.paid_from == self.account, pe.paid_to).else_(pe.paid_from)).as_("against_account"),
+				Coalesce(
+					pe.party_name, Case().when(pe.paid_from == self.account, pe.paid_to).else_(pe.paid_from)
+				).as_("against_account"),
 				pe.clearance_date,
-				Case().when(pe.paid_to == self.account, pe.paid_to_account_currency).else_(pe.paid_from_account_currency).as_("account_currency"),
+				Case()
+				.when(pe.paid_to == self.account, pe.paid_to_account_currency)
+				.else_(pe.paid_from_account_currency)
+				.as_("account_currency"),
 			)
 			.where(condition_pe)
 			.orderby(pe.posting_date)
@@ -87,30 +97,49 @@ class BankClearancePro(Document):
 			account = frappe.qb.DocType("Account")
 			pos_sales_invoices = (
 				frappe.qb.from_(sip)
-				.join(si).on(sip.parent == si.name)
-				.join(account).on(account.name == sip.account)
+				.join(si)
+				.on(sip.parent == si.name)
+				.join(account)
+				.on(account.name == sip.account)
 				.select(
 					ValueWrapper("Sales Invoice Payment").as_("payment_document"),
-					sip.name.as_("payment_entry"), sip.amount.as_("debit"),
-					si.posting_date, si.customer.as_("against_account"),
-					sip.clearance_date, account.account_currency,
+					sip.name.as_("payment_entry"),
+					sip.amount.as_("debit"),
+					si.posting_date,
+					si.customer.as_("against_account"),
+					sip.clearance_date,
+					account.account_currency,
 					ValueWrapper(0).as_("credit"),
 				)
-				.where((sip.account == self.account) & (si.docstatus == 1) & si.posting_date.between(self.from_date, self.to_date))
-				.orderby(si.posting_date).orderby(si.name, order=Order.desc)
+				.where(
+					(sip.account == self.account)
+					& (si.docstatus == 1)
+					& si.posting_date.between(self.from_date, self.to_date)
+				)
+				.orderby(si.posting_date)
+				.orderby(si.name, order=Order.desc)
 			).run(as_dict=True)
 			pos_purchase_invoices = (
 				frappe.qb.from_(pi)
-				.join(account).on(account.name == pi.cash_bank_account)
+				.join(account)
+				.on(account.name == pi.cash_bank_account)
 				.select(
 					ValueWrapper("Purchase Invoice").as_("payment_document"),
-					pi.name.as_("payment_entry"), pi.paid_amount.as_("credit"),
-					pi.posting_date, pi.supplier.as_("against_account"),
-					pi.clearance_date, account.account_currency,
+					pi.name.as_("payment_entry"),
+					pi.paid_amount.as_("credit"),
+					pi.posting_date,
+					pi.supplier.as_("against_account"),
+					pi.clearance_date,
+					account.account_currency,
 					ValueWrapper(0).as_("debit"),
 				)
-				.where((pi.cash_bank_account == self.account) & (pi.docstatus == 1) & pi.posting_date.between(self.from_date, self.to_date))
-				.orderby(pi.posting_date).orderby(pi.name, order=Order.desc)
+				.where(
+					(pi.cash_bank_account == self.account)
+					& (pi.docstatus == 1)
+					& pi.posting_date.between(self.from_date, self.to_date)
+				)
+				.orderby(pi.posting_date)
+				.orderby(pi.name, order=Order.desc)
 			).run(as_dict=True)
 
 		entries = sorted(

@@ -28,7 +28,7 @@ def get_columns(fiscal_years):
 
 def get_data(filters):
 	gl = frappe.qb.DocType("GL Entry")
-	balance = (gl.debit - gl.credit)
+	balance = gl.debit - gl.credit
 	return (
 		frappe.qb.from_(gl)
 		.select(gl.party, gl.account, gl.fiscal_year, Sum(balance).as_("balance"))

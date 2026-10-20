@@ -1,6 +1,5 @@
 import frappe
 
-
 FULL_ACCESS_ROLE = "FULL ACCESS"
 SETUP_DOCTYPE = "Full Access Role Setup"
 ROLE_CHILD_DOCTYPE = "Has Role"

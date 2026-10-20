@@ -15,13 +15,16 @@ def set_bom_guided_qty(doc, method=None):
 		return
 
 	def bom_quantities(**kwargs):
-		items = get_bom_items_as_dict(
-			doc.bom_no,
-			doc.company,
-			qty=doc.fg_completed_qty,
-			fetch_qty_in_stock_uom=True,
-			**kwargs,
-		) or {}
+		items = (
+			get_bom_items_as_dict(
+				doc.bom_no,
+				doc.company,
+				qty=doc.fg_completed_qty,
+				fetch_qty_in_stock_uom=True,
+				**kwargs,
+			)
+			or {}
+		)
 		return {item.item_code: flt(item.qty) for item in items.values()}
 
 	raw_qty = bom_quantities(fetch_exploded=doc.get("use_multi_level_bom"))
@@ -31,9 +34,7 @@ def set_bom_guided_qty(doc, method=None):
 		factor = flt(row.get("conversion_factor"))
 		if factor <= 0:
 			frappe.throw(
-				"Valid conversion factor required for BOM guidance on row {0} ({1})".format(
-					row.idx, row.item_code
-				)
+				f"Valid conversion factor required for BOM guidance on row {row.idx} ({row.item_code})"
 			)
 
 		if row.get("is_finished_item"):
