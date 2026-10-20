@@ -3,14 +3,12 @@ import frappe
 
 @frappe.whitelist()
 def get_payroll_employees(payroll_entry):
-	return frappe.db.sql(
-		"""
-		select employee
-		from `tabPayroll Employee Detail`
-		where parent = %s
-		""",
-		(payroll_entry,),
-		as_dict=True,
+	Employee = frappe.qb.DocType("Payroll Employee Detail")
+	return (
+		frappe.qb.from_(Employee)
+		.select(Employee.employee)
+		.where(Employee.parent == payroll_entry)
+		.run(as_dict=True)
 	)
 
 
