@@ -30,9 +30,7 @@ class TestFinancialDrilldownRule(FrappeTestCase):
 
 	def test_coalesce_uses_first_present_value(self):
 		template = {
-			"to_date": {
-				"$coalesce": ["{row.to_date?}", "{row.year_end_date?}", "{ctx.period_end_date?}"]
-			}
+			"to_date": {"$coalesce": ["{row.to_date?}", "{row.year_end_date?}", "{ctx.period_end_date?}"]}
 		}
 		resolved = resolve_filter_template(
 			template,
