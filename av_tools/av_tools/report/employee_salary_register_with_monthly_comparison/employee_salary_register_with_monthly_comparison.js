@@ -67,6 +67,7 @@ frappe.query_reports["Employee Salary Register with Monthly Comparison"] = {
 			fieldtype: "Select",
 			options: ["Draft", "Submitted", "Cancelled"],
 			default: "Submitted",
+			reqd: 1,
 			width: "100px",
 		},
 	],
