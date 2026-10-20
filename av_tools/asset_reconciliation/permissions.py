@@ -45,7 +45,7 @@ def permitted_names(doctype, cache):
 	return cache[doctype]
 
 
-def run_permitted(query, doctype, cache):
+def run_permitted(query, doctype, cache, permission_filters=None):
 	if ("fields", doctype) not in cache:
 		check_fields(doctype)
 		if doctype == "Asset Category":
@@ -58,7 +58,11 @@ def run_permitted(query, doctype, cache):
 		query = query.where(table.parent.isin(names)).where(table.parenttype == parenttype)
 		query = query.where(table.parentfield == parentfield)
 	else:
-		names = permitted_names(doctype, cache)
+		if permission_filters is not None:
+			frappe.has_permission(doctype, "read", throw=True)
+			names = frappe.get_list(doctype, filters=permission_filters, pluck="name", limit_page_length=0)
+		else:
+			names = permitted_names(doctype, cache)
 		query = query.where(table.name.isin(names))
 	if not names:
 		return []

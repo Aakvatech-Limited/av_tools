@@ -105,13 +105,24 @@ class TestReconciliation(unittest.TestCase):
 
 	def report(self, view="All Records"):
 		permissions = ModuleType("av_tools.asset_reconciliation.permissions")
-		permissions.run_permitted = lambda query, doctype, cache: query.run(as_dict=True)
+		permissions.run_permitted = lambda query, doctype, cache, **kwargs: query.run(as_dict=True)
 		module = load_module(
 			"av_tools/report/fixed_asset_financial_reconciliation/fixed_asset_financial_reconciliation.py",
 			self.frappe,
 			{permissions.__name__: permissions},
 		)
-		return module.execute({"company": "ACME", "as_on": "2026-10-18", "view_mode": view})[1]
+		with patch.object(
+			self.frappe, "get_doc", return_value=Mock(company="ACME", is_group=1, lft=1, rgt=10)
+		):
+			with patch.object(self.frappe, "get_list", return_value=["Depreciation Expense - A"]):
+				return module.execute(
+					{
+						"company": "ACME",
+						"as_on": "2026-10-18",
+						"view_mode": view,
+						"depreciation_group_account": "Depreciation - A",
+					}
+				)[1]
 
 	def asset(self, **kwargs):
 		row = Row(
