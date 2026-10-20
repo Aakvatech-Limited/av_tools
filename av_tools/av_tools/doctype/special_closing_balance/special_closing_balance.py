@@ -124,8 +124,10 @@ def get_items(warehouse, posting_date, company, posting_time=None):
 	child_warehouse = frappe.qb.DocType("Warehouse")
 	items = (
 		frappe.qb.from_(item)
-		.join(defaults).on(defaults.parent == item.name)
-		.join(child_warehouse).on(child_warehouse.name == defaults.default_warehouse)
+		.join(defaults)
+		.on(defaults.parent == item.name)
+		.join(child_warehouse)
+		.on(child_warehouse.name == defaults.default_warehouse)
 		.select(item.name, item.item_name, item.stock_uom, defaults.default_warehouse)
 		.where(
 			(child_warehouse.lft >= lft)
