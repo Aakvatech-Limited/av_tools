@@ -4,7 +4,6 @@ import frappe
 
 from av_tools.patches.v1_0.seed_financial_drilldown_rules import DEFAULT_RULES
 
-
 RULE_NAME = "Monthly Summary General Ledger"
 LEGACY_TARGET = "General Ledger"
 
