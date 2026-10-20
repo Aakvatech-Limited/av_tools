@@ -11,8 +11,8 @@ from erpnext.accounts.utils import (
 )
 from frappe import _, msgprint
 from frappe.model.document import Document
-from frappe.utils import cint, flt, today
 from frappe.query_builder.functions import Coalesce, Sum
+from frappe.utils import cint, flt, today
 from pypika.terms import ValueWrapper
 
 
@@ -69,19 +69,26 @@ class PaymentReconciliationPro(Document):
 		)
 		query = (
 			frappe.qb.from_(je)
-			.join(account).on(je.name == account.parent)
+			.join(account)
+			.on(je.name == account.parent)
 			.select(
 				ValueWrapper("Journal Entry").as_("reference_type"),
-				je.name.as_("reference_name"), je.posting_date,
-				je.remark.as_("remarks"), account.name.as_("reference_row"),
-				amount.as_("amount"), account.is_advance,
+				je.name.as_("reference_name"),
+				je.posting_date,
+				je.remark.as_("remarks"),
+				account.name.as_("reference_row"),
+				amount.as_("amount"),
+				account.is_advance,
 				account.account_currency.as_("currency"),
 			)
 			.where(
-				(je.docstatus == 1) & (account.docstatus == 1)
-				& (account.party_type == self.party_type) & (account.party == self.party)
+				(je.docstatus == 1)
+				& (account.docstatus == 1)
+				& (account.party_type == self.party_type)
+				& (account.party == self.party)
 				& (account.account == self.receivable_payable_account)
-				& (amount > 0) & reference_is_unallocated
+				& (amount > 0)
+				& reference_is_unallocated
 			)
 			.orderby(je.posting_date)
 		)
@@ -116,7 +123,8 @@ class PaymentReconciliationPro(Document):
 		amount = Sum(gl[dr_or_cr]) - Sum(gl[reconciled_dr_or_cr])
 		return (
 			frappe.qb.from_(doc)
-			.join(gl).on((doc.name == gl.against_voucher) | (doc.name == gl.voucher_no))
+			.join(gl)
+			.on((doc.name == gl.against_voucher) | (doc.name == gl.voucher_no))
 			.select(
 				doc.name.as_("reference_name"),
 				ValueWrapper(voucher_type).as_("reference_type"),
@@ -125,9 +133,11 @@ class PaymentReconciliationPro(Document):
 			)
 			.where(
 				(doc[frappe.scrub(self.party_type)] == self.party)
-				& (doc.is_return == 1) & (Coalesce(doc.return_against, "") == "")
+				& (doc.is_return == 1)
+				& (Coalesce(doc.return_against, "") == "")
 				& (gl.against_voucher_type == voucher_type)
-				& (doc.docstatus == 1) & (gl.party == self.party)
+				& (doc.docstatus == 1)
+				& (gl.party == self.party)
 				& (gl.party_type == self.party_type)
 				& (gl.account == self.receivable_payable_account)
 				& (gl.is_cancelled == 0)
@@ -387,19 +397,25 @@ def get_advance_payment_entries(
 	if order_list or against_all_orders:
 		query = (
 			frappe.qb.from_(pe)
-			.join(ref).on(pe.name == ref.parent)
+			.join(ref)
+			.on(pe.name == ref.parent)
 			.select(
 				ValueWrapper("Payment Entry").as_("reference_type"),
-				pe.name.as_("reference_name"), pe.remarks,
-				ref.allocated_amount.as_("amount"), ref.name.as_("reference_row"),
-				ref.reference_name.as_("against_order"), pe.posting_date,
-				pe[currency_field].as_("currency"), pe[exchange_rate_field].as_("exchange_rate"),
+				pe.name.as_("reference_name"),
+				pe.remarks,
+				ref.allocated_amount.as_("amount"),
+				ref.name.as_("reference_row"),
+				ref.reference_name.as_("against_order"),
+				pe.posting_date,
+				pe[currency_field].as_("currency"),
+				pe[exchange_rate_field].as_("exchange_rate"),
 			)
 			.where(
 				(pe[party_account_field] == party_account)
 				& (pe.payment_type == payment_type)
 				& (pe.party_type == party_type)
-				& (pe.party == party) & (pe.docstatus == 1)
+				& (pe.party == party)
+				& (pe.docstatus == 1)
 				& (ref.reference_doctype == order_doctype)
 			)
 			.orderby(pe.posting_date)
@@ -415,7 +431,8 @@ def get_advance_payment_entries(
 			frappe.qb.from_(pe)
 			.select(
 				ValueWrapper("Payment Entry").as_("reference_type"),
-				pe.name.as_("reference_name"), pe.remarks,
+				pe.name.as_("reference_name"),
+				pe.remarks,
 				pe.unallocated_amount.as_("amount"),
 				pe[exchange_rate_field].as_("exchange_rate"),
 			)
