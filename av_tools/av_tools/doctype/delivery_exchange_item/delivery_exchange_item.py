@@ -99,19 +99,28 @@ def get_item_details(doctype: str, doctype_id: str, item_code: str | None = None
 	if doctype not in ("Sales Invoice", "Delivery Note", "Sales Order"):
 		frappe.throw(_("Unsupported reference document type: {0}").format(doctype))
 
-	condition = "AND cdt.item_code = %(item_code)s" if item_code else ""
-	# doctype is whitelisted above; all values are bound as parameters
-	return frappe.db.sql(  # nosemgrep
-		f"""
-		SELECT
-			cdt.item_code, cdt.amount, cdt.warehouse, cdt.qty, cdt.rate, cdt.uom,
-			pdt.selling_price_list, i.is_stock_item
-		FROM `tab{doctype}` pdt
-		INNER JOIN `tab{doctype} Item` cdt ON pdt.name = cdt.parent
-		INNER JOIN `tabItem` i ON i.name = cdt.item_code
-		WHERE pdt.name = %(doctype_id)s
-		{condition}
-		""",
-		{"doctype_id": doctype_id, "item_code": item_code},
-		as_dict=1,
+	parent = frappe.qb.DocType(doctype)
+	child = frappe.qb.DocType(f"{doctype} Item")
+	item = frappe.qb.DocType("Item")
+	query = (
+		frappe.qb.from_(parent)
+		.join(child)
+		.on(parent.name == child.parent)
+		.join(item)
+		.on(item.name == child.item_code)
+		.select(
+			child.item_code,
+			child.amount,
+			child.warehouse,
+			child.qty,
+			child.rate,
+			child.uom,
+			parent.selling_price_list,
+			item.is_stock_item,
+		)
+		.where(parent.name == doctype_id)
 	)
+	if item_code:
+		query = query.where(child.item_code == item_code)
+
+	return query.run(as_dict=True)
