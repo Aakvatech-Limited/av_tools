@@ -145,6 +145,12 @@ def execute(filters=None):
 			Asset.purchase_date,
 			Asset.available_for_use_date,
 			Asset.disposal_date,
+			Asset.purchase_invoice,
+			Asset.purchase_invoice_item,
+			Asset.av_nta_purchase_invoice,
+			Asset.av_nta_purchase_invoice_item,
+			Asset.purchase_amount,
+			Asset.asset_quantity,
 		)
 		.where(Asset.docstatus == 1)
 		.where(Asset.company == company)
@@ -387,25 +393,8 @@ def execute(filters=None):
 	assets_by_name = {}
 	for a in assets:
 		assets_by_name[a.name] = a
-	purchases = run_permitted(
-		frappe.qb.from_(Asset)
-		.select(
-			Asset.name,
-			Asset.purchase_invoice,
-			Asset.purchase_invoice_item,
-			Asset.av_nta_purchase_invoice,
-			Asset.av_nta_purchase_invoice_item,
-			Asset.asset_category,
-			Asset.total_asset_cost,
-			Asset.purchase_amount,
-			Asset.asset_quantity,
-		)
-		.where(Asset.company == company)
-		.where(Asset.docstatus == 1)
-		.where(Asset.status != "Scrapped"),
-		"Asset",
-		permission_cache,
-	)
+	# Reuse the permission-filtered asset rows; avoid an identical second Asset scan.
+	purchases = assets
 	asset_purchase = {}
 	for a in purchases:
 		a.purchase_invoice = a.purchase_invoice or a.av_nta_purchase_invoice
