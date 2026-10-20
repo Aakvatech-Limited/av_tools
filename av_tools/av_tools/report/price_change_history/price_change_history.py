@@ -18,37 +18,34 @@ def execute(filters=None):
 
 
 def get_data(filters):
-	conditions = get_conditions(filters)
-
-	return frappe.db.sql(
-		f"""
-		SELECT pr.posting_date as date, pi.item_code as item_code, pi.item_name as item_name,
-			pi.price_list as price_list, pi.old_price as old_price, pi.new_price as new_price
-		FROM `tabPrice Change Request` pr
-		INNER JOIN `tabPrice Change Request Detail` pi ON pr.name = pi.parent
-		WHERE pr.docstatus = 1 {conditions}
-	""",
-		filters,
-		as_dict=1,
+	Request = frappe.qb.DocType("Price Change Request")
+	Detail = frappe.qb.DocType("Price Change Request Detail")
+	query = (
+		frappe.qb.from_(Request)
+		.join(Detail)
+		.on(Request.name == Detail.parent)
+		.select(
+			Request.posting_date.as_("date"),
+			Detail.item_code,
+			Detail.item_name,
+			Detail.price_list,
+			Detail.old_price,
+			Detail.new_price,
+		)
+		.where(Request.docstatus == 1)
+		.where(Request.company == filters.get("company"))
 	)
 
+	if filters.get("item"):
+		query = query.where(Detail.item_code == filters.get("item"))
+	if filters.get("price_list"):
+		query = query.where(Detail.price_list == filters.get("price_list"))
+	if filters.get("from_date"):
+		query = query.where(Request.posting_date >= filters.get("from_date"))
+	if filters.get("to_date"):
+		query = query.where(Request.posting_date <= filters.get("to_date"))
 
-def get_conditions(filters):
-	conditions = " AND pr.company = %(company)s "
-
-	if filters.item:
-		conditions += " AND pi.item_code = %(item)s "
-
-	if filters.price_list:
-		conditions += " AND pi.price_list = %(price_list)s "
-
-	if filters.from_date:
-		conditions += " AND pr.posting_date >= %(from_date)s "
-
-	if filters.to_date:
-		conditions += " AND pr.posting_date <= %(to_date)s "
-
-	return conditions
+	return query.run(as_dict=True)
 
 
 def get_columns(filters):
