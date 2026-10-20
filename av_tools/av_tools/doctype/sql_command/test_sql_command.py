@@ -21,7 +21,7 @@ class TestSQLCommand(FrappeTestCase):
 	def test_on_submit_deletes_with_document_api(self):
 		doc = self._document()
 		with (
-			patch.object(frappe.session, "user", "Administrator"),
+			patch.dict(frappe.session, {"user": "Administrator"}),
 			patch("frappe.db.get_single_value", return_value=1),
 			patch("frappe.get_meta") as meta,
 			patch("frappe.delete_doc") as delete_doc,
@@ -44,14 +44,14 @@ class TestSQLCommand(FrappeTestCase):
 			self._document(sql_text="SELECT * FROM tabUser").on_submit()
 
 	def test_non_administrator_cannot_delete(self):
-		with patch.object(frappe.session, "user", "user@example.com"):
+		with patch.dict(frappe.session, {"user": "user@example.com"}):
 			with self.assertRaises(frappe.PermissionError):
 				self._document().on_submit()
 
 	def test_unquoted_names_are_rejected(self):
 		doc = self._document(names="TEST-1,TEST-2")
 		with (
-			patch.object(frappe.session, "user", "Administrator"),
+			patch.dict(frappe.session, {"user": "Administrator"}),
 			patch("frappe.db.get_single_value", return_value=1),
 			patch("frappe.get_meta") as meta,
 		):
