@@ -42,9 +42,7 @@ def get_price_lists(filters):
 	PriceList = frappe.qb.DocType("Price List")
 
 	query = (
-		frappe.qb.from_(PriceList)
-		.select(PriceList.name, PriceList.currency)
-		.where(PriceList.selling == 1)
+		frappe.qb.from_(PriceList).select(PriceList.name, PriceList.currency).where(PriceList.selling == 1)
 	)
 
 	if filters.get("price_list"):
