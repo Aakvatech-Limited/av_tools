@@ -80,7 +80,9 @@ class GoogleChatClient:
 		except requests.RequestException as exc:
 			raise GoogleChatAPIError(f"Google OAuth token request failed: {exc}") from exc
 		if response.status_code >= 400:
-			raise GoogleChatAPIError(f"Google OAuth token request returned HTTP {response.status_code}: {response.text[:2000]}")
+			raise GoogleChatAPIError(
+				f"Google OAuth token request returned HTTP {response.status_code}: {response.text[:2000]}"
+			)
 		data = response.json()
 		self._access_token = data.get("access_token")
 		if not self._access_token:
@@ -96,11 +98,15 @@ class GoogleChatClient:
 		}
 		url = f"{API_BASE}/{path.lstrip('/')}"
 		try:
-			response = requests.request(method, url, params=params, json=json_body, headers=headers, timeout=self.timeout)
+			response = requests.request(
+				method, url, params=params, json=json_body, headers=headers, timeout=self.timeout
+			)
 		except requests.RequestException as exc:
 			raise GoogleChatAPIError(f"Google Chat API request failed: {exc}") from exc
 		if response.status_code >= 400 and response.status_code not in allow_statuses:
-			raise GoogleChatAPIError(f"Google Chat API returned HTTP {response.status_code}: {response.text[:2000]}")
+			raise GoogleChatAPIError(
+				f"Google Chat API returned HTTP {response.status_code}: {response.text[:2000]}"
+			)
 		if not response.content:
 			return {}
 		try:
@@ -119,7 +125,9 @@ class GoogleChatClient:
 			"spaceType": "SPACE",
 			"displayName": display_name[:128],
 			"customer": self.settings.workspace_customer or "customers/my_customer",
-			"spaceDetails": {"description": "Private ERPNext notification space managed by the ERPNext Google Chat integration."},
+			"spaceDetails": {
+				"description": "Private ERPNext notification space managed by the ERPNext Google Chat integration."
+			},
 		}
 		space = self._request("POST", "spaces", params={"requestId": request_id}, json_body=body)
 		space_name = space.get("name")
@@ -135,8 +143,12 @@ class GoogleChatClient:
 		if chat_user.direct_message_space_name:
 			return chat_user.direct_message_space_name
 		if not chat_user.google_chat_user_id:
-			raise GoogleChatAPIError("Direct Message mode requires Google Chat User ID; app-authenticated findDirectMessage does not support an email alias")
-		space = self._request("GET", "spaces:findDirectMessage", params={"name": f"users/{chat_user.google_chat_user_id}"})
+			raise GoogleChatAPIError(
+				"Direct Message mode requires Google Chat User ID; app-authenticated findDirectMessage does not support an email alias"
+			)
+		space = self._request(
+			"GET", "spaces:findDirectMessage", params={"name": f"users/{chat_user.google_chat_user_id}"}
+		)
 		space_name = space.get("name")
 		if not space_name:
 			raise GoogleChatAPIError("Google Chat did not return a direct-message space")
