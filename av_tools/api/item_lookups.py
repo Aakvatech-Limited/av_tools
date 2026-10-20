@@ -109,7 +109,7 @@ def _get_invoice_prices(invoice_type, item_code, currency, company, party=None, 
 def _collect_prices(rows: list[dict], rate_field: str, mapper, max_records: int) -> list[dict]:
 	prices: list[dict] = []
 	for row in rows:
-		if row.get(rate_field) and len(prices) <= max_records:
+		if row.get(rate_field) and len(prices) < max_records:
 			prices.append(mapper(row))
 	return prices
 
