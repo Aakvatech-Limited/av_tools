@@ -77,8 +77,10 @@ def get_item_info(item_code: Any):
 	return result
 
 
-def _get_invoice_prices(invoice_type, item_code, currency, company, party=None, posting_date_range=None):
-	"""Fetch invoice item prices with safely bound Query Builder predicates."""
+def _get_invoice_prices(
+	invoice_type, item_code, currency, company, max_records, party=None, posting_date_range=None
+):
+	"""Fetch the latest `max_records` invoice item prices that have a rate."""
 	parent_doctype = "Sales Invoice" if invoice_type == "Sales" else "Purchase Invoice"
 	item_doctype = parent_doctype + " Item"
 	Invoice = frappe.qb.DocType(parent_doctype)
@@ -90,6 +92,7 @@ def _get_invoice_prices(invoice_type, item_code, currency, company, party=None, 
 		.on(Item.parent == Invoice.name)
 		.select(Invoice.name, Invoice.posting_date, party_field, Item.item_code, Item.qty, Item.rate)
 		.where(Item.item_code == item_code)
+		.where(IfNull(Item.rate, 0) != 0)
 		.where(Invoice.docstatus == 1)
 		.where(Invoice.currency == currency)
 		.where(Invoice.is_return != 1)
@@ -103,25 +106,20 @@ def _get_invoice_prices(invoice_type, item_code, currency, company, party=None, 
 			query = query.where(Invoice.posting_date.between(from_date, to_date))
 		except (IndexError, TypeError):
 			pass
-	return query.orderby(Invoice.posting_date, order=frappe.qb.desc).run(as_dict=True)
-
-
-def _collect_prices(rows: list[dict], rate_field: str, mapper, max_records: int) -> list[dict]:
-	prices: list[dict] = []
-	for row in rows:
-		if row.get(rate_field) and len(prices) < max_records:
-			prices.append(mapper(row))
-	return prices
+	return (
+		query.orderby(Invoice.posting_date, order=frappe.qb.desc)
+		.orderby(Invoice.name, order=frappe.qb.desc)
+		.limit(max_records)
+		.run(as_dict=True)
+	)
 
 
 @frappe.whitelist()
 def get_item_prices(item_code: Any, currency: Any, customer: Any = None, company: Any = None):
 	"""Sales Invoice historical prices for an item (legacy shape: `price`, `date`)."""
-	rows = _get_invoice_prices("Sales", item_code, currency, company, party=customer)
-	return _collect_prices(
-		rows,
-		"rate",
-		lambda r: {
+	rows = _get_invoice_prices("Sales", item_code, currency, company, DEFAULT_MAX_RECORDS, party=customer)
+	return [
+		{
 			"name": r.item_code,
 			"item_code": r.item_code,
 			"price": r.rate,
@@ -129,9 +127,9 @@ def get_item_prices(item_code: Any, currency: Any, customer: Any = None, company
 			"invoice": r.name,
 			"customer": r.customer,
 			"qty": r.qty,
-		},
-		DEFAULT_MAX_RECORDS,
-	)
+		}
+		for r in rows
+	]
 
 
 @frappe.whitelist()
@@ -152,12 +150,16 @@ def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20)
 	max_records = int(start) + int(limit)
 
 	rows = _get_invoice_prices(
-		"Sales", item_code, currency, company, party=customer, posting_date_range=posting_date_range
+		"Sales",
+		item_code,
+		currency,
+		company,
+		max_records,
+		party=customer,
+		posting_date_range=posting_date_range,
 	)
-	return _collect_prices(
-		rows,
-		"rate",
-		lambda r: {
+	return [
+		{
 			"name": r.item_code,
 			"item_code": r.item_code,
 			"rate": r.rate,
@@ -165,9 +167,9 @@ def get_item_prices_custom(filters: Any = None, start: Any = 0, limit: Any = 20)
 			"invoice": r.name,
 			"customer": r.customer,
 			"qty": r.qty,
-		},
-		max_records,
-	)
+		}
+		for r in rows
+	]
 
 
 @frappe.whitelist()
@@ -188,12 +190,16 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 	max_records = int(start) + int(limit)
 
 	rows = _get_invoice_prices(
-		"Purchase", item_code, currency, company, party=supplier, posting_date_range=posting_date_range
+		"Purchase",
+		item_code,
+		currency,
+		company,
+		max_records,
+		party=supplier,
+		posting_date_range=posting_date_range,
 	)
-	return _collect_prices(
-		rows,
-		"rate",
-		lambda r: {
+	return [
+		{
 			"name": r.item_code,
 			"item_code": r.item_code,
 			"rate": r.rate,
@@ -201,19 +207,17 @@ def get_item_prices_custom_po(filters: Any = None, start: Any = 0, limit: Any = 
 			"invoice": r.name,
 			"customer": r.supplier,
 			"qty": r.qty,
-		},
-		max_records,
-	)
+		}
+		for r in rows
+	]
 
 
 @frappe.whitelist()
 def get_item_prices_po(item_code: Any, currency: Any, customer: Any = None, company: Any = None):
 	"""Purchase Invoice historical prices (legacy PO shape: `price`, `date`)."""
-	rows = _get_invoice_prices("Purchase", item_code, currency, company, party=customer)
-	return _collect_prices(
-		rows,
-		"rate",
-		lambda r: {
+	rows = _get_invoice_prices("Purchase", item_code, currency, company, DEFAULT_MAX_RECORDS, party=customer)
+	return [
+		{
 			"name": r.item_code,
 			"item_code": r.item_code,
 			"price": r.rate,
@@ -221,6 +225,6 @@ def get_item_prices_po(item_code: Any, currency: Any, customer: Any = None, comp
 			"invoice": r.name,
 			"customer": r.supplier,
 			"qty": r.qty,
-		},
-		DEFAULT_MAX_RECORDS,
-	)
+		}
+		for r in rows
+	]
