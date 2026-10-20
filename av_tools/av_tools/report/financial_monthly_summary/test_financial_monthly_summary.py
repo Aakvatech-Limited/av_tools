@@ -32,12 +32,11 @@ class TestFinancialMonthlySummary(FrappeTestCase):
 		self.assertEqual(resolved.business_unit, ["Consulting"])
 
 	def test_month_row_uses_standard_general_ledger_totals(self):
-		labels = general_ledger.get_translated_labels_for_totals()
 		period = _dict(label="Apr 2026", from_date="2026-04-01", to_date="2026-04-30")
 		gl_data = [
-			_dict(account=labels["opening"], debit=100, credit=0),
-			_dict(account=labels["total"], debit=40, credit=10),
-			_dict(account=labels["closing"], debit=130, credit=0),
+			_dict(account="'Opening'", debit=100, credit=0),
+			_dict(account="'Total'", debit=40, credit=10),
+			_dict(account="'Closing (Opening + Total)'", debit=130, credit=0),
 		]
 
 		row = _get_month_row(period, gl_data, "TZS")
