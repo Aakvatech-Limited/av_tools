@@ -183,7 +183,13 @@ def execute(filters=None):
 		.where(GL.account.isin(depreciation_accounts)),
 		"GL Entry",
 		permission_cache,
-		permission_filters={"company": company, "posting_date": ["<=", as_on], "is_cancelled": 0, "voucher_type": "Journal Entry", "account": ["in", depreciation_accounts]},
+		permission_filters={
+			"company": company,
+			"posting_date": ["<=", as_on],
+			"is_cancelled": 0,
+			"voucher_type": "Journal Entry",
+			"account": ["in", depreciation_accounts],
+		},
 	)
 	gl_map = {}
 	for g in gl_rows:
@@ -321,7 +327,12 @@ def execute(filters=None):
 			.where(GL.account.isin(capital_accounts)),
 			"GL Entry",
 			permission_cache,
-			permission_filters={"company": company, "posting_date": ["<=", as_on], "is_cancelled": 0, "account": ["in", list(capital_accounts)]},
+			permission_filters={
+				"company": company,
+				"posting_date": ["<=", as_on],
+				"is_cancelled": 0,
+				"account": ["in", list(capital_accounts)],
+			},
 		)
 	capital_vouchers = {}
 	for g in capital_rows:
@@ -707,7 +718,10 @@ def execute(filters=None):
 			voucher_dates[voucher_key] = gl_row.posting_date
 	depreciation_voucher_dates = {}
 	for gl_row in gl_rows:
-		if gl_row.voucher_no not in depreciation_voucher_dates or gl_row.posting_date < depreciation_voucher_dates[gl_row.voucher_no]:
+		if (
+			gl_row.voucher_no not in depreciation_voucher_dates
+			or gl_row.posting_date < depreciation_voucher_dates[gl_row.voucher_no]
+		):
 			depreciation_voucher_dates[gl_row.voucher_no] = gl_row.posting_date
 	for result_row in data:
 		if result_row.get("asset"):
