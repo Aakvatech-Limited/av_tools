@@ -251,5 +251,10 @@ def _ensure_serial_nos_exist(item, company):
 	for serial_no in [s.strip() for s in (item.custom_trade_in_serial_no or "").split("\n") if s.strip()]:
 		if not frappe.db.exists("Serial No", serial_no):
 			frappe.get_doc(
-				{"doctype": "Serial No", "serial_no": serial_no, "item_code": item.custom_trade_in_item, "company": company}
+				{
+					"doctype": "Serial No",
+					"serial_no": serial_no,
+					"item_code": item.custom_trade_in_item,
+					"company": company,
+				}
 			).insert(ignore_permissions=True, ignore_mandatory=True)

@@ -47,7 +47,12 @@ def get_columns():
 		{"label": _("Stock UOM"), "fieldname": "uom", "fieldtype": "Link", "options": "UOM", "width": 80},
 		{"label": _("Category"), "fieldname": "row_category", "fieldtype": "Data", "width": 150},
 		{"label": _("Entries"), "fieldname": "entry_count", "fieldtype": "Int", "width": 80},
-		{"label": _("BOM Guided Stock Qty"), "fieldname": "bom_guided_qty", "fieldtype": "Float", "width": 120},
+		{
+			"label": _("BOM Guided Stock Qty"),
+			"fieldname": "bom_guided_qty",
+			"fieldtype": "Float",
+			"width": 120,
+		},
 		{"label": _("Actual Stock Qty"), "fieldname": "actual_qty", "fieldtype": "Float", "width": 110},
 		{"label": _("Variance Qty"), "fieldname": "variance_qty", "fieldtype": "Float", "width": 110},
 		{"label": _("Variance %"), "fieldname": "variance_percent", "fieldtype": "Percent", "width": 100},

@@ -2,11 +2,10 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe import _
-from frappe.utils import flt, getdate
-
 from erpnext.accounts.report.financial_statements import get_period_list
 from erpnext.accounts.report.general_ledger import general_ledger
+from frappe import _
+from frappe.utils import flt, getdate
 
 from av_tools.av_tools.report.financial_master_summary.providers import (
 	get_asset_month_values,
@@ -60,13 +59,13 @@ def _validate_filters(filters):
 	if getdate(filters.from_date) > getdate(filters.to_date):
 		frappe.throw(_("From Date cannot be greater than To Date."))
 
-	account = frappe.get_cached_value(
-		"Account", filters.account, ["company", "is_group"], as_dict=True
-	)
+	account = frappe.get_cached_value("Account", filters.account, ["company", "is_group"], as_dict=True)
 	if not account:
 		frappe.throw(_("Account {0} does not exist.").format(filters.account))
 	if account.company != filters.company:
-		frappe.throw(_("Account {0} does not belong to company {1}.").format(filters.account, filters.company))
+		frappe.throw(
+			_("Account {0} does not belong to company {1}.").format(filters.account, filters.company)
+		)
 	if account.is_group:
 		frappe.throw(_("Financial Monthly Summary requires a ledger account."))
 
@@ -92,11 +91,7 @@ def _get_general_ledger_filters(filters, period):
 
 def _get_month_row(period, gl_data, currency):
 	labels = general_ledger.get_translated_labels_for_totals()
-	rows_by_label = {
-		row.get("account"): row
-		for row in gl_data
-		if row.get("account") in labels.values()
-	}
+	rows_by_label = {row.get("account"): row for row in gl_data if row.get("account") in labels.values()}
 	opening = rows_by_label.get(labels["opening"], frappe._dict())
 	total = rows_by_label.get(labels["total"], frappe._dict())
 	closing = rows_by_label.get(labels["closing"], frappe._dict())
@@ -115,7 +110,6 @@ def _get_month_row(period, gl_data, currency):
 			"closing_credit": flt(closing.get("credit")),
 		}
 	)
-
 
 
 def _get_provider_month_row(period, values, currency):

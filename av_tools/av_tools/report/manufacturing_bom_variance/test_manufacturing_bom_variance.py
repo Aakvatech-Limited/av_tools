@@ -60,9 +60,7 @@ class TestManufacturingBomVariance(FrappeTestCase):
 		self.assertEqual(summary.absolute_variance_percent, 20)
 		self.assertEqual(summary.efficiency_percent, 100)
 
-	@patch(
-		"av_tools.av_tools.report.manufacturing_bom_variance.manufacturing_bom_variance.get_detail_data"
-	)
+	@patch("av_tools.av_tools.report.manufacturing_bom_variance.manufacturing_bom_variance.get_detail_data")
 	def test_monthly_summary_averages_item_normalized_percentages(self, get_detail_data):
 		get_detail_data.return_value = [
 			frappe._dict(

@@ -97,18 +97,49 @@ class TestStockEntryBomGuidedQty(FrappeTestCase):
 		self.assertEqual(doc.items[0].qty, 8)
 
 	def test_guidance_uses_stock_uom_and_keeps_transaction_uom(self):
-		doc = frappe._dict({
-			"bom_no": "BOM-TEST-001", "company": "Test Company",
-			"fg_completed_qty": 10, "use_multi_level_bom": 0,
-			"items": [
-				frappe._dict({"idx": 1, "item_code": "RM-001", "qty": 22, "transfer_qty": 550,
-					"conversion_factor": 25, "is_finished_item": 0, "is_scrap_item": 0}),
-				frappe._dict({"idx": 2, "item_code": "FG-001", "qty": 10, "transfer_qty": 10,
-					"conversion_factor": 1, "is_finished_item": 1, "is_scrap_item": 0}),
-				frappe._dict({"idx": 3, "item_code": "SCR-001", "qty": 3, "transfer_qty": 3,
-					"conversion_factor": 1, "is_finished_item": 0, "is_scrap_item": 1}),
-			]
-		})
+		doc = frappe._dict(
+			{
+				"bom_no": "BOM-TEST-001",
+				"company": "Test Company",
+				"fg_completed_qty": 10,
+				"use_multi_level_bom": 0,
+				"items": [
+					frappe._dict(
+						{
+							"idx": 1,
+							"item_code": "RM-001",
+							"qty": 22,
+							"transfer_qty": 550,
+							"conversion_factor": 25,
+							"is_finished_item": 0,
+							"is_scrap_item": 0,
+						}
+					),
+					frappe._dict(
+						{
+							"idx": 2,
+							"item_code": "FG-001",
+							"qty": 10,
+							"transfer_qty": 10,
+							"conversion_factor": 1,
+							"is_finished_item": 1,
+							"is_scrap_item": 0,
+						}
+					),
+					frappe._dict(
+						{
+							"idx": 3,
+							"item_code": "SCR-001",
+							"qty": 3,
+							"transfer_qty": 3,
+							"conversion_factor": 1,
+							"is_finished_item": 0,
+							"is_scrap_item": 1,
+						}
+					),
+				],
+			}
+		)
 		raw = {"RM-001": frappe._dict({"item_code": "RM-001", "qty": 500})}
 		scrap = {"SCR-001": frappe._dict({"item_code": "SCR-001", "qty": 2})}
 		with patch(
@@ -126,16 +157,27 @@ class TestStockEntryBomGuidedQty(FrappeTestCase):
 
 	def test_v16_secondary_item_uses_secondary_bom_quantities(self):
 		"""Material transfer rows linked to BOM Secondary Item use v16 secondary quantities."""
-		doc = frappe._dict({
-			"bom_no": "BOM-TEST-001", "company": "Test Company",
-			"fg_completed_qty": 10200, "use_multi_level_bom": 1,
-			"items": [frappe._dict({
-				"idx": 1, "item_code": "Waste Lube Oil",
-				"bom_secondary_item": "br0sk96o3b",
-				"qty": 12000, "transfer_qty": 12000,
-				"conversion_factor": 1, "is_finished_item": 0,
-			})],
-		})
+		doc = frappe._dict(
+			{
+				"bom_no": "BOM-TEST-001",
+				"company": "Test Company",
+				"fg_completed_qty": 10200,
+				"use_multi_level_bom": 1,
+				"items": [
+					frappe._dict(
+						{
+							"idx": 1,
+							"item_code": "Waste Lube Oil",
+							"bom_secondary_item": "br0sk96o3b",
+							"qty": 12000,
+							"transfer_qty": 12000,
+							"conversion_factor": 1,
+							"is_finished_item": 0,
+						}
+					)
+				],
+			}
+		)
 		raw = {"Waste Lube Oil": frappe._dict({"item_code": "Waste Lube Oil", "qty": 100})}
 		secondary = {"Waste Lube Oil": frappe._dict({"item_code": "Waste Lube Oil", "qty": 11500})}
 		with patch(
@@ -152,14 +194,25 @@ class TestStockEntryBomGuidedQty(FrappeTestCase):
 
 	def test_combines_multiple_bom_rows_for_same_item(self):
 		"""Different BOM operations may return multiple dictionary rows per item code."""
-		doc = frappe._dict({
-			"bom_no": "BOM-TEST-001", "company": "Test Company",
-			"fg_completed_qty": 10, "use_multi_level_bom": 0,
-			"items": [frappe._dict({
-				"idx": 1, "item_code": "RM-001", "qty": 9,
-				"conversion_factor": 2, "is_finished_item": 0,
-			})],
-		})
+		doc = frappe._dict(
+			{
+				"bom_no": "BOM-TEST-001",
+				"company": "Test Company",
+				"fg_completed_qty": 10,
+				"use_multi_level_bom": 0,
+				"items": [
+					frappe._dict(
+						{
+							"idx": 1,
+							"item_code": "RM-001",
+							"qty": 9,
+							"conversion_factor": 2,
+							"is_finished_item": 0,
+						}
+					)
+				],
+			}
+		)
 		raw = {
 			("RM-001", "Operation 1"): frappe._dict({"item_code": "RM-001", "qty": 6}),
 			("RM-001", "Operation 2"): frappe._dict({"item_code": "RM-001", "qty": 10}),

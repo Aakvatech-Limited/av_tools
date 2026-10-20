@@ -66,7 +66,9 @@ def process_notification_log(notification_log_name):
 				conversation, thread_key = _get_or_create_conversation(notification, space_name)
 
 		text = format_notification_message(notification, settings)
-		request_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"{frappe.local.site}:notification-log:{notification.name}"))
+		request_id = str(
+			uuid.uuid5(uuid.NAMESPACE_URL, f"{frappe.local.site}:notification-log:{notification.name}")
+		)
 		response = client.send_message(
 			space_name=space_name,
 			text=text,

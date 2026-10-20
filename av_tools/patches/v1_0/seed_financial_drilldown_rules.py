@@ -2,7 +2,6 @@ import json
 
 import frappe
 
-
 DEFAULT_RULES = (
 	{
 		"rule_name": "Receivable Account Summary",
@@ -12,9 +11,7 @@ DEFAULT_RULES = (
 		"base_filter_template": {
 			"$inherit_context": True,
 			"company": "{ctx.company}",
-			"account": {
-				"$coalesce": ["{row.account?}", "{row.accounts?}"]
-			},
+			"account": {"$coalesce": ["{row.account?}", "{row.accounts?}"]},
 			"from_date": {
 				"$coalesce": [
 					"{row.from_date?}",
@@ -39,9 +36,7 @@ DEFAULT_RULES = (
 		"base_filter_template": {
 			"$inherit_context": True,
 			"company": "{ctx.company}",
-			"account": {
-				"$coalesce": ["{row.account?}", "{row.accounts?}"]
-			},
+			"account": {"$coalesce": ["{row.account?}", "{row.accounts?}"]},
 			"from_date": {
 				"$coalesce": [
 					"{row.from_date?}",
@@ -118,7 +113,6 @@ DEFAULT_RULES = (
 			"to_date": "{ctx.to_date}",
 		},
 	},
-
 	{
 		"rule_name": "Stock Account Summary",
 		"account_type": "Stock",
@@ -131,9 +125,7 @@ DEFAULT_RULES = (
 			"from_date": {
 				"$coalesce": ["{row.from_date?}", "{row.year_start_date?}", "{ctx.period_start_date?}"]
 			},
-			"to_date": {
-				"$coalesce": ["{row.to_date?}", "{row.year_end_date?}", "{ctx.period_end_date?}"]
-			},
+			"to_date": {"$coalesce": ["{row.to_date?}", "{row.year_end_date?}", "{ctx.period_end_date?}"]},
 		},
 	},
 	{
@@ -182,9 +174,7 @@ DEFAULT_RULES = (
 			"from_date": {
 				"$coalesce": ["{row.from_date?}", "{row.year_start_date?}", "{ctx.period_start_date?}"]
 			},
-			"to_date": {
-				"$coalesce": ["{row.to_date?}", "{row.year_end_date?}", "{ctx.period_end_date?}"]
-			},
+			"to_date": {"$coalesce": ["{row.to_date?}", "{row.year_end_date?}", "{ctx.period_end_date?}"]},
 		},
 	},
 	{
@@ -199,9 +189,7 @@ DEFAULT_RULES = (
 			"from_date": {
 				"$coalesce": ["{row.from_date?}", "{row.year_start_date?}", "{ctx.period_start_date?}"]
 			},
-			"to_date": {
-				"$coalesce": ["{row.to_date?}", "{row.year_end_date?}", "{ctx.period_end_date?}"]
-			},
+			"to_date": {"$coalesce": ["{row.to_date?}", "{row.year_end_date?}", "{ctx.period_end_date?}"]},
 		},
 	},
 	{
@@ -216,13 +204,9 @@ DEFAULT_RULES = (
 			"from_date": {
 				"$coalesce": ["{row.from_date?}", "{row.year_start_date?}", "{ctx.period_start_date?}"]
 			},
-			"to_date": {
-				"$coalesce": ["{row.to_date?}", "{row.year_end_date?}", "{ctx.period_end_date?}"]
-			},
+			"to_date": {"$coalesce": ["{row.to_date?}", "{row.year_end_date?}", "{ctx.period_end_date?}"]},
 		},
 	},
-
-
 	{
 		"rule_name": "Fixed Asset Master Summary",
 		"source_report": "Financial Account Summary",
