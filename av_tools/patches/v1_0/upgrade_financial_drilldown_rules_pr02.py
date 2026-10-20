@@ -4,7 +4,6 @@ import frappe
 
 from av_tools.patches.v1_0.seed_financial_drilldown_rules import DEFAULT_RULES
 
-
 LEGACY_TARGETS = {
 	"Receivable Account Summary": "Accounts Receivable Summary",
 	"Payable Account Summary": "Accounts Payable Summary",
