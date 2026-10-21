@@ -114,13 +114,18 @@ class TestReconciliation(unittest.TestCase):
 		with patch.object(
 			self.frappe, "get_doc", return_value=Mock(company="ACME", is_group=1, lft=1, rgt=10)
 		):
-			with patch.object(self.frappe, "get_list", return_value=["Depreciation Expense - A"]):
+			with patch.object(
+				self.frappe,
+				"get_list",
+				side_effect=[["Depreciation Expense - A"], ["Accumulated Depreciation - A"]],
+			):
 				return module.execute(
 					{
 						"company": "ACME",
 						"as_on": "2026-10-18",
 						"view_mode": view,
 						"depreciation_group_account": "Depreciation - A",
+						"accumulated_depreciation_group_account": "Accumulated Depreciation - A",
 					}
 				)[1]
 

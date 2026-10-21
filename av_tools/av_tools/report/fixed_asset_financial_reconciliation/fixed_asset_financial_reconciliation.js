@@ -24,6 +24,21 @@ frappe.query_reports["Fixed Asset Financial Reconciliation"] = {
 			},
 		},
 		{
+			fieldname: "accumulated_depreciation_group_account",
+			label: "Accumulated Depreciation Group Account",
+			fieldtype: "Link",
+			options: "Account",
+			reqd: 1,
+			get_query() {
+				return {
+					filters: {
+						company: frappe.query_report.get_filter_value("company"),
+						is_group: 1,
+					},
+				};
+			},
+		},
+		{
 			fieldname: "as_on",
 			label: "As On",
 			fieldtype: "Date",

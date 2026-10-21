@@ -11,6 +11,7 @@ def execute(filters=None):
 		frappe.throw("Company is required.")
 	frappe.get_doc("Company", filters.company).check_permission("read")
 	group_name = filters.get("depreciation_group_account")
+	accumulated_group_name = filters.get("accumulated_depreciation_group_account")
 	if not group_name:
 		frappe.throw("Depreciation Group Account is required.")
 	group_account = frappe.get_doc("Account", group_name)
@@ -31,6 +32,30 @@ def execute(filters=None):
 	)
 	if not depreciation_accounts:
 		frappe.throw("The selected Depreciation Group Account has no accessible ledger accounts.")
+	if not accumulated_group_name:
+		frappe.throw("Accumulated Depreciation Group Account is required.")
+	accumulated_group = frappe.get_doc("Account", accumulated_group_name)
+	accumulated_group.check_permission("read")
+	if accumulated_group.company != filters.company or not accumulated_group.is_group:
+		frappe.throw("Select an accumulated depreciation group belonging to the selected company.")
+	accumulated_accounts = frappe.get_list(
+		"Account",
+		filters={
+			"company": filters.company,
+			"lft": [">", accumulated_group.lft],
+			"rgt": ["<", accumulated_group.rgt],
+			"is_group": 0,
+		},
+		pluck="name",
+		limit_page_length=0,
+	)
+	if not accumulated_accounts:
+		frappe.throw("The selected Accumulated Depreciation Group has no accessible ledger accounts.")
+	if set(depreciation_accounts).intersection(accumulated_accounts):
+		frappe.throw("Depreciation and accumulated depreciation account groups must not overlap.")
+	depreciation_account_set = set(depreciation_accounts)
+	accumulated_account_set = set(accumulated_accounts)
+	all_depreciation_accounts = list(depreciation_account_set | accumulated_account_set)
 	permission_cache = {}
 	company = filters.get("company") or frappe.defaults.get_user_default("Company")
 	as_on = filters.get("as_on") or frappe.utils.today()
@@ -120,6 +145,12 @@ def execute(filters=None):
 			Asset.purchase_date,
 			Asset.available_for_use_date,
 			Asset.disposal_date,
+			Asset.purchase_invoice,
+			Asset.purchase_invoice_item,
+			Asset.av_nta_purchase_invoice,
+			Asset.av_nta_purchase_invoice_item,
+			Asset.purchase_amount,
+			Asset.asset_quantity,
 		)
 		.where(Asset.docstatus == 1)
 		.where(Asset.company == company)
@@ -180,7 +211,7 @@ def execute(filters=None):
 		.where(GL.posting_date <= as_on)
 		.where(GL.is_cancelled == 0)
 		.where(GL.voucher_type == "Journal Entry")
-		.where(GL.account.isin(depreciation_accounts)),
+		.where(GL.account.isin(all_depreciation_accounts)),
 		"GL Entry",
 		permission_cache,
 		permission_filters={
@@ -188,23 +219,22 @@ def execute(filters=None):
 			"posting_date": ["<=", as_on],
 			"is_cancelled": 0,
 			"voucher_type": "Journal Entry",
-			"account": ["in", depreciation_accounts],
+			"account": ["in", all_depreciation_accounts],
 		},
 	)
 	gl_map = {}
 	for g in gl_rows:
 		if g.against_voucher in scrapped_asset_ids or g.voucher_no in scrap_journals:
 			continue
-		account = (g.account or "").lower()
 		if g.voucher_type != "Journal Entry":
 			continue
 		if g.voucher_no not in gl_map:
 			gl_map[g.voucher_no] = {"debit": 0.0, "credit": 0.0}
-		if "accumulated" in account:
+		if g.account in accumulated_account_set:
 			gl_map[g.voucher_no]["credit"] = (
 				gl_map[g.voucher_no]["credit"] + float(g.credit or 0) - float(g.debit or 0)
 			)
-		else:
+		elif g.account in depreciation_account_set:
 			gl_map[g.voucher_no]["debit"] = (
 				gl_map[g.voucher_no]["debit"] + float(g.debit or 0) - float(g.credit or 0)
 			)
@@ -219,6 +249,12 @@ def execute(filters=None):
 			schedule_by_asset[s.asset] = []
 		schedule_by_asset[s.asset].append(s)
 	linked_journals = set()
+	journal_assets = {}
+	for asset_row in assets:
+		for schedule in schedule_by_asset.get(asset_row.name, []):
+			for detail in detail_by_schedule.get(schedule.name, []):
+				if detail.journal_entry and detail.schedule_date and str(detail.schedule_date) <= str(as_on):
+					journal_assets.setdefault(detail.journal_entry, set()).add(asset_row.name)
 	data = []
 	for a in assets:
 		linked = schedule_by_asset.get(a.name, [])
@@ -227,6 +263,7 @@ def execute(filters=None):
 		debit = 0.0
 		credit = 0.0
 		issues = []
+		counted_journals = set()
 		schedule_names_text = []
 		for s in linked:
 			schedule_names_text.append(s.name)
@@ -235,11 +272,14 @@ def execute(filters=None):
 					due = due + float(d.depreciation_amount or 0)
 					if d.journal_entry and journal_status.get(d.journal_entry) == 1:
 						booked = booked + float(d.depreciation_amount or 0)
-						if d.journal_entry not in linked_journals:
-							linked_journals.add(d.journal_entry)
+						linked_journals.add(d.journal_entry)
+						if len(journal_assets.get(d.journal_entry, ())) > 1:
+							issues.append("Shared depreciation JE requires asset-level GL allocation")
+						elif d.journal_entry not in counted_journals:
+							counted_journals.add(d.journal_entry)
 							v = gl_map.get(d.journal_entry, {})
-							debit = debit + float(v.get("debit", 0))
-							credit = credit + float(v.get("credit", 0))
+							debit += float(v.get("debit", 0))
+							credit += float(v.get("credit", 0))
 					else:
 						issues.append("Due schedule row has no submitted depreciation JE")
 		if a.calculate_depreciation and (not linked):
@@ -353,25 +393,8 @@ def execute(filters=None):
 	assets_by_name = {}
 	for a in assets:
 		assets_by_name[a.name] = a
-	purchases = run_permitted(
-		frappe.qb.from_(Asset)
-		.select(
-			Asset.name,
-			Asset.purchase_invoice,
-			Asset.purchase_invoice_item,
-			Asset.av_nta_purchase_invoice,
-			Asset.av_nta_purchase_invoice_item,
-			Asset.asset_category,
-			Asset.total_asset_cost,
-			Asset.purchase_amount,
-			Asset.asset_quantity,
-		)
-		.where(Asset.company == company)
-		.where(Asset.docstatus == 1)
-		.where(Asset.status != "Scrapped"),
-		"Asset",
-		permission_cache,
-	)
+	# Reuse the permission-filtered asset rows; avoid an identical second Asset scan.
+	purchases = assets
 	asset_purchase = {}
 	for a in purchases:
 		a.purchase_invoice = a.purchase_invoice or a.av_nta_purchase_invoice
