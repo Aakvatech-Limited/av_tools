@@ -79,7 +79,7 @@ def execute(filters=None):
         query = query.where(Log.for_document == filters.doctype_name)
     if filters.get("changed_by"):
         query = query.where(Log.owner == filters.changed_by)
-    logs = query.orderby(Log.creation, order=frappe.qb.desc).run(as_dict=True)
+    logs = query.orderby(Log.creation).run(as_dict=True)
 
     # Batched identity lookup avoids one query per log.
     references = {"Custom DocPerm": set(), "DocPerm": set()}
@@ -168,4 +168,5 @@ def execute(filters=None):
                 continue
         result.append(row)
 
+    result.reverse()
     return columns, result
