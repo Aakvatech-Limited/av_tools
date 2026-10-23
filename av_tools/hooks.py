@@ -79,6 +79,7 @@ doctype_js = {
 	],
 	"Purchase Receipt": "weigh_bridge/doctype/purchase_receipt_weighbridge_ticket.js",
 	"Material Request": "av_tools/material_request.js",
+	"Supplier Quotation": "av_tools/supplier_quotation.js",
 	"Customer": [
 		"authotp/api/customer.js",
 		"sales/customer.js",
@@ -234,6 +235,7 @@ doc_events = {
 			"av_tools.av_tools_hooks.purchase_order.target_warehouse_based_price_list",
 		]
 	},
+	"Supplier Quotation": {"onload": "av_tools.av_tools_hooks.supplier_quotation.set_skip_mr_rates_onload"},
 	"Purchase Invoice": {
 		"validate": [
 			"av_tools.weigh_bridge.validation.validate_weighbridge_ticket",
@@ -311,6 +313,7 @@ scheduler_events = {
 # ------------------------------
 #
 override_whitelisted_methods = {
+	"erpnext.stock.doctype.material_request.material_request.make_supplier_quotation": "av_tools.av_tools_hooks.supplier_quotation.make_supplier_quotation",
 	"frappe.desk.search.search_link": "av_tools.av_tools_hooks.item_search.search_link",
 	"frappe.desk.search.search_widget": "av_tools.av_tools_hooks.item_search.search_widget",
 	"frappe.desk.query_report.get_script": "av_tools.av_tools_hooks.query_report.get_script",

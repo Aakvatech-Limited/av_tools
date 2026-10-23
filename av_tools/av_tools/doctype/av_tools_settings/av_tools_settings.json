@@ -18,6 +18,7 @@
   "is_manufacture",
   "buying_settings_section",
   "target_warehouse_based_price_list",
+  "do_not_fetch_rates_in_sq_from_mr",
   "material_request_review_section",
   "require_material_request_review",
   "section_break_inter_company",
@@ -128,6 +129,13 @@
    "fieldname": "target_warehouse_based_price_list",
    "fieldtype": "Check",
    "label": "Enable Target Warehouse Based Buying Price List"
+  },
+  {
+   "default": "0",
+   "description": "When checked, a Supplier Quotation created from a Material Request starts with blank rates and amounts (nothing is copied from the Material Request or fetched from the Buying Price List), so the supplier's prices are entered manually.",
+   "fieldname": "do_not_fetch_rates_in_sq_from_mr",
+   "fieldtype": "Check",
+   "label": "Don't Fetch Rates in Supplier Quotation from Material Request"
   },
   {
    "fieldname": "material_request_review_section",
@@ -309,7 +317,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-10-18 20:00:00.000000",
+ "modified": "2026-10-23 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Av Tools",
  "name": "AV Tools Settings",
