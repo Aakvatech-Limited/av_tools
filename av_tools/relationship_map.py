@@ -83,7 +83,7 @@ def _links_for(doctype, name):
                     limit_page_length=MAX_CANDIDATES,
                 )
                 for candidate in candidates:
-                    edges.add((other, candidate, doctype, name))
+                    edges.add((doctype, name, other, candidate))
             elif df.fieldtype == "Table" and df.options and frappe.db.exists("DocType", df.options):
                 child_meta = frappe.get_meta(df.options)
                 for link in child_meta.fields:
@@ -97,14 +97,14 @@ def _links_for(doctype, name):
                         limit_page_length=MAX_CANDIDATES,
                     )
                     for row in rows:
-                        edges.add((other, row.parent, doctype, name))
+                        edges.add((doctype, name, other, row.parent))
         # Also locate links from the current document toward its predecessors.
     doc = frappe.get_doc(doctype, name)
     for df in doc.meta.fields:
         if df.fieldtype == "Link" and df.options in SUPPORTED:
             target = doc.get(df.fieldname)
             if target:
-                edges.add((doctype, name, df.options, target))
+                edges.add((df.options, target, doctype, name))
         elif df.fieldtype == "Table" and df.options:
             child_meta = frappe.get_meta(df.options)
             for link in child_meta.fields:
@@ -113,7 +113,7 @@ def _links_for(doctype, name):
                 for row in doc.get(df.fieldname) or []:
                     target = row.get(link.fieldname)
                     if target:
-                        edges.add((doctype, name, link.options, target))
+                        edges.add((link.options, target, doctype, name))
     return edges
 
 
