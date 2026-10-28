@@ -64,3 +64,35 @@ class TestRelationshipMap(FrappeTestCase):
             result = rm.get_relationship_map("Sales Order", "SO-TEST")
         self.assertEqual(len(result["nodes"]), 1)
         self.assertFalse(result["edges"])
+
+    def test_payment_entry_dynamic_forward_reference(self):
+        from types import SimpleNamespace
+        doc = SimpleNamespace(
+            doctype="Payment Entry", name="PE-1",
+            get=lambda key: [SimpleNamespace(reference_doctype="Sales Invoice", reference_name="SI-1")]
+            if key == "references" else [],
+        )
+        self.assertIn(
+            ("Sales Invoice", "SI-1", "Payment Entry", "PE-1"),
+            rm._source_dynamic_references(doc),
+        )
+
+    def test_payment_entry_reverse_reference(self):
+        from types import SimpleNamespace
+        class Meta:
+            def has_field(self, field):
+                return field in ("reference_doctype", "reference_name")
+        def get_all(doctype, **kwargs):
+            self.assertEqual(doctype, "Payment Entry Reference")
+            self.assertEqual(kwargs["filters"]["reference_doctype"], "Sales Invoice")
+            self.assertEqual(kwargs["filters"]["reference_name"], "SI-1")
+            return [SimpleNamespace(parent="PE-1")]
+        with (
+            patch.object(rm.frappe.db, "exists", side_effect=lambda dt, name: dt == "DocType" and name == "Payment Entry Reference"),
+            patch.object(rm.frappe, "get_meta", return_value=Meta()),
+            patch.object(rm.frappe, "get_all", side_effect=get_all),
+        ):
+            self.assertIn(
+                ("Sales Invoice", "SI-1", "Payment Entry", "PE-1"),
+                rm._dynamic_references("Sales Invoice", "SI-1"),
+            )
