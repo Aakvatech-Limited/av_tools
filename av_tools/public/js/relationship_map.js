@@ -83,6 +83,8 @@
             const details = [
                 n.doctype + " " + n.name, __("State") + ": " + state(n),
                 __("Business status") + ": " + (n.status || __("Not recorded")),
+                __("Workflow state") + ": " + (n.workflow_state || __("Not recorded")),
+                __("Amount") + ": " + (n.currency || "") + " " + (n.amount || __("Not recorded")),
                 __("Created by") + ": " + (n.created_by || __("Unknown")),
                 __("Created at") + ": " + (n.created_at || __("Unknown")),
                 __("Authorized by") + ": " + (n.authorization?.by || __("Not recorded")),
@@ -104,7 +106,7 @@
                 <text x="${NODE_W - 9}" y="69" font-size="11" text-anchor="end" fill="#566879">${esc(n.posting_date || n.transaction_date || (n.created_at || "").slice(0, 10))}</text>
                 <text x="9" y="91" font-size="11" fill="#344054">${esc(state(n))}</text>
                 <circle cx="${NODE_W - 15}" cy="86" r="5" fill="${colors.marker}"/>
-                <text x="${NODE_W - 9}" y="106" font-size="10.5" text-anchor="end" fill="#536477">${esc((n.status || "").slice(0, 28))}</text>
+                <text x="${NODE_W - 9}" y="106" font-size="10.5" text-anchor="end" fill="#536477">${esc((n.currency || "") + " " + (n.amount || (n.status || "").slice(0, 24)))}</text>
             </g>`;
         }).join("");
         return `<svg xmlns="${svgNS}" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img"
