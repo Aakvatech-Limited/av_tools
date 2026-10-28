@@ -118,6 +118,60 @@ def _source_dynamic_references(doc):
     return edges
 
 
+# Source child item -> target child item references not surfaced by parent Link fields.
+ITEM_REFERENCES = (
+    ("Delivery Note", "Delivery Note Item", "Sales Invoice", "Sales Invoice Item", "dn_detail"),
+    ("Purchase Receipt", "Purchase Receipt Item", "Purchase Invoice", "Purchase Invoice Item", "pr_detail"),
+    ("Sales Order", "Sales Order Item", "Delivery Note", "Delivery Note Item", "so_detail"),
+    ("Sales Order", "Sales Order Item", "Sales Invoice", "Sales Invoice Item", "so_detail"),
+    ("Purchase Order", "Purchase Order Item", "Purchase Receipt", "Purchase Receipt Item", "po_detail"),
+    ("Purchase Order", "Purchase Order Item", "Purchase Invoice", "Purchase Invoice Item", "po_detail"),
+)
+
+
+def _item_references(doctype, name):
+    """Resolve cross-document item references through source child-row identifiers."""
+    edges = set()
+    for source, source_child, target, target_child, fieldname in ITEM_REFERENCES:
+        if doctype not in (source, target):
+            continue
+        if not frappe.db.exists("DocType", source_child) or not frappe.db.exists("DocType", target_child):
+            continue
+        if not frappe.get_meta(target_child).has_field(fieldname):
+            continue
+        if doctype == source:
+            ids = frappe.get_all(
+                source_child, filters={"parenttype": source, "parent": name},
+                pluck="name", limit_page_length=MAX_CANDIDATES,
+            )
+            if not ids:
+                continue
+            rows = frappe.get_all(
+                target_child,
+                filters={"parenttype": target, fieldname: ("in", ids)},
+                fields=["parent"], limit_page_length=MAX_CANDIDATES,
+            )
+            for row in rows:
+                edges.add((source, name, target, row.parent))
+        else:
+            references = frappe.get_all(
+                target_child,
+                filters={"parenttype": target, "parent": name},
+                fields=[fieldname], limit_page_length=MAX_CANDIDATES,
+            )
+            ids = [row.get(fieldname) for row in references if row.get(fieldname)]
+            if not ids:
+                continue
+            rows = frappe.get_all(
+                source_child,
+                filters={"parenttype": source, "name": ("in", ids)},
+                fields=["parent"], limit_page_length=MAX_CANDIDATES,
+            )
+            for row in rows:
+                edges.add((source, row.parent, target, name))
+    return edges
+
+
 def _links_for(doctype, name):
     """Look up both parent Link fields and child-table Link fields.
 
@@ -125,6 +179,7 @@ def _links_for(doctype, name):
     is checked for document read permission before it reaches the client.
     """
     edges = _dynamic_references(doctype, name)
+    edges.update(_item_references(doctype, name))
     for other in SUPPORTED:
         if not frappe.db.exists("DocType", other):
             continue
