@@ -32,6 +32,13 @@ def _summary(doctype, name):
         "name": name,
         "docstatus": doc.docstatus,
         "status": status,
+        "workflow_state": doc.get("workflow_state") if doc.meta.has_field("workflow_state") else None,
+        "posting_date": str(doc.get("posting_date") or doc.get("transaction_date") or doc.get("date") or ""),
+        "currency": doc.get("currency") if doc.meta.has_field("currency") else None,
+        "amount": str(
+            doc.get("grand_total") or doc.get("paid_amount") or doc.get("total_amount")
+            or doc.get("base_grand_total") or ""
+        ),
         "created_by": doc.owner,
         "created_at": str(doc.creation),
         "modified_by": doc.modified_by,
