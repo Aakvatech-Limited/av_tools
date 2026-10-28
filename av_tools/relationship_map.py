@@ -63,13 +63,68 @@ def _authorization(doctype, name):
     return None
 
 
+def _dynamic_references(doctype, name):
+    """Find references that use (reference_doctype, reference_name) pairs."""
+    edges = set()
+    # These are actual ERPNext dynamic-reference pairs, not regular Link fields.
+    for parent, child, table_field in (
+        ("Payment Entry", "Payment Entry Reference", "references"),
+        ("Journal Entry", "Journal Entry Account", "accounts"),
+    ):
+        if parent not in SUPPORTED or not frappe.db.exists("DocType", child):
+            continue
+        meta = frappe.get_meta(child)
+        if not meta.has_field("reference_type") and not meta.has_field("reference_doctype"):
+            continue
+        type_field = "reference_doctype" if meta.has_field("reference_doctype") else "reference_type"
+        if not meta.has_field("reference_name"):
+            continue
+        rows = frappe.get_all(
+            child,
+            filters={"parenttype": parent, "parentfield": table_field,
+                     type_field: doctype, "reference_name": name},
+            fields=["parent"],
+            limit_page_length=MAX_CANDIDATES,
+        )
+        for row in rows:
+            edges.add((doctype, name, parent, row.parent))
+    # Payment Request stores the same pair on its parent document.
+    if frappe.db.exists("DocType", "Payment Request"):
+        meta = frappe.get_meta("Payment Request")
+        if meta.has_field("reference_doctype") and meta.has_field("reference_name"):
+            for target in frappe.get_all(
+                "Payment Request",
+                filters={"reference_doctype": doctype, "reference_name": name},
+                pluck="name", limit_page_length=MAX_CANDIDATES,
+            ):
+                edges.add((doctype, name, "Payment Request", target))
+    return edges
+
+
+def _source_dynamic_references(doc):
+    """Resolve outbound dynamic references from the current document."""
+    edges = set()
+    if doc.doctype == "Payment Entry":
+        for ref in doc.get("references") or []:
+            if ref.reference_doctype in SUPPORTED and ref.reference_name:
+                edges.add((ref.reference_doctype, ref.reference_name, doc.doctype, doc.name))
+    elif doc.doctype == "Journal Entry":
+        for ref in doc.get("accounts") or []:
+            if ref.reference_type in SUPPORTED and ref.reference_name:
+                edges.add((ref.reference_type, ref.reference_name, doc.doctype, doc.name))
+    elif doc.doctype == "Payment Request":
+        if doc.get("reference_doctype") in SUPPORTED and doc.get("reference_name"):
+            edges.add((doc.reference_doctype, doc.reference_name, doc.doctype, doc.name))
+    return edges
+
+
 def _links_for(doctype, name):
     """Look up both parent Link fields and child-table Link fields.
 
     Candidate SQL is restricted to known transaction DocTypes, and every candidate
     is checked for document read permission before it reaches the client.
     """
-    edges = set()
+    edges = _dynamic_references(doctype, name)
     for other in SUPPORTED:
         if not frappe.db.exists("DocType", other):
             continue
@@ -100,6 +155,7 @@ def _links_for(doctype, name):
                         edges.add((doctype, name, other, row.parent))
         # Also locate links from the current document toward its predecessors.
     doc = frappe.get_doc(doctype, name)
+    edges.update(_source_dynamic_references(doc))
     for df in doc.meta.fields:
         if df.fieldtype == "Link" and df.options in SUPPORTED:
             target = doc.get(df.fieldname)
