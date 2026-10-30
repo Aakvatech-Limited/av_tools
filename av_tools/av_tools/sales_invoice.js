@@ -217,8 +217,11 @@ const balance_sales_invoice_payments = (frm, cdt, cdn) => {
 		});
 
 	if (overflow > 0) {
-		frappe.msgprint(__("Total payment allocation cannot exceed invoice total."));
-		set_sales_invoice_payment_amount(frm, row, flt(row.amount) - overflow);
+		// In POS the cashier may collect more than the invoice total; allow overpayment (change returned to customer).
+		if (!frm.doc.is_pos) {
+			frappe.msgprint(__("Total payment allocation cannot exceed invoice total."));
+			set_sales_invoice_payment_amount(frm, row, flt(row.amount) - overflow);
+		}
 	}
 
 	refresh_sales_invoice_payments(frm);
