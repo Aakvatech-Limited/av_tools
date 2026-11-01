@@ -190,7 +190,7 @@ def create_trade_in_stock_entry(doc, method):
 				{
 					"item_code": item.get("custom_trade_in_item"),
 					"qty": item.get("custom_trade_in_qty"),
-					"uom": item.get("uom") or "Nos",  # Default to "Nos" if UOM is not provided
+					"uom": item.get("custom_trade_in_uom") or item.get("uom") or "Nos",  # Default to custom_trade_in_uom, fallback to uom or "Nos"
 					"basic_rate": item.get("custom_trade_in_incoming_rate"),
 					"batch_no": custom_batch_no,  # Use the custom batch number here
 					"serial_no": item.get("custom_trade_in_serial_no"),  # Custom serial number value
