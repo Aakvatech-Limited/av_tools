@@ -1,3 +1,4 @@
+import functools
 import frappe
 from frappe import _
 
@@ -7,6 +8,7 @@ def _is_feature_enabled():
 
 
 def trade_in_flag_check(func):
+	@functools.wraps(func)
 	def wrapper(doc, method=None, *args, **kwargs):
 		if not _is_feature_enabled():
 			return  # Skip if the Trade In feature is disabled
@@ -230,8 +232,7 @@ def create_trade_in_stock_entry(doc, method):
 			)
 		except Exception as e:
 			frappe.throw(_("Error during Stock Entry creation: {0}").format(str(e)))
-	else:
-		frappe.msgprint(_("No valid items found for stock entry."))
+	# If no valid items were found, simply return without misleading notification
 
 
 @trade_in_flag_check
