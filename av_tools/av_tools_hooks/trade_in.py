@@ -90,7 +90,11 @@ def validate_trade_in_sales_percentage(doc, method):
 	non_trade_in_total = sum(row.amount for row in doc.items if row.item_code != "Trade In")
 
 	# Fetch allowed percentage from the Company doctype
-	trade_in_percentage = frappe.db.get_value("Company", doc.company, "custom_trade_in_sales_percentage") or 0
+	trade_in_percentage = frappe.db.get_value("Company", doc.company, "custom_trade_in_sales_percentage")
+
+	# Skip limit validation if percentage is not configured or zero (unrestricted)
+	if not trade_in_percentage:
+		return
 
 	# Calculate the allowed trade-in value based on the percentage of non-trade-in total
 	allowed_trade_in_value = (trade_in_percentage / 100) * non_trade_in_total
