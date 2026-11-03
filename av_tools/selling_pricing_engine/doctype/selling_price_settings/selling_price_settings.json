@@ -1,0 +1,149 @@
+{
+ "doctype": "DocType",
+ "name": "Selling Price Settings",
+ "module": "Selling Pricing Engine",
+ "engine": "InnoDB",
+ "custom": 0,
+ "istable": 0,
+ "editable_grid": 1,
+ "track_changes": 1,
+ "field_order": [
+  "company",
+  "enabled",
+  "mode",
+  "cost_basis",
+  "tax_basis",
+  "calculation_method",
+  "calculation_value",
+  "rounding_method",
+  "rounding_increment",
+  "minimum_margin",
+  "rate_precision",
+  "retain_price_decreases",
+  "max_revision_items",
+  "manual_rate_role"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "0"
+  },
+  {
+   "fieldname": "mode",
+   "fieldtype": "Select",
+   "label": "Mode",
+   "options": "Manual",
+   "default": "Manual",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cost_basis",
+   "fieldtype": "Select",
+   "label": "Cost Basis",
+   "options": "Latest Submitted Purchase Invoice",
+   "default": "Latest Submitted Purchase Invoice",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tax_basis",
+   "fieldtype": "Select",
+   "label": "Tax Basis",
+   "options": "Tax Exclusive",
+   "default": "Tax Exclusive",
+   "read_only": 1
+  },
+  {
+   "fieldname": "calculation_method",
+   "fieldtype": "Select",
+   "label": "Calculation Method",
+   "options": "Markup Percentage\nTarget Gross Margin\nFixed Addition\nFixed Selling Price",
+   "default": "Markup Percentage",
+   "reqd": true
+  },
+  {
+   "fieldname": "calculation_value",
+   "fieldtype": "Float",
+   "label": "Calculation Value",
+   "precision": "9",
+   "default": "0",
+   "description": "Percentage or amount. Explicit 0 is valid for markup/addition. Fixed prices require a positive value."
+  },
+  {
+   "fieldname": "rounding_method",
+   "fieldtype": "Select",
+   "label": "Rounding Method",
+   "options": "No Rounding\nNearest\nRound Up\nRound Down",
+   "default": "No Rounding"
+  },
+  {
+   "fieldname": "rounding_increment",
+   "fieldtype": "Float",
+   "label": "Rounding Increment",
+   "default": "1",
+   "precision": "9"
+  },
+  {
+   "fieldname": "minimum_margin",
+   "fieldtype": "Percent",
+   "label": "Minimum Margin",
+   "default": "0",
+   "precision": "6"
+  },
+  {
+   "fieldname": "rate_precision",
+   "fieldtype": "Int",
+   "label": "Rate Precision",
+   "default": "6",
+   "reqd": 1
+  },
+  {
+   "fieldname": "retain_price_decreases",
+   "fieldtype": "Check",
+   "label": "Retain Price Decreases",
+   "default": "1",
+   "description": "Retain the current published rate when a cost-based calculation proposes a decrease. Explicit fixed prices take precedence."
+  },
+  {
+   "fieldname": "max_revision_items",
+   "fieldtype": "Int",
+   "label": "Max Revision Items",
+   "default": "500",
+   "reqd": 1
+  },
+  {
+   "fieldname": "manual_rate_role",
+   "fieldtype": "Link",
+   "label": "Manual Rate Role",
+   "options": "Role",
+   "default": "Sales Manager",
+   "reqd": 1,
+   "description": "Users in this role may explicitly preserve manual sales rates. Existing customer agreements and ERPNext Pricing Rules keep precedence."
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "autoname": "field:company"
+}

@@ -1,0 +1,117 @@
+{
+ "doctype": "Sidebar",
+ "name": "Selling Pricing Engine",
+ "title": "Selling Pricing Engine",
+ "app": "av_tools",
+ "module": "Selling Pricing Engine",
+ "standard": 1,
+ "header_icon": "tag",
+ "items": [
+  {
+   "type": "Link",
+   "label": "Home",
+   "link_type": "Workspace",
+   "link_to": "Selling Pricing Engine",
+   "child": 0
+  },
+  {
+   "type": "Section Break",
+   "label": "Transactions",
+   "child": 0,
+   "collapsible": 1,
+   "keep_closed": 0
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price Revision",
+   "link_type": "DocType",
+   "link_to": "Selling Price Revision",
+   "child": 1
+  },
+  {
+   "type": "Section Break",
+   "label": "Pricing Policies",
+   "child": 0,
+   "collapsible": 1,
+   "keep_closed": 0
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price List Policy",
+   "link_type": "DocType",
+   "link_to": "Selling Price List Policy",
+   "child": 1
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price Rule",
+   "link_type": "DocType",
+   "link_to": "Selling Price Rule",
+   "child": 1
+  },
+  {
+   "type": "Link",
+   "label": "Location Selling Price",
+   "link_type": "DocType",
+   "link_to": "Location Selling Price",
+   "child": 1
+  },
+  {
+   "type": "Section Break",
+   "label": "Reports",
+   "child": 0,
+   "collapsible": 1,
+   "keep_closed": 0
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price and Margin Review",
+   "link_type": "Report",
+   "link_to": "Selling Price and Margin Review",
+   "child": 1
+  },
+  {
+   "type": "Link",
+   "label": "Missing Selling Prices",
+   "link_type": "Report",
+   "link_to": "Missing Selling Prices",
+   "child": 1
+  },
+  {
+   "type": "Link",
+   "label": "Below Minimum Selling Margin",
+   "link_type": "Report",
+   "link_to": "Below Minimum Selling Margin",
+   "child": 1
+  },
+  {
+   "type": "Link",
+   "label": "Location Selling Price Matrix",
+   "link_type": "Report",
+   "link_to": "Location Selling Price Matrix",
+   "child": 1
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price Revision History",
+   "link_type": "Report",
+   "link_to": "Selling Price Revision History",
+   "child": 1
+  },
+  {
+   "type": "Section Break",
+   "label": "Settings",
+   "child": 0,
+   "collapsible": 1,
+   "keep_closed": 1
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price Settings",
+   "link_type": "DocType",
+   "link_to": "Selling Price Settings",
+   "child": 1
+  }
+ ],
+ "modified": "2026-11-03 19:30:00.000000"
+}

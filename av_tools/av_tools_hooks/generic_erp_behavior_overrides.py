@@ -71,7 +71,12 @@ def update_material_request_status(name, status):
 
 @frappe.whitelist()
 def get_item_details(ctx, doc=None, for_validate=False, overwrite_warehouse=True):
+	from av_tools.selling_pricing_engine.sales import enabled_context, resolve_response
+
+	parsed = frappe.parse_json(ctx) if isinstance(ctx, str) else ctx
+	enabled_context(parsed)
 	response = original_get_item_details(ctx, doc, for_validate, overwrite_warehouse)
+	response = resolve_response(parsed, response, doc)
 
 	if _get_setting("override_sales_invoice_qty"):
 		response.pop("qty", None)
