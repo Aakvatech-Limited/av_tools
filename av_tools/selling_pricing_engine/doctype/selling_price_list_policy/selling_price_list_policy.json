@@ -1,0 +1,126 @@
+{
+ "doctype": "DocType",
+ "name": "Selling Price List Policy",
+ "module": "Selling Pricing Engine",
+ "engine": "InnoDB",
+ "custom": 0,
+ "istable": 0,
+ "editable_grid": 1,
+ "track_changes": 1,
+ "field_order": [
+  "company",
+  "price_list",
+  "enabled",
+  "fallback_price_list",
+  "calculation_mode",
+  "calculation_method",
+  "calculation_value",
+  "rounding_mode",
+  "rounding_method",
+  "rounding_increment"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "price_list",
+   "fieldtype": "Link",
+   "label": "Price List",
+   "options": "Price List",
+   "reqd": 1,
+   "unique": 1,
+   "description": "One managed list belongs to one Company. Standard ERPNext Item Prices are shared by everyone using that list."
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "fallback_price_list",
+   "fieldtype": "Link",
+   "label": "Fallback Price List",
+   "options": "Price List",
+   "description": "Generation fallback only. Must use the same currency. Runtime fallback remains standard Item Price in Phase 1."
+  },
+  {
+   "fieldname": "calculation_mode",
+   "fieldtype": "Select",
+   "label": "Calculation Mode",
+   "options": "Use Default\nOverride",
+   "default": "Use Default",
+   "reqd": 1
+  },
+  {
+   "fieldname": "calculation_method",
+   "fieldtype": "Select",
+   "label": "Calculation Method",
+   "options": "Markup Percentage\nTarget Gross Margin\nFixed Addition\nFixed Selling Price",
+   "default": "Markup Percentage",
+   "reqd": false
+  },
+  {
+   "fieldname": "calculation_value",
+   "fieldtype": "Float",
+   "label": "Calculation Value",
+   "precision": "9",
+   "default": "0",
+   "description": "Percentage or amount. Explicit 0 is valid for markup/addition. Fixed prices require a positive value."
+  },
+  {
+   "fieldname": "rounding_mode",
+   "fieldtype": "Select",
+   "label": "Rounding Mode",
+   "options": "Use Default\nOverride",
+   "default": "Use Default",
+   "reqd": 1
+  },
+  {
+   "fieldname": "rounding_method",
+   "fieldtype": "Select",
+   "label": "Rounding Method",
+   "options": "No Rounding\nNearest\nRound Up\nRound Down",
+   "default": "No Rounding"
+  },
+  {
+   "fieldname": "rounding_increment",
+   "fieldtype": "Float",
+   "label": "Rounding Increment",
+   "default": "1",
+   "precision": "9"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1
+  },
+  {
+   "role": "Sales Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "autoname": "field:price_list"
+}

@@ -1,0 +1,92 @@
+[
+ {
+  "dt": "Quotation",
+  "module": "Selling Pricing Engine",
+  "name": "Quotation-custom_spe_keep_manual_rates",
+  "fieldname": "custom_spe_keep_manual_rates",
+  "fieldtype": "Check",
+  "label": "Keep Manual Selling Rates",
+  "insert_after": "selling_price_list",
+  "description": "For companies using Selling Pricing Engine. Requires the configured manual-rate role. Does not change customer agreements or Pricing Rules."
+ },
+ {
+  "dt": "Quotation Item",
+  "module": "Selling Pricing Engine",
+  "name": "Quotation Item-custom_spe_price_source",
+  "fieldname": "custom_spe_price_source",
+  "fieldtype": "Link",
+  "label": "Location Price Source",
+  "options": "Location Selling Price",
+  "insert_after": "price_list_rate",
+  "read_only": 1,
+  "no_copy": 1
+ },
+ {
+  "dt": "Sales Order",
+  "module": "Selling Pricing Engine",
+  "name": "Sales Order-custom_spe_keep_manual_rates",
+  "fieldname": "custom_spe_keep_manual_rates",
+  "fieldtype": "Check",
+  "label": "Keep Manual Selling Rates",
+  "insert_after": "selling_price_list",
+  "description": "For companies using Selling Pricing Engine. Requires the configured manual-rate role. Does not change customer agreements or Pricing Rules."
+ },
+ {
+  "dt": "Sales Order Item",
+  "module": "Selling Pricing Engine",
+  "name": "Sales Order Item-custom_spe_price_source",
+  "fieldname": "custom_spe_price_source",
+  "fieldtype": "Link",
+  "label": "Location Price Source",
+  "options": "Location Selling Price",
+  "insert_after": "price_list_rate",
+  "read_only": 1,
+  "no_copy": 1
+ },
+ {
+  "dt": "Sales Invoice",
+  "module": "Selling Pricing Engine",
+  "name": "Sales Invoice-custom_spe_keep_manual_rates",
+  "fieldname": "custom_spe_keep_manual_rates",
+  "fieldtype": "Check",
+  "label": "Keep Manual Selling Rates",
+  "insert_after": "selling_price_list",
+  "description": "For companies using Selling Pricing Engine. Requires the configured manual-rate role. Does not change customer agreements or Pricing Rules."
+ },
+ {
+  "dt": "Sales Invoice Item",
+  "module": "Selling Pricing Engine",
+  "name": "Sales Invoice Item-custom_spe_price_source",
+  "fieldname": "custom_spe_price_source",
+  "fieldtype": "Link",
+  "label": "Location Price Source",
+  "options": "Location Selling Price",
+  "insert_after": "price_list_rate",
+  "read_only": 1,
+  "no_copy": 1
+ },
+ {
+  "dt": "Item Price",
+  "module": "Selling Pricing Engine",
+  "name": "Item Price-custom_spe_revision",
+  "fieldname": "custom_spe_revision",
+  "fieldtype": "Link",
+  "label": "Selling Price Revision",
+  "options": "Selling Price Revision",
+  "read_only": 1,
+  "no_copy": 1,
+  "insert_after": "price_list_rate"
+ },
+ {
+  "dt": "Item Price",
+  "module": "Selling Pricing Engine",
+  "name": "Item Price-custom_spe_company",
+  "fieldname": "custom_spe_company",
+  "fieldtype": "Link",
+  "label": "Managed Pricing Company",
+  "options": "Company",
+  "read_only": 1,
+  "no_copy": 1,
+  "insert_after": "custom_spe_revision"
+ }
+]

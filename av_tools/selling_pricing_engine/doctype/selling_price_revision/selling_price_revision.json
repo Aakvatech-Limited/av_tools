@@ -1,0 +1,170 @@
+{
+ "doctype": "DocType",
+ "name": "Selling Price Revision",
+ "module": "Selling Pricing Engine",
+ "engine": "InnoDB",
+ "custom": 0,
+ "istable": 0,
+ "editable_grid": 1,
+ "track_changes": 1,
+ "field_order": [
+  "naming_series",
+  "company",
+  "price_list",
+  "warehouse",
+  "item_code",
+  "uom",
+  "valid_from",
+  "valid_upto",
+  "tax_basis",
+  "status",
+  "input_rows",
+  "calculated_by",
+  "calculated_on",
+  "published_by",
+  "published_on",
+  "items"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "SPE-REV-.YYYY.-.#####",
+   "default": "SPE-REV-.YYYY.-.#####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "price_list",
+   "fieldtype": "Link",
+   "label": "Price List",
+   "options": "Price List",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "Uom",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "valid_from",
+   "fieldtype": "Date",
+   "label": "Valid From",
+   "reqd": 1,
+   "default": "Today"
+  },
+  {
+   "fieldname": "valid_upto",
+   "fieldtype": "Date",
+   "label": "Valid Upto"
+  },
+  {
+   "fieldname": "tax_basis",
+   "fieldtype": "Select",
+   "label": "Tax Basis",
+   "options": "Tax Exclusive",
+   "default": "Tax Exclusive",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nCalculated\nPublished",
+   "default": "Draft",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "input_rows",
+   "fieldtype": "Long Text",
+   "label": "Input Rows",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "calculated_by",
+   "fieldtype": "Link",
+   "label": "Calculated By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "calculated_on",
+   "fieldtype": "Datetime",
+   "label": "Calculated On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "published_by",
+   "fieldtype": "Link",
+   "label": "Published By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "published_on",
+   "fieldtype": "Datetime",
+   "label": "Published On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Selling Price Revision Item"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "submit": 1
+  },
+  {
+   "role": "Sales Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "submit": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "autoname": "naming_series:",
+ "is_submittable": 1
+}

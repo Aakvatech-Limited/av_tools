@@ -13,54 +13,57 @@ def _get_qty_by_item(rows):
 
 
 def validate_weighbridge_ticket(doc, method=None):
-	ticket_name = doc.get("weighbridge_ticket")
-	if not ticket_name:
+	"""Validate ticket-controlled item rows without restricting other document items."""
+	header_ticket = doc.get("weighbridge_ticket")
+	linked_rows = [row for row in doc.get("items") or [] if row.get("weighbridge_ticket")]
+	ticket_names = {row.get("weighbridge_ticket") for row in linked_rows}
+	if header_ticket:
+		ticket_names.add(header_ticket)
+	if not ticket_names:
 		return
 
-	ticket = frappe.get_doc("Weighbridge Ticket", ticket_name)
-	if ticket.docstatus != 1:
-		frappe.throw("Weighbridge Ticket must be submitted.")
+	for ticket_name in ticket_names:
+		ticket = frappe.get_doc("Weighbridge Ticket", ticket_name)
+		if ticket.docstatus != 1:
+			frappe.throw(f"Weighbridge Ticket {ticket_name} must be submitted.")
 
-	is_source_doc = (
-		ticket.get("document_type") == doc.doctype and ticket.get("document_reference") == doc.name
-	)
-	is_target_doctype = ticket.get("target_document_type") == doc.doctype
-
-	if ticket.get("document_type") == doc.doctype and not is_source_doc:
-		frappe.throw(
-			f"Cannot use Weighbridge Ticket {ticket.name} from {ticket.document_type} as target {doc.doctype}."
+		is_source_doc = (
+			ticket.get("document_type") == doc.doctype
+			and ticket.get("document_reference") == doc.name
 		)
+		if ticket.get("document_type") == doc.doctype and not is_source_doc:
+			frappe.throw(
+				f"Cannot use Weighbridge Ticket {ticket_name} from {ticket.document_type} as target {doc.doctype}."
+			)
+		if ticket.get("target_document_type") and not is_source_doc:
+			if ticket.target_document_type != doc.doctype:
+				frappe.throw(f"Weighbridge Ticket {ticket_name} has a different target document type.")
+		if (
+			not doc.get("__islocal")
+			and ticket.get("target_document_type") == doc.doctype
+			and ticket.get("target_document_reference")
+			and ticket.target_document_reference != doc.name
+		):
+			frappe.throw(f"Weighbridge Ticket {ticket_name} belongs to another document.")
 
-	if (
-		not doc.get("__islocal")
-		and is_target_doctype
-		and ticket.get("target_document_reference")
-		and ticket.target_document_reference != doc.name
-	):
-		frappe.throw("Weighbridge Ticket belongs to another document.")
+		# A header ticket is contextual. Only items carrying a ticket link
+		# represent goods controlled by that ticket.
+		rows = [row for row in linked_rows if row.get("weighbridge_ticket") == ticket_name]
+		if not rows or is_source_doc:
+			continue
 
-	# In source->ticket->target flows, source docs can keep their own qty/items.
-	# Exact item/qty enforcement applies on the target document.
-	if ticket.get("target_document_type") and is_source_doc and not is_target_doctype:
-		return
+		ticket_qty = _get_qty_by_item(ticket.get("items"))
+		used_qty = {}
+		for row in rows:
+			code = (row.get("item_code") or "").strip()
+			if code not in ticket_qty:
+				frappe.throw(
+					f"Row {row.idx}: {code or 'Item'} is not in Weighbridge Ticket {ticket_name}."
+				)
+			used_qty[code] = used_qty.get(code, 0) + flt(row.get("qty"))
 
-	ticket_qty_by_item = _get_qty_by_item(ticket.get("items"))
-	doc_qty_by_item = _get_qty_by_item(doc.get("items"))
-
-	extra_items = sorted([item for item in doc_qty_by_item if item not in ticket_qty_by_item])
-	if extra_items:
-		frappe.throw(f"Items not in Weighbridge Ticket: {', '.join(extra_items)}")
-
-	missing_items = sorted([item for item in ticket_qty_by_item if item not in doc_qty_by_item])
-	if missing_items:
-		frappe.throw(f"Items missing from document: {', '.join(missing_items)}")
-
-	qty_mismatch = []
-	for item_code, ticket_qty in ticket_qty_by_item.items():
-		doc_qty = flt(doc_qty_by_item.get(item_code))
-		ticket_qty = flt(ticket_qty)
-		if abs(doc_qty - ticket_qty) > 1e-9:
-			qty_mismatch.append(f"{item_code} ({doc_qty} != {ticket_qty})")
-
-	if qty_mismatch:
-		frappe.throw(f"Qty must match Weighbridge Ticket: {', '.join(qty_mismatch)}")
+		for code, qty in used_qty.items():
+			if qty > ticket_qty[code] + 1e-9:
+				frappe.throw(
+					f"Weighbridge Ticket {ticket_name}: {code} quantity {qty} exceeds ticket quantity {ticket_qty[code]}."
+				)

@@ -56,6 +56,7 @@ web_include_css = "/assets/av_tools/css/theme.css"
 doctype_js = {
 	"Asset": ["public/js/asset_accounting_audit.js", "public/js/asset_lifecycle.js"],
 	"Sales Invoice": [
+		"selling_pricing_engine/sales.js",
 		"weigh_bridge/doctype/sales_invoice_weighbridge_ticket.js",
 		"authotp/api/sales_invoice.js",
 		"av_tools/sales_invoice.js",
@@ -66,6 +67,7 @@ doctype_js = {
 		"av_tools/delivery_note.js",
 	],
 	"Sales Order": [
+		"selling_pricing_engine/sales.js",
 		"weigh_bridge/doctype/sales_order_weighbridge_ticket.js",
 		"av_tools/sales_order.js",
 	],
@@ -86,6 +88,7 @@ doctype_js = {
 		"sales/customer.js",
 	],
 	"Account": ["av_tools/account.js", "public/js/bank_account_setup.js"],
+	"Quotation": "selling_pricing_engine/sales.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -330,6 +333,9 @@ override_whitelisted_methods = {
 override_doctype_class = {"Report": "av_tools.av_tools_hooks.report_override.ReportOverride"}
 extend_doctype_class = {
 	"Purchase Invoice": ["av_tools.asset_reconciliation.purchase_assets.NoTimeAppropriationPurchaseInvoice"],
+	"Quotation": ["av_tools.selling_pricing_engine.sales.SellingPricingMixin"],
+	"Sales Order": ["av_tools.selling_pricing_engine.sales.SellingPricingMixin"],
+	"Sales Invoice": ["av_tools.selling_pricing_engine.sales.SellingPricingMixin"],
 }
 #
 # each overriding function accepts a `data` argument;

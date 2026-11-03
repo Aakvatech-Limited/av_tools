@@ -1,0 +1,104 @@
+{
+ "doctype": "Workspace",
+ "name": "Selling Pricing Engine",
+ "title": "Selling Pricing Engine",
+ "label": "Selling Pricing Engine",
+ "module": "Selling Pricing Engine",
+ "standard": 1,
+ "public": 1,
+ "is_hidden": 0,
+ "icon": "tag",
+ "roles": [
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "System Manager"
+  }
+ ],
+ "content": "[{\"id\": \"pricing-title\", \"type\": \"header\", \"data\": {\"text\": \"Selling Pricing Engine\", \"col\": 12}}, {\"id\": \"pricing-card-0\", \"type\": \"card\", \"data\": {\"card_name\": \"Transactions\", \"col\": 6}}, {\"id\": \"pricing-card-1\", \"type\": \"card\", \"data\": {\"card_name\": \"Pricing Policies\", \"col\": 6}}, {\"id\": \"pricing-card-2\", \"type\": \"card\", \"data\": {\"card_name\": \"Reports\", \"col\": 6}}, {\"id\": \"pricing-card-3\", \"type\": \"card\", \"data\": {\"card_name\": \"Settings\", \"col\": 6}}]",
+ "links": [
+  {
+   "type": "Card Break",
+   "label": "Transactions"
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price Revision",
+   "link_type": "DocType",
+   "link_to": "Selling Price Revision"
+  },
+  {
+   "type": "Card Break",
+   "label": "Pricing Policies"
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price List Policy",
+   "link_type": "DocType",
+   "link_to": "Selling Price List Policy"
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price Rule",
+   "link_type": "DocType",
+   "link_to": "Selling Price Rule"
+  },
+  {
+   "type": "Link",
+   "label": "Location Selling Price",
+   "link_type": "DocType",
+   "link_to": "Location Selling Price"
+  },
+  {
+   "type": "Card Break",
+   "label": "Reports"
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price and Margin Review",
+   "link_type": "Report",
+   "link_to": "Selling Price and Margin Review"
+  },
+  {
+   "type": "Link",
+   "label": "Missing Selling Prices",
+   "link_type": "Report",
+   "link_to": "Missing Selling Prices"
+  },
+  {
+   "type": "Link",
+   "label": "Below Minimum Selling Margin",
+   "link_type": "Report",
+   "link_to": "Below Minimum Selling Margin"
+  },
+  {
+   "type": "Link",
+   "label": "Location Selling Price Matrix",
+   "link_type": "Report",
+   "link_to": "Location Selling Price Matrix"
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price Revision History",
+   "link_type": "Report",
+   "link_to": "Selling Price Revision History"
+  },
+  {
+   "type": "Card Break",
+   "label": "Settings"
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price Settings",
+   "link_type": "DocType",
+   "link_to": "Selling Price Settings"
+  }
+ ],
+ "shortcuts": [],
+ "charts": [],
+ "number_cards": [],
+ "quick_lists": [],
+ "custom_blocks": [],
+ "modified": "2026-11-03 19:30:00.000000"
+}
