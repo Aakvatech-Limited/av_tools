@@ -87,7 +87,7 @@ doctype_js = {
 		"authotp/api/customer.js",
 		"sales/customer.js",
 	],
-	"Account": "av_tools/account.js",
+	"Account": ["av_tools/account.js", "public/js/bank_account_setup.js"],
 	"Quotation": "selling_pricing_engine/sales.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
