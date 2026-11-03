@@ -78,15 +78,18 @@ const apply_ticket_items = (frm, ticket) => {
 		const itemCode = (docRow.item_code || "").trim();
 		const matches = itemCode ? byItemCode[itemCode] : null;
 		if (!matches || !matches.length) {
-			// Keep items mapped from a Sales Order even when not on the ticket.
-			// Server validation verifies that the item exists in the Sales Order.
-			if (docRow.sales_order) keep.push(docRow);
+			// Preserve unrelated mapped and configured transport/service items.
+			// Only rows explicitly linked to the ticket are ticket-controlled.
+			keep.push(docRow);
 			return;
 		}
 
 		const ticketRow = matches.shift();
 
 		if (ticketRow.qty != null) docRow.qty = ticketRow.qty;
+		if (docRow.weighbridge_ticket !== undefined) {
+			docRow.weighbridge_ticket = frm.doc.weighbridge_ticket;
+		}
 		// Keep mapped UOM to satisfy previous-doc validation (SO/DN rows).
 
 		if (ticketRow.sales_order && docRow.sales_order !== undefined) {
@@ -105,6 +108,9 @@ const apply_ticket_items = (frm, ticket) => {
 			child.item_code = row.item_code;
 			if (row.item_name) child.item_name = row.item_name;
 			if (row.qty != null) child.qty = row.qty;
+			if (child.weighbridge_ticket !== undefined) {
+				child.weighbridge_ticket = frm.doc.weighbridge_ticket;
+			}
 			// Don't force UOM on target docs; keep system defaults / mapped values.
 			if (row.sales_order) child.sales_order = row.sales_order;
 			if (row.so_detail) child.so_detail = row.so_detail;
