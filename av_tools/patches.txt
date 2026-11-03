@@ -34,3 +34,4 @@ av_tools.patches.v1_0.move_finance_and_education_doctypes
 av_tools.patches.v1_0.move_trade_in_feature
 av_tools.patches.v1_0.rename_sales_invoice_remaining_balance_field
 av_tools.patches.v1_0.create_aakvaerp_email_domain
+av_tools.patches.v1_0.correct_aakvaerp_email_domain_smtp
