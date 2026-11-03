@@ -12,6 +12,20 @@ def _get_qty_by_item(rows):
 	return qty_by_item
 
 
+
+def _is_sales_order_item(row):
+	"""Allow document items that can be traced to an actual Sales Order item."""
+	sales_order = row.get("sales_order")
+	item_code = (row.get("item_code") or "").strip()
+	if not sales_order or not item_code:
+		return False
+
+	filters = {"parent": sales_order, "item_code": item_code}
+	if row.get("so_detail"):
+		filters["name"] = row.get("so_detail")
+	return bool(frappe.db.exists("Sales Order Item", filters))
+
+
 def validate_weighbridge_ticket(doc, method=None):
 	ticket_name = doc.get("weighbridge_ticket")
 	if not ticket_name:
@@ -47,7 +61,13 @@ def validate_weighbridge_ticket(doc, method=None):
 	ticket_qty_by_item = _get_qty_by_item(ticket.get("items"))
 	doc_qty_by_item = _get_qty_by_item(doc.get("items"))
 
-	extra_items = sorted([item for item in doc_qty_by_item if item not in ticket_qty_by_item])
+	extra_items = sorted({
+		(row.get("item_code") or "").strip()
+		for row in doc.get("items") or []
+		if (row.get("item_code") or "").strip() not in ticket_qty_by_item
+		and (row.get("item_code") or "").strip()
+		and not _is_sales_order_item(row)
+	})
 	if extra_items:
 		frappe.throw(f"Items not in Weighbridge Ticket: {', '.join(extra_items)}")
 
