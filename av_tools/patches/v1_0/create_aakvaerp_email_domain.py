@@ -19,10 +19,10 @@ def execute():
 			"incoming_port": "993",
 			"attachment_limit": 25,
 			"smtp_server": "mail.aakvaerp.com",
-			"use_tls": 0,
-			"use_ssl_for_outgoing": 1,
+			"use_tls": 1,
+			"use_ssl_for_outgoing": 0,
 			"validate_ssl_certificate_for_outgoing": 1,
-			"smtp_port": "465",
+			"smtp_port": "587",
 			"append_emails_to_sent_folder": 0,
 			"sent_folder_name": "Sent",
 		}
