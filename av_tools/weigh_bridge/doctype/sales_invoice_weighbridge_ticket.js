@@ -78,6 +78,9 @@ const apply_ticket_items = (frm, ticket) => {
 		const itemCode = (docRow.item_code || "").trim();
 		const matches = itemCode ? byItemCode[itemCode] : null;
 		if (!matches || !matches.length) {
+			// Keep items mapped from a Sales Order even when not on the ticket.
+			// Server validation verifies that the item exists in the Sales Order.
+			if (docRow.sales_order) keep.push(docRow);
 			return;
 		}
 
