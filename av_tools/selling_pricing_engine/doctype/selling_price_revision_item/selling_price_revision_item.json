@@ -1,0 +1,309 @@
+{
+ "doctype": "DocType",
+ "name": "Selling Price Revision Item",
+ "module": "Selling Pricing Engine",
+ "engine": "InnoDB",
+ "custom": 0,
+ "istable": 1,
+ "editable_grid": 1,
+ "track_changes": 0,
+ "field_order": [
+  "selected",
+  "item_code",
+  "warehouse",
+  "uom",
+  "currency",
+  "valid_from",
+  "valid_upto",
+  "result",
+  "exception_reason",
+  "price_source",
+  "fallback_price_list",
+  "pricing_rule",
+  "calculation_method",
+  "calculation_value",
+  "cost_available",
+  "fixed_input_rate",
+  "cost_rate",
+  "previous_rate",
+  "calculated_rate",
+  "rounded_rate",
+  "proposed_rate",
+  "previous_margin",
+  "proposed_margin",
+  "minimum_margin",
+  "cost_source",
+  "source_invoice",
+  "source_invoice_item",
+  "supplier",
+  "exchange_rate",
+  "exchange_reference",
+  "acknowledge_unknown_margin",
+  "review_note",
+  "calculation_hash",
+  "calculation_snapshot",
+  "published_doctype",
+  "published_price"
+ ],
+ "fields": [
+  {
+   "fieldname": "selected",
+   "fieldtype": "Check",
+   "label": "Selected",
+   "default": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "Uom",
+   "options": "UOM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valid_from",
+   "fieldtype": "Date",
+   "label": "Valid From",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valid_upto",
+   "fieldtype": "Date",
+   "label": "Valid Upto",
+   "read_only": 1
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "Select",
+   "label": "Result",
+   "options": "Ready\nRequires Review\nBlocked\nPublished",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "exception_reason",
+   "fieldtype": "Small Text",
+   "label": "Exception Reason",
+   "read_only": 1
+  },
+  {
+   "fieldname": "price_source",
+   "fieldtype": "Data",
+   "label": "Price Source",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fallback_price_list",
+   "fieldtype": "Link",
+   "label": "Fallback Price List",
+   "options": "Price List",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pricing_rule",
+   "fieldtype": "Link",
+   "label": "Pricing Rule",
+   "options": "Selling Price Rule",
+   "read_only": 1
+  },
+  {
+   "fieldname": "calculation_method",
+   "fieldtype": "Data",
+   "label": "Calculation Method",
+   "read_only": 1
+  },
+  {
+   "fieldname": "calculation_value",
+   "fieldtype": "Float",
+   "label": "Calculation Value",
+   "precision": "9",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cost_available",
+   "fieldtype": "Check",
+   "label": "Cost Available",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fixed_input_rate",
+   "fieldtype": "Currency",
+   "label": "Fixed Input Rate",
+   "options": "currency",
+   "precision": "9",
+   "read_only": 1,
+   "in_list_view": 0
+  },
+  {
+   "fieldname": "cost_rate",
+   "fieldtype": "Currency",
+   "label": "Cost Rate",
+   "options": "currency",
+   "precision": "9",
+   "read_only": 1,
+   "in_list_view": 0
+  },
+  {
+   "fieldname": "previous_rate",
+   "fieldtype": "Currency",
+   "label": "Previous Rate",
+   "options": "currency",
+   "precision": "9",
+   "read_only": 1,
+   "in_list_view": 0
+  },
+  {
+   "fieldname": "calculated_rate",
+   "fieldtype": "Currency",
+   "label": "Calculated Rate",
+   "options": "currency",
+   "precision": "9",
+   "read_only": 1,
+   "in_list_view": 0
+  },
+  {
+   "fieldname": "rounded_rate",
+   "fieldtype": "Currency",
+   "label": "Rounded Rate",
+   "options": "currency",
+   "precision": "9",
+   "read_only": 1,
+   "in_list_view": 0
+  },
+  {
+   "fieldname": "proposed_rate",
+   "fieldtype": "Currency",
+   "label": "Proposed Rate",
+   "options": "currency",
+   "precision": "9",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "previous_margin",
+   "fieldtype": "Percent",
+   "label": "Previous Margin",
+   "precision": "9",
+   "read_only": 1
+  },
+  {
+   "fieldname": "proposed_margin",
+   "fieldtype": "Percent",
+   "label": "Proposed Margin",
+   "precision": "9",
+   "read_only": 1
+  },
+  {
+   "fieldname": "minimum_margin",
+   "fieldtype": "Percent",
+   "label": "Minimum Margin",
+   "precision": "9",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cost_source",
+   "fieldtype": "Data",
+   "label": "Cost Source",
+   "read_only": 1
+  },
+  {
+   "fieldname": "source_invoice",
+   "fieldtype": "Link",
+   "label": "Source Invoice",
+   "options": "Purchase Invoice",
+   "read_only": 1
+  },
+  {
+   "fieldname": "source_invoice_item",
+   "fieldtype": "Data",
+   "label": "Source Invoice Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier",
+   "read_only": 1
+  },
+  {
+   "fieldname": "exchange_rate",
+   "fieldtype": "Float",
+   "label": "Exchange Rate",
+   "precision": "9",
+   "read_only": 1
+  },
+  {
+   "fieldname": "exchange_reference",
+   "fieldtype": "Data",
+   "label": "Exchange Reference",
+   "read_only": 1
+  },
+  {
+   "fieldname": "acknowledge_unknown_margin",
+   "fieldtype": "Check",
+   "label": "Acknowledge Unverified Margin",
+   "default": "0",
+   "description": "Only valid for a fixed or fallback price with no usable cost. Below-minimum known margins remain blocked."
+  },
+  {
+   "fieldname": "review_note",
+   "fieldtype": "Small Text",
+   "label": "Review Note"
+  },
+  {
+   "fieldname": "calculation_hash",
+   "fieldtype": "Data",
+   "label": "Calculation Hash",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "calculation_snapshot",
+   "fieldtype": "Long Text",
+   "label": "Calculation Snapshot",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "published_doctype",
+   "fieldtype": "Link",
+   "label": "Published Doctype",
+   "options": "DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "published_price",
+   "fieldtype": "Dynamic Link",
+   "label": "Published Price",
+   "options": "published_doctype",
+   "read_only": 1
+  }
+ ],
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

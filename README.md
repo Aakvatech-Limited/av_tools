@@ -36,6 +36,12 @@ This app can use GitHub Actions for CI. The following workflows are configured:
 - Linters: Runs [Frappe Semgrep Rules](https://github.com/frappe/semgrep-rules) and [pip-audit](https://pypi.org/project/pip-audit/) on every pull request.
 
 
+### Selling Pricing Engine (v16)
+
+Optional company-based pricing with fixed Item/Warehouse overrides, cost calculations, fallback generation, reviewed publication, sales retrieval and five operating reports. Disabled until configured.
+
+See the [Phase 1 setup, user guide and validation checklist](av_tools/selling_pricing_engine/README.md).
+
 ### License
 
 mit

@@ -60,6 +60,14 @@
    "icon": "messages-square",
    "hidden": 0,
    "added": 0
+  },
+  {
+   "link_type": "Sidebar",
+   "link_to": "Selling Pricing Engine",
+   "title": "Selling Pricing Engine",
+   "icon": "tag",
+   "hidden": 0,
+   "added": 0
   }
  ],
  "modified": "2026-10-10 11:00:00.000000"

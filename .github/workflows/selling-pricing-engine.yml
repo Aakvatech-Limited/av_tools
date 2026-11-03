@@ -1,0 +1,26 @@
+name: Selling Pricing Engine unit tests
+
+on:
+  pull_request:
+    paths:
+      - "av_tools/selling_pricing_engine/**"
+      - "av_tools/av_tools_hooks/generic_erp_behavior_overrides.py"
+      - "av_tools/hooks.py"
+      - "av_tools/modules.txt"
+      - "av_tools/patches/custom_fields/custom_fields_json/selling_pricing_engine.json"
+      - ".github/workflows/selling-pricing-engine.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check calculation, imports, sales resolution and publication guards
+        run: python -m unittest av_tools.selling_pricing_engine.test_pricing -v

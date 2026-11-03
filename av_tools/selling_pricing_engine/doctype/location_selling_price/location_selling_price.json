@@ -1,0 +1,204 @@
+{
+ "doctype": "DocType",
+ "name": "Location Selling Price",
+ "module": "Selling Pricing Engine",
+ "engine": "InnoDB",
+ "custom": 0,
+ "istable": 0,
+ "editable_grid": 1,
+ "track_changes": 1,
+ "field_order": [
+  "price_key",
+  "company",
+  "item_code",
+  "warehouse",
+  "price_list",
+  "uom",
+  "currency",
+  "rate",
+  "enabled",
+  "valid_from",
+  "valid_upto",
+  "price_source",
+  "revision",
+  "pricing_rule",
+  "calculated_on",
+  "cost_available",
+  "cost_rate",
+  "supplier",
+  "source_invoice"
+ ],
+ "fields": [
+  {
+   "fieldname": "price_key",
+   "fieldtype": "Data",
+   "label": "Price Key",
+   "unique": 1,
+   "hidden": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "price_list",
+   "fieldtype": "Link",
+   "label": "Price List",
+   "options": "Price List",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "Uom",
+   "options": "UOM",
+   "reqd": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "label": "Rate",
+   "options": "currency",
+   "precision": "9",
+   "in_list_view": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "1"
+  },
+  {
+   "fieldname": "valid_from",
+   "fieldtype": "Date",
+   "label": "Valid From",
+   "reqd": 1
+  },
+  {
+   "fieldname": "valid_upto",
+   "fieldtype": "Date",
+   "label": "Valid Upto"
+  },
+  {
+   "fieldname": "price_source",
+   "fieldtype": "Data",
+   "label": "Price Source",
+   "read_only": 1
+  },
+  {
+   "fieldname": "revision",
+   "fieldtype": "Link",
+   "label": "Revision",
+   "options": "Selling Price Revision",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pricing_rule",
+   "fieldtype": "Link",
+   "label": "Pricing Rule",
+   "options": "Selling Price Rule",
+   "read_only": 1
+  },
+  {
+   "fieldname": "calculated_on",
+   "fieldtype": "Datetime",
+   "label": "Calculated On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cost_available",
+   "fieldtype": "Check",
+   "label": "Cost Available",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "cost_rate",
+   "fieldtype": "Currency",
+   "label": "Cost Rate",
+   "options": "currency",
+   "precision": "9",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier",
+   "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "source_invoice",
+   "fieldtype": "Link",
+   "label": "Source Invoice",
+   "options": "Purchase Invoice",
+   "permlevel": 1,
+   "read_only": 1
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1
+  },
+  {
+   "role": "Sales Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1
+  },
+  {
+   "role": "Sales User",
+   "read": 1,
+   "report": 1,
+   "export": 1
+  },
+  {
+   "role": "System Manager",
+   "read": 1,
+   "permlevel": 1
+  },
+  {
+   "role": "Sales Manager",
+   "read": 1,
+   "permlevel": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "autoname": "hash",
+ "allow_rename": 0
+}
