@@ -20,7 +20,7 @@ def _is_sales_order_item(row):
 	if not sales_order or not item_code:
 		return False
 
-	filters = {"parent": sales_order, "item_code": item_code}
+	filters = {"parent": sales_order, "parenttype": "Sales Order", "item_code": item_code}
 	if row.get("so_detail"):
 		filters["name"] = row.get("so_detail")
 	return bool(frappe.db.exists("Sales Order Item", filters))
