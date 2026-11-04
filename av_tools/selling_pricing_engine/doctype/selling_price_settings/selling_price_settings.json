@@ -8,22 +8,39 @@
  "editable_grid": 1,
  "track_changes": 1,
  "field_order": [
+  "company_activation_section",
   "company",
   "enabled",
+  "company_activation_column",
   "mode",
+  "pricing_basis_section",
   "cost_basis",
+  "pricing_basis_column",
   "tax_basis",
+  "default_calculation_section",
   "calculation_method",
+  "default_calculation_column",
   "calculation_value",
+  "rounding_section",
   "rounding_method",
   "rounding_increment",
-  "minimum_margin",
+  "rounding_column",
   "rate_precision",
+  "margin_price_protection_section",
+  "minimum_margin",
+  "margin_price_protection_column",
   "retain_price_decreases",
+  "operational_controls_section",
   "max_revision_items",
+  "operational_controls_column",
   "manual_rate_role"
  ],
  "fields": [
+  {
+   "fieldname": "company_activation_section",
+   "fieldtype": "Section Break",
+   "label": "Company & Activation"
+  },
   {
    "fieldname": "company",
    "fieldtype": "Link",
@@ -39,12 +56,21 @@
    "default": "0"
   },
   {
+   "fieldname": "company_activation_column",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "mode",
    "fieldtype": "Select",
    "label": "Mode",
    "options": "Manual",
    "default": "Manual",
    "read_only": 1
+  },
+  {
+   "fieldname": "pricing_basis_section",
+   "fieldtype": "Section Break",
+   "label": "Pricing Basis"
   },
   {
    "fieldname": "cost_basis",
@@ -55,12 +81,21 @@
    "read_only": 1
   },
   {
+   "fieldname": "pricing_basis_column",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "tax_basis",
    "fieldtype": "Select",
    "label": "Tax Basis",
    "options": "Tax Exclusive",
    "default": "Tax Exclusive",
    "read_only": 1
+  },
+  {
+   "fieldname": "default_calculation_section",
+   "fieldtype": "Section Break",
+   "label": "Default Calculation"
   },
   {
    "fieldname": "calculation_method",
@@ -71,12 +106,21 @@
    "reqd": true
   },
   {
+   "fieldname": "default_calculation_column",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "calculation_value",
    "fieldtype": "Float",
    "label": "Calculation Value",
    "precision": "9",
    "default": "0",
    "description": "Percentage or amount. Explicit 0 is valid for markup/addition. Fixed prices require a positive value."
+  },
+  {
+   "fieldname": "rounding_section",
+   "fieldtype": "Section Break",
+   "label": "Rounding"
   },
   {
    "fieldname": "rounding_method",
@@ -93,11 +137,8 @@
    "precision": "9"
   },
   {
-   "fieldname": "minimum_margin",
-   "fieldtype": "Percent",
-   "label": "Minimum Margin",
-   "default": "0",
-   "precision": "6"
+   "fieldname": "rounding_column",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "rate_precision",
@@ -107,6 +148,22 @@
    "reqd": 1
   },
   {
+   "fieldname": "margin_price_protection_section",
+   "fieldtype": "Section Break",
+   "label": "Margin & Price Protection"
+  },
+  {
+   "fieldname": "minimum_margin",
+   "fieldtype": "Percent",
+   "label": "Minimum Margin",
+   "default": "0",
+   "precision": "6"
+  },
+  {
+   "fieldname": "margin_price_protection_column",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "retain_price_decreases",
    "fieldtype": "Check",
    "label": "Retain Price Decreases",
@@ -114,11 +171,20 @@
    "description": "Retain the current published rate when a cost-based calculation proposes a decrease. Explicit fixed prices take precedence."
   },
   {
+   "fieldname": "operational_controls_section",
+   "fieldtype": "Section Break",
+   "label": "Operational Controls"
+  },
+  {
    "fieldname": "max_revision_items",
    "fieldtype": "Int",
    "label": "Max Revision Items",
    "default": "500",
    "reqd": 1
+  },
+  {
+   "fieldname": "operational_controls_column",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "manual_rate_role",

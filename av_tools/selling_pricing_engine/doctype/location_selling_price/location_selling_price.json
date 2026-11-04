@@ -8,34 +8,41 @@
  "editable_grid": 1,
  "track_changes": 1,
  "field_order": [
-  "price_key",
+  "price_context_section",
   "company",
   "item_code",
-  "warehouse",
-  "price_list",
   "uom",
+  "price_context_column",
+  "price_list",
+  "warehouse",
+  "published_price_section",
   "currency",
   "rate",
+  "published_price_column",
   "enabled",
+  "validity_section",
   "valid_from",
+  "validity_column",
   "valid_upto",
+  "pricing_references_section",
   "price_source",
-  "revision",
   "pricing_rule",
+  "pricing_references_column",
+  "revision",
   "calculated_on",
+  "cost_evidence_section",
   "cost_available",
   "cost_rate",
+  "cost_evidence_column",
   "supplier",
-  "source_invoice"
+  "source_invoice",
+  "price_key"
  ],
  "fields": [
   {
-   "fieldname": "price_key",
-   "fieldtype": "Data",
-   "label": "Price Key",
-   "unique": 1,
-   "hidden": 1,
-   "read_only": 1
+   "fieldname": "price_context_section",
+   "fieldtype": "Section Break",
+   "label": "Price Context"
   },
   {
    "fieldname": "company",
@@ -53,12 +60,15 @@
    "in_list_view": 1
   },
   {
-   "fieldname": "warehouse",
+   "fieldname": "uom",
    "fieldtype": "Link",
-   "label": "Warehouse",
-   "options": "Warehouse",
-   "reqd": 1,
-   "in_list_view": 1
+   "label": "Uom",
+   "options": "UOM",
+   "reqd": 1
+  },
+  {
+   "fieldname": "price_context_column",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "price_list",
@@ -69,11 +79,17 @@
    "in_list_view": 1
   },
   {
-   "fieldname": "uom",
+   "fieldname": "warehouse",
    "fieldtype": "Link",
-   "label": "Uom",
-   "options": "UOM",
-   "reqd": 1
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "published_price_section",
+   "fieldtype": "Section Break",
+   "label": "Published Price"
   },
   {
    "fieldname": "currency",
@@ -92,10 +108,19 @@
    "reqd": 1
   },
   {
+   "fieldname": "published_price_column",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "enabled",
    "fieldtype": "Check",
    "label": "Enabled",
    "default": "1"
+  },
+  {
+   "fieldname": "validity_section",
+   "fieldtype": "Section Break",
+   "label": "Validity"
   },
   {
    "fieldname": "valid_from",
@@ -104,21 +129,24 @@
    "reqd": 1
   },
   {
+   "fieldname": "validity_column",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "valid_upto",
    "fieldtype": "Date",
    "label": "Valid Upto"
   },
   {
+   "fieldname": "pricing_references_section",
+   "fieldtype": "Section Break",
+   "label": "Pricing References",
+   "collapsible": 1
+  },
+  {
    "fieldname": "price_source",
    "fieldtype": "Data",
    "label": "Price Source",
-   "read_only": 1
-  },
-  {
-   "fieldname": "revision",
-   "fieldtype": "Link",
-   "label": "Revision",
-   "options": "Selling Price Revision",
    "read_only": 1
   },
   {
@@ -129,10 +157,28 @@
    "read_only": 1
   },
   {
+   "fieldname": "pricing_references_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "revision",
+   "fieldtype": "Link",
+   "label": "Revision",
+   "options": "Selling Price Revision",
+   "read_only": 1
+  },
+  {
    "fieldname": "calculated_on",
    "fieldtype": "Datetime",
    "label": "Calculated On",
    "read_only": 1
+  },
+  {
+   "fieldname": "cost_evidence_section",
+   "fieldtype": "Section Break",
+   "label": "Cost Evidence",
+   "collapsible": 1,
+   "permlevel": 1
   },
   {
    "fieldname": "cost_available",
@@ -151,6 +197,11 @@
    "read_only": 1
   },
   {
+   "fieldname": "cost_evidence_column",
+   "fieldtype": "Column Break",
+   "permlevel": 1
+  },
+  {
    "fieldname": "supplier",
    "fieldtype": "Link",
    "label": "Supplier",
@@ -164,6 +215,14 @@
    "label": "Source Invoice",
    "options": "Purchase Invoice",
    "permlevel": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "price_key",
+   "fieldtype": "Data",
+   "label": "Price Key",
+   "unique": 1,
+   "hidden": 1,
    "read_only": 1
   }
  ],
