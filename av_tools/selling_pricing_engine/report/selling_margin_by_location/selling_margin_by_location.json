@@ -1,0 +1,19 @@
+{
+ "doctype": "Report",
+ "name": "Selling Margin by Location",
+ "report_name": "Selling Margin by Location",
+ "module": "Selling Pricing Engine",
+ "ref_doctype": "Selling Price Revision",
+ "report_type": "Script Report",
+ "is_standard": "Yes",
+ "disabled": 0,
+ "add_total_row": 0,
+ "roles": [
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "System Manager"
+  }
+ ]
+}

@@ -19,6 +19,7 @@
   "uom",
   "item_location_column",
   "warehouse",
+  "branch",
   "currency",
   "validity_section",
   "valid_from",
@@ -27,6 +28,7 @@
   "calculation_basis_section",
   "price_source",
   "pricing_rule",
+  "rule_tier",
   "fallback_price_list",
   "calculation_basis_column",
   "calculation_method",
@@ -50,6 +52,9 @@
   "cost_evidence_column",
   "supplier",
   "source_invoice",
+  "source_doctype",
+  "source_document",
+  "source_detail",
   "source_invoice_item",
   "currency_conversion_section",
   "exchange_rate",
@@ -134,6 +139,13 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "branch",
+   "label": "Branch",
+   "fieldtype": "Link",
+   "read_only": 1,
+   "options": "Branch"
+  },
+  {
    "fieldname": "currency",
    "fieldtype": "Link",
    "label": "Currency",
@@ -177,6 +189,12 @@
    "fieldtype": "Link",
    "label": "Pricing Rule",
    "options": "Selling Price Rule",
+   "read_only": 1
+  },
+  {
+   "fieldname": "rule_tier",
+   "label": "Rule Tier",
+   "fieldtype": "Data",
    "read_only": 1
   },
   {
@@ -333,6 +351,26 @@
    "read_only": 1
   },
   {
+   "fieldname": "source_doctype",
+   "label": "Cost Source Type",
+   "fieldtype": "Link",
+   "read_only": 1,
+   "options": "DocType"
+  },
+  {
+   "fieldname": "source_document",
+   "label": "Cost Source Document",
+   "fieldtype": "Dynamic Link",
+   "read_only": 1,
+   "options": "source_doctype"
+  },
+  {
+   "fieldname": "source_detail",
+   "label": "Cost Source Row",
+   "fieldtype": "Data",
+   "read_only": 1
+  },
+  {
    "fieldname": "source_invoice_item",
    "fieldtype": "Data",
    "label": "Source Invoice Item",
@@ -419,5 +457,6 @@
  ],
  "permissions": [],
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "allow_import": 0
 }

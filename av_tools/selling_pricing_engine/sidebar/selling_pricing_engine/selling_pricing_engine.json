@@ -15,6 +15,20 @@
    "child": 0
   },
   {
+   "type": "Link",
+   "label": "Sales Manager Pricing",
+   "link_type": "Dashboard",
+   "link_to": "Sales Manager Pricing",
+   "child": 0
+  },
+  {
+   "type": "Link",
+   "label": "Selling Pricing Manager Overview",
+   "link_type": "Report",
+   "link_to": "Selling Pricing Manager Overview",
+   "child": 0
+  },
+  {
    "type": "Section Break",
    "label": "Transactions",
    "child": 0,
@@ -96,6 +110,34 @@
    "label": "Selling Price Revision History",
    "link_type": "Report",
    "link_to": "Selling Price Revision History",
+   "child": 1
+  },
+  {
+   "type": "Link",
+   "label": "Supplier Cost Comparison",
+   "link_type": "Report",
+   "link_to": "Supplier Cost Comparison",
+   "child": 1
+  },
+  {
+   "type": "Link",
+   "label": "Selling Margin by Location",
+   "link_type": "Report",
+   "link_to": "Selling Margin by Location",
+   "child": 1
+  },
+  {
+   "type": "Link",
+   "label": "Selling Margin by Price List",
+   "link_type": "Report",
+   "link_to": "Selling Margin by Price List",
+   "child": 1
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price Fallback Usage",
+   "link_type": "Report",
+   "link_to": "Selling Price Fallback Usage",
    "child": 1
   },
   {

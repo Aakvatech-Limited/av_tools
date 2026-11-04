@@ -1,4 +1,4 @@
-# Selling Pricing Engine — Phase 1
+# Selling Pricing Engine — Phases 1 and 2
 
 An optional **Selling Pricing Engine** module for `version-16-hotfix` only. It creates reviewed selling prices with company settings, Item/warehouse/list rules, fixed overrides and generation fallback. It publishes standard ERPNext **Item Price** records or company-scoped **Location Selling Price** records. It does not create purchase-event automation in this phase.
 
@@ -9,7 +9,7 @@ An optional **Selling Pricing Engine** module for `version-16-hotfix` only. It c
 3. Create **Selling Price Settings**, select the Company and configure the method/value, minimum gross margin and ordinary rounding. The feature starts **disabled**. The only Phase 1 mode is **Manual**.
 4. Check **Stock Settings → Auto insert Price List rate if missing**. It must be off before enabling this engine, because ERPNext's transaction-driven Item Price writes would bypass revision review. The engine refuses activation/calculation/sales repricing while that conflicting setting is on; it does not change the global setting itself. Review any other app's purchase-to-price hooks before activation. This branch contains no automatic purchase-based selling-price updater to disable.
 5. Enable the Company settings and create an enabled **Selling Price List Policy** for each managed list. An optional generation fallback list must be enabled, selling and use the same currency.
-6. Map each business HQ/Branch to an existing leaf Warehouse in that Company. Phase 1 uses this mapping, not a new Branch master. Independent Branch override tiers are Phase 2.
+6. Map each business HQ/Branch to an existing leaf Warehouse in that Company. Phase 1 uses this mapping, not a new Branch master. Independent Branch overrides are available with Expanded Pricing Policies; see [Phase 2](PHASE_2.md).
 
 **Standard Item Price is global to its Price List.** A managed list can belong to only one pricing Company. Use separate lists where companies require independent standard prices; a company checkbox cannot make a shared native Item Price company-specific.
 
@@ -50,7 +50,7 @@ Changing revision filters invalidates the previous preview and imported input. S
 
 Target margin must be below 100%. Negative/nonfinite values and non-positive fixed selling prices are rejected. **Use Default** is distinct from **Override with 0**. Fixed rates are final prices and are not changed by global commercial rounding. Storage precision still applies, and imports exceeding configured precision are rejected.
 
-The Phase 1 calculation hierarchy is Item + Warehouse + Price List, Item + Price List, Warehouse + Price List, list policy, then Company default. An exact UOM wins over a wildcard UOM within the same specificity tier. Equally specific overlapping rules are rejected. Supplier and Item Group conditions are deferred to Phase 2.
+The Phase 1 calculation hierarchy is Item + Warehouse + Price List, Item + Price List, Warehouse + Price List, list policy, then Company default. An exact UOM wins over a wildcard UOM within the same specificity tier. Equally specific overlapping rules are rejected. Enable Expanded Pricing Policies for the supplier/Item Group/Branch hierarchy documented in [Phase 2](PHASE_2.md).
 
 Costs use the latest **permitted, submitted, non-return Purchase Invoice** for that Item and Company, at or before the effective date. This is a company-wide net invoice cost, not warehouse valuation or landed cost. Latest is ordered by posting date, creation and name; where the same Item appears more than once in that invoice, the last eligible line is used. Cost is `base_net_amount / stock_qty`, converted to selling UOM and Price List currency. Missing UOM factors are errors. Foreign currencies require a stored, dated **Currency Exchange** record (direct or inverse); there is no silent rate of 1 or external FX lookup during publication.
 
@@ -103,8 +103,16 @@ Quotation, Sales Order and non-POS Sales Invoice are included. Returns, Delivery
 | Below Minimum Selling Margin | Reports | Current/proposed price margin exceptions |
 | Location Selling Price Matrix | Reports | Items × permitted Company warehouses, with override/standard-fallback/missing indicators |
 | Selling Price Revision History | Reports | Previous/new rates, source, invoice/rule, publisher and review note |
+| Sales Manager Pricing | Dashboard / module home | Sixteen operational number cards and six charts |
+| Selling Pricing Manager Overview | Module sidebar / dashboard links | Shared permission-scoped summary and chart filters |
 
-All reports require Company and Price List and support applicable Item, Warehouse, UOM and effective-as-on filters. The matrix is limited to 25 permitted warehouses at once; select a Warehouse on larger sites. Reports never sum mixed currencies. Full dashboards, supplier trends and realized-margin reporting remain Phase 4.
+All reports require Company and Price List and support applicable Item, Warehouse, UOM and effective-as-on filters. The matrix is limited to 25 permitted warehouses at once; select a Warehouse on larger sites. Reports never sum mixed currencies. Supplier trends, realized-margin reporting and advanced analytics remain Phase 4.
+
+## Sales Manager Pricing dashboard and Phase 2
+
+The combined dashboard now covers both releases with **16 Number Cards and six charts**, a shared manager overview report, Company/location/policy filters and native module navigation. Phase 2 adds supplier/Item Group policies, independent Branch prices, additional cost sources, opt-in alternate-list runtime fallback, advanced bulk filters and four comparison reports.
+
+See [Phase 2 implementation and deployment guide](PHASE_2.md) for exact precedence, source definitions, metric definitions, activation, mapping/permission setup and acceptance checks. Phase 2 is opt-in per Company; default Phase 1 behavior is preserved. Large views run per Price List / Item Group, coverage supports 5,000 SKUs, and live detail reports use explicit pages of at most 500 Items. Save a private default for all cards/charts with **Use Scope for Dashboard** in the overview report. The operational dashboard is included in Phase 2. Saved margin exceptions are not a live purchase-cost recalculation.
 
 ## Validation and RTM handoff
 
@@ -113,7 +121,7 @@ The baseline is the existing four-phase RTM, **MVP-01 through MVP-14**. The tabl
 Run isolated tests without a bench:
 
 ```bash
-python -m unittest av_tools.selling_pricing_engine.test_pricing -v
+python -m unittest av_tools.selling_pricing_engine.test_pricing av_tools.selling_pricing_engine.test_dashboard av_tools.selling_pricing_engine.test_phase_two av_tools.selling_pricing_engine.test_scale -v
 ```
 
 After migrating an ERPNext v16 **test site** with the `_Test Company` fixture:
@@ -124,6 +132,6 @@ bench --site <test-site> run-tests --module av_tools.selling_pricing_engine.test
 
 The bench tests exercise real preview storage/browser serialization, standard/location publication, repeat submission, fixed imports, stale-cost rejection and tamper protection. They deliberately replace only the cost retriever; separately validate real Purchase Invoice retrieval and sales flows in UAT.
 
-Release checks still required on the test site: migration and native navigation import; real cost and FX/UOM evidence; ordinary-user permission behavior; sales Pricing Rule/customer/manual/source precedence; all five reports; mixed Warehouse sales rows; original sample import; and rollback on failed multi-row publication. Do not mark an RTM item UAT Passed from the isolated test suite alone.
+Release checks still required on the test site: migration and native navigation import; real cost and FX/UOM evidence; ordinary-user permission behavior; sales Pricing Rule/customer/manual/source precedence; all operational reports and the manager overview; mixed Warehouse sales rows; original sample import; and rollback on failed multi-row publication. Do not mark an RTM item UAT Passed from the isolated test suite alone.
 
-Phases 2–4 remain as planned: supplier/Item Group/full Branch policies and additional cost bases; purchase-event/approval automation; advanced costing/psychological rounding, remaining channels, complete analytics and final client acceptance. This change adds no scheduled jobs and does not modify historical sales, accounting or stock valuation.
+Phase 2 policy and operational dashboard implementation is documented in [PHASE_2.md](PHASE_2.md); live-site acceptance is still pending. Phases 3–4 retain purchase-event/approval automation, moving/weighted cost, psychological rounding, remaining channels, advanced analytics and final client acceptance. This change adds no scheduled jobs and does not modify historical sales, accounting or stock valuation.

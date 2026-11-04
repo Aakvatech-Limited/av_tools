@@ -1,0 +1,26 @@
+{
+ "doctype": "Dashboard Chart",
+ "name": "Selling Price Publication Trend",
+ "chart_name": "Selling Price Publication Trend",
+ "module": "Selling Pricing Engine",
+ "chart_type": "Report",
+ "report_name": "Selling Pricing Manager Overview",
+ "filters_json": "{\"chart_view\": \"Publication Trend\", \"chart_only\": 1}",
+ "dynamic_filters_json": "{}",
+ "is_public": 1,
+ "is_standard": 1,
+ "type": "Line",
+ "use_report_chart": 1,
+ "timeseries": 0,
+ "roles": [
+  {
+   "role": "Sales Manager"
+  },
+  {
+   "role": "System Manager"
+  }
+ ],
+ "custom_options": "{}",
+ "y_axis": [],
+ "empty_state_message": "Select Company, Price List and Item Group in Selling Pricing Manager Overview, then use Use Scope for Dashboard."
+}

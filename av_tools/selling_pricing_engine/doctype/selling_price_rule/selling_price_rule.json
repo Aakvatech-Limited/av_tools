@@ -18,6 +18,12 @@
   "uom",
   "applies_to_column",
   "warehouse",
+  "branch",
+  "supplier_group_section",
+  "supplier",
+  "supplier_group_column",
+  "item_group",
+  "include_child_groups",
   "validity_section",
   "valid_from",
   "validity_column",
@@ -27,6 +33,8 @@
   "calculation_method",
   "calculation_column",
   "calculation_value",
+  "cost_source_section",
+  "cost_basis",
   "rounding_section",
   "rounding_mode",
   "rounding_method",
@@ -93,7 +101,40 @@
    "label": "Warehouse",
    "options": "Warehouse",
    "in_list_view": 1,
-   "description": "Use a confirmed HQ-to-Warehouse mapping. Independent Branch policies are Phase 2."
+   "description": "Optional Warehouse scope. A mapped Branch supplies the independent fallback tier."
+  },
+  {
+   "fieldname": "branch",
+   "label": "Branch",
+   "fieldtype": "Link",
+   "options": "Branch"
+  },
+  {
+   "fieldname": "supplier_group_section",
+   "fieldtype": "Section Break",
+   "label": "Supplier & Item Group Conditions"
+  },
+  {
+   "fieldname": "supplier",
+   "label": "Supplier",
+   "fieldtype": "Link",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "supplier_group_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_group",
+   "label": "Item Group",
+   "fieldtype": "Link",
+   "options": "Item Group"
+  },
+  {
+   "fieldname": "include_child_groups",
+   "label": "Include Child Item Groups",
+   "fieldtype": "Check",
+   "default": "0"
   },
   {
    "fieldname": "validity_section",
@@ -148,6 +189,18 @@
    "precision": "9",
    "default": "0",
    "description": "Percentage or amount. Explicit 0 is valid for markup/addition. Fixed prices require a positive value."
+  },
+  {
+   "fieldname": "cost_source_section",
+   "fieldtype": "Section Break",
+   "label": "Cost Source"
+  },
+  {
+   "fieldname": "cost_basis",
+   "label": "Cost Basis",
+   "fieldtype": "Select",
+   "default": "Use Default",
+   "options": "Use Default\nLatest Submitted Purchase Invoice\nCurrent Purchase Invoice\nCurrent Purchase Receipt\nLatest Submitted Purchase Receipt\nLatest Purchase Rate\nSupplier Latest Purchase Rate\nValuation Rate\nWarehouse Valuation Rate"
   },
   {
    "fieldname": "rounding_section",
@@ -220,5 +273,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "autoname": "hash"
+ "autoname": "hash",
+ "allow_import": 1
 }

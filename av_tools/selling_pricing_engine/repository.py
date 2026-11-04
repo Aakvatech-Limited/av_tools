@@ -170,14 +170,16 @@ def exchange_rate(from_currency, to_currency, date, *, lock=False):
 	raise ValueError(f"No stored Currency Exchange rate for {from_currency} to {to_currency} on {date}")
 
 
-def price_rows(company, price_list, item_code, uom, warehouse=None, *, lock=False):
-	doctype = LOCATION if warehouse else "Item Price"
+def price_rows(company, price_list, item_code, uom, warehouse=None, *, branch=None, lock=False):
+	doctype = LOCATION if warehouse or branch else "Item Price"
 	t = frappe.qb.DocType(doctype)
 	query = frappe.qb.from_(t).select(t.star).where((t.item_code == item_code) & (t.price_list == price_list))
-	if warehouse:
-		query = query.where(
-			(t.company == company) & (t.warehouse == warehouse) & (t.enabled == 1) & (t.uom == uom)
-		)
+	if warehouse or branch:
+		query = query.where((t.company == company) & (t.enabled == 1) & (t.uom == uom))
+		if warehouse:
+			query = query.where(t.warehouse == warehouse)
+		else:
+			query = query.where((IfNull(t.warehouse, "") == "") & (t.branch == branch))
 	else:
 		stock_uom = frappe.get_cached_value("Item", item_code, "stock_uom")
 		query = query.where(IfNull(t.uom, "").isin([uom, ""] if uom == stock_uom else [uom]))

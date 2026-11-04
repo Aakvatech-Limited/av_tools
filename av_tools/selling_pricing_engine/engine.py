@@ -4,13 +4,14 @@ import frappe
 
 from av_tools.selling_pricing_engine import repository as store
 from av_tools.selling_pricing_engine.access import check_context
-from av_tools.selling_pricing_engine.calculation import calculate, choose_rule, margin, number
+from av_tools.selling_pricing_engine.calculation import calculate, choose_rule, margin, matching_rules, number
 
 
 def effective_configuration(settings, policy, rule=None):
 	config = {
 		key: settings.get(key)
 		for key in (
+			"cost_basis",
 			"calculation_method",
 			"calculation_value",
 			"rounding_method",
@@ -19,13 +20,16 @@ def effective_configuration(settings, policy, rule=None):
 			"rate_precision",
 		)
 	}
-	for source in (policy, rule):
+	chain = rule if isinstance(rule, list) else [rule]
+	for source in (policy, *reversed(chain)):
 		if not source:
 			continue
 		if source.get("calculation_mode") == "Override":
 			config.update({key: source.get(key) for key in ("calculation_method", "calculation_value")})
 		if source.get("rounding_mode") == "Override":
 			config.update({key: source.get(key) for key in ("rounding_method", "rounding_increment")})
+		if source.get("cost_basis") not in (None, "", "Use Default"):
+			config["cost_basis"] = source.get("cost_basis")
 	return config
 
 
@@ -42,17 +46,89 @@ def calculate_row(settings, policy, context, *, fixed_input=None, lock=False):
 	rules = store.rules_for(
 		company, price_list, item_code=item_code, warehouse=warehouse, uom=uom, effective_date=date, lock=lock
 	)
-	rule = choose_rule(rules, item_code, warehouse, uom, date)
-	config = effective_configuration(settings, policy, rule)
-	current_rows = store.price_rows(company, price_list, item_code, uom, warehouse, lock=lock)
+	expanded = settings.get("enable_phase_2")
+	branch, chain = None, None
+	if expanded:
+		from av_tools.selling_pricing_engine.locations import branch_for
+		from av_tools.selling_pricing_engine.policies import check_filters, groups
+
+		check_filters(frappe._dict(context))
+		branch = branch_for(company, warehouse, context.get("branch"))
+		ancestry = groups(item.item_group)
+		chain = matching_rules(
+			rules,
+			item_code,
+			warehouse,
+			uom,
+			date,
+			supplier=context.get("supplier"),
+			branch=branch,
+			item_groups=ancestry,
+		)
+		rule = chain[0] if chain else None
+	else:
+		rule = choose_rule(rules, item_code, warehouse, uom, date)
+	config = effective_configuration(settings, policy, chain if expanded else rule)
+	current_rows = store.price_rows(
+		company,
+		price_list,
+		item_code,
+		uom,
+		warehouse,
+		lock=lock,
+		**({"branch": branch} if branch and not warehouse else {}),
+	)
 	current = store.valid_price(current_rows, date)
 	if current and current.currency != currency:
 		raise ValueError("Existing published price currency differs from the Price List")
 	standard = store.standard_price(company, price_list, item, uom, date, lock=lock)
-	old_rate = (current.get("rate") if warehouse else current.get("price_list_rate")) if current else None
+	old_rate = (
+		(current.get("rate") if warehouse or branch else current.get("price_list_rate")) if current else None
+	)
 	existing_rate = old_rate if old_rate is not None else (standard.price_list_rate if standard else None)
+	resolved_current = None
+	if expanded and not current:
+		from av_tools.selling_pricing_engine.locations import resolve
+
+		resolved_current = resolve(company, price_list, item, uom, date, warehouse, branch)
+		if resolved_current:
+			existing_rate = resolved_current["rate"]
 	try:
-		cost = store.purchase_cost(company, item, uom, currency, date, lock=lock)
+		if expanded:
+			from av_tools.selling_pricing_engine.cost_sources import cost as get_cost
+
+			basis = config.get("cost_basis") or "Latest Submitted Purchase Invoice"
+			cost = get_cost(
+				company,
+				item,
+				uom,
+				currency,
+				date,
+				basis,
+				context,
+				fallbacks=settings.get("cost_fallbacks"),
+				lock=lock,
+			)
+			supplier = context.get("supplier") or cost.get("supplier")
+			chain = matching_rules(
+				rules, item_code, warehouse, uom, date, supplier=supplier, branch=branch, item_groups=ancestry
+			)
+			rule = chain[0] if chain else None
+			config = effective_configuration(settings, policy, chain)
+			if config.get("cost_basis") and config["cost_basis"] != basis:
+				cost = get_cost(
+					company,
+					item,
+					uom,
+					currency,
+					date,
+					config["cost_basis"],
+					{**context, "supplier": supplier},
+					fallbacks=settings.get("cost_fallbacks"),
+					lock=lock,
+				)
+		else:
+			cost = store.purchase_cost(company, item, uom, currency, date, lock=lock)
 	except ValueError as exc:
 		cost = {"cost_rate": None, "cost_reason": str(exc)}
 	source, fallback = (
@@ -73,7 +149,7 @@ def calculate_row(settings, policy, context, *, fixed_input=None, lock=False):
 			fallback = store.standard_price(company, policy.fallback_price_list, item, uom, date, lock=lock)
 		if fallback:
 			method, value, source = "Fixed Selling Price", fallback.price_list_rate, "Base Price Fallback"
-		elif standard and warehouse:
+		elif standard and (warehouse or branch):
 			method, value, source = "Fixed Selling Price", standard.price_list_rate, "Standard Price Fallback"
 		else:
 			raise ValueError(cost.get("cost_reason") or "No usable cost or fallback price")
@@ -117,6 +193,7 @@ def calculate_row(settings, policy, context, *, fixed_input=None, lock=False):
 	result = {
 		"item_code": item_code,
 		"warehouse": warehouse,
+		"branch": branch,
 		"uom": uom,
 		"currency": currency,
 		"valid_from": date,
@@ -128,7 +205,17 @@ def calculate_row(settings, policy, context, *, fixed_input=None, lock=False):
 		"cost_source": cost.get("cost_source"),
 		"source_invoice": cost.get("source_invoice"),
 		"source_invoice_item": cost.get("source_invoice_item"),
-		"supplier": cost.get("supplier"),
+		"supplier": cost.get("supplier") or context.get("supplier"),
+		"source_doctype": cost.get("source_doctype")
+		or ("Purchase Invoice" if cost.get("source_invoice") else None),
+		"source_document": cost.get("source_document") or cost.get("source_invoice"),
+		"source_detail": cost.get("source_detail") or cost.get("source_invoice_item"),
+		"rule_tier": " + ".join(
+			key.replace("_", " ").title()
+			for key in ("item_code", "item_group", "supplier", "warehouse", "branch")
+			if rule and rule.get(key)
+		)
+		or "Price List / Company",
 		"exchange_rate": cost.get("exchange_rate"),
 		"exchange_reference": cost.get("exchange_reference"),
 		"pricing_rule": rule.get("name") if rule else None,
@@ -155,6 +242,7 @@ def calculate_row(settings, policy, context, *, fixed_input=None, lock=False):
 		"cost": cost,
 		"current": store.price_snapshot(current),
 		"standard": store.price_snapshot(standard),
+		"resolved_current": resolved_current,
 		"overlaps": [store.price_snapshot(row) for row in conflicts],
 		"fallback": store.price_snapshot(fallback),
 		"result": result,

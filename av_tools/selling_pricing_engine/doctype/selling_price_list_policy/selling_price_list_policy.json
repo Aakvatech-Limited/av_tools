@@ -15,11 +15,14 @@
   "enabled",
   "generation_fallback_section",
   "fallback_price_list",
+  "fallback_column",
+  "runtime_fallback",
   "calculation_section",
   "calculation_mode",
   "calculation_method",
   "calculation_column",
   "calculation_value",
+  "cost_basis",
   "rounding_section",
   "rounding_mode",
   "rounding_method",
@@ -71,6 +74,17 @@
    "description": "Generation fallback only. Must use the same currency. Runtime fallback remains standard Item Price in Phase 1."
   },
   {
+   "fieldname": "fallback_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "runtime_fallback",
+   "label": "Allow Alternate List During Sales",
+   "fieldtype": "Check",
+   "default": "0",
+   "description": "Try the configured same-currency fallback list only after warehouse, branch and standard prices are missing."
+  },
+  {
    "fieldname": "calculation_section",
    "fieldtype": "Section Break",
    "label": "Calculation"
@@ -102,6 +116,13 @@
    "precision": "9",
    "default": "0",
    "description": "Percentage or amount. Explicit 0 is valid for markup/addition. Fixed prices require a positive value."
+  },
+  {
+   "fieldname": "cost_basis",
+   "label": "Cost Basis",
+   "fieldtype": "Select",
+   "default": "Use Default",
+   "options": "Use Default\nLatest Submitted Purchase Invoice\nCurrent Purchase Invoice\nCurrent Purchase Receipt\nLatest Submitted Purchase Receipt\nLatest Purchase Rate\nSupplier Latest Purchase Rate\nValuation Rate\nWarehouse Valuation Rate"
   },
   {
    "fieldname": "rounding_section",
@@ -161,5 +182,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "autoname": "field:price_list"
+ "autoname": "field:price_list",
+ "allow_import": 1
 }

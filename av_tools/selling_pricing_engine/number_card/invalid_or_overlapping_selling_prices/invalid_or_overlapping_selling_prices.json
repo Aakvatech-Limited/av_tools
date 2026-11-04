@@ -1,0 +1,18 @@
+{
+ "doctype": "Number Card",
+ "name": "Invalid or Overlapping Selling Prices",
+ "label": "Invalid or Overlapping Selling Prices",
+ "module": "Selling Pricing Engine",
+ "type": "Report",
+ "report_name": "Selling Pricing Manager Overview",
+ "function": "Sum",
+ "report_function": "Sum",
+ "report_field": "invalid_prices",
+ "filters_json": "{\"metric\": \"invalid_prices\", \"chart_view\": \"Coverage\"}",
+ "dynamic_filters_json": "{}",
+ "is_public": 1,
+ "is_standard": 1,
+ "show_full_number": 1,
+ "show_percentage_stats": 0,
+ "color": "Red"
+}

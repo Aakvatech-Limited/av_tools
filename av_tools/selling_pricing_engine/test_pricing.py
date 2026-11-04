@@ -225,9 +225,10 @@ class EngineFixture(unittest.TestCase):
 		self.store.standard_price = lambda company, price_list, item, uom, day, **kw: self.store.valid_price(
 			self.store.price_rows(company, price_list, item.name, uom), day
 		)
-		self.store.overlaps = lambda row, start, end: str(row.valid_from or "1900-01-01") <= str(
-			end or "9999-12-31"
-		) and str(row.valid_upto or "9999-12-31") >= str(start)
+		self.store.overlaps = lambda row, start, end: (
+			str(row.valid_from or "1900-01-01") <= str(end or "9999-12-31")
+			and str(row.valid_upto or "9999-12-31") >= str(start)
+		)
 		self.store.digest = lambda value: hashlib.sha256(
 			json.dumps(value, default=str, sort_keys=True).encode()
 		).hexdigest()
@@ -565,8 +566,8 @@ class TestRepository(unittest.TestCase):
 		self.module.price_rows = Mock(
 			side_effect=lambda company, pl, code, uom, **kw: [stock_price] if uom == "Nos" else []
 		)
-		self.frappe.get_cached_value.side_effect = (
-			lambda dt, name, field: 0 if field == "price_not_uom_dependent" else "TZS"
+		self.frappe.get_cached_value.side_effect = lambda dt, name, field: (
+			0 if field == "price_not_uom_dependent" else "TZS"
 		)
 		price = self.module.standard_price("C", "Retail", item, "Box", "2026-11-03")
 		self.assertEqual(price.price_list_rate, 17000)
@@ -576,14 +577,12 @@ class TestRepository(unittest.TestCase):
 	def test_price_not_uom_dependent_retains_the_rate(self):
 		item = Row(name="I", stock_uom="Nos", uoms=[Row(uom="Box", conversion_factor=10)])
 		self.module.price_rows = Mock(
-			side_effect=lambda company, pl, code, uom, **kw: [
-				Row(name="IP", uom="Nos", currency="TZS", price_list_rate=1700)
-			]
-			if uom == "Nos"
-			else []
+			side_effect=lambda company, pl, code, uom, **kw: (
+				[Row(name="IP", uom="Nos", currency="TZS", price_list_rate=1700)] if uom == "Nos" else []
+			)
 		)
-		self.frappe.get_cached_value.side_effect = (
-			lambda dt, name, field: 1 if field == "price_not_uom_dependent" else "TZS"
+		self.frappe.get_cached_value.side_effect = lambda dt, name, field: (
+			1 if field == "price_not_uom_dependent" else "TZS"
 		)
 		self.assertEqual(
 			self.module.standard_price("C", "Retail", item, "Box", "2026-11-03").price_list_rate, 1700
@@ -615,9 +614,10 @@ class TestPublication(unittest.TestCase):
 		self.frappe, self.access = make_frappe(), access_stub()
 		store = ModuleType(PREFIX + "repository")
 		store.price_rows = Mock(return_value=[])
-		store.overlaps = lambda row, start, end: str(row.valid_from or "1900-01-01") <= str(
-			end or "9999-12-31"
-		) and str(row.valid_upto or "9999-12-31") >= str(start)
+		store.overlaps = lambda row, start, end: (
+			str(row.valid_from or "1900-01-01") <= str(end or "9999-12-31")
+			and str(row.valid_upto or "9999-12-31") >= str(start)
+		)
 		self.module = load(
 			"publication", self.frappe, {PREFIX + "repository": store, PREFIX + "access": self.access}
 		)
@@ -674,7 +674,7 @@ class TestPublication(unittest.TestCase):
 
 
 class TestShippedContract(unittest.TestCase):
-	def test_six_doctypes_and_five_reports_with_valid_fields(self):
+	def test_six_doctypes_and_ten_reports_with_valid_fields(self):
 		doctypes = list((ROOT / "doctype").glob("*/*.json"))
 		self.assertEqual(len(doctypes), 6)
 		for path in doctypes:
@@ -683,7 +683,7 @@ class TestShippedContract(unittest.TestCase):
 			fields = [field["fieldname"] for field in doc["fields"]]
 			self.assertEqual(fields, doc["field_order"])
 			self.assertEqual(len(fields), len(set(fields)))
-		self.assertEqual(len(list((ROOT / "report").glob("*/*.json"))), 5)
+		self.assertEqual(len(list((ROOT / "report").glob("*/*.json"))), 10)
 
 	def test_cost_fields_are_not_visible_to_sales_user(self):
 		doc = json.loads((ROOT / "doctype/location_selling_price/location_selling_price.json").read_text())

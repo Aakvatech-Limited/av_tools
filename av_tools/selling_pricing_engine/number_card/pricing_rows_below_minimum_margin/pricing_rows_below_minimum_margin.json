@@ -1,0 +1,18 @@
+{
+ "doctype": "Number Card",
+ "name": "Pricing Rows Below Minimum Margin",
+ "label": "Pricing Rows Below Minimum Margin",
+ "module": "Selling Pricing Engine",
+ "type": "Report",
+ "report_name": "Selling Pricing Manager Overview",
+ "function": "Sum",
+ "report_function": "Sum",
+ "report_field": "below_margin",
+ "filters_json": "{\"metric\": \"below_margin\", \"chart_view\": \"Coverage\"}",
+ "dynamic_filters_json": "{}",
+ "is_public": 1,
+ "is_standard": 1,
+ "show_full_number": 1,
+ "show_percentage_stats": 0,
+ "color": "Red"
+}

@@ -23,4 +23,4 @@ jobs:
         with:
           python-version: "3.11"
       - name: Check calculation, imports, sales resolution and publication guards
-        run: python -m unittest av_tools.selling_pricing_engine.test_pricing -v
+        run: python -m unittest av_tools.selling_pricing_engine.test_pricing av_tools.selling_pricing_engine.test_dashboard av_tools.selling_pricing_engine.test_phase_two av_tools.selling_pricing_engine.test_scale -v

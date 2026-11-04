@@ -16,7 +16,7 @@
    "role": "System Manager"
   }
  ],
- "content": "[{\"id\": \"pricing-title\", \"type\": \"header\", \"data\": {\"text\": \"Selling Pricing Engine\", \"col\": 12}}, {\"id\": \"pricing-card-0\", \"type\": \"card\", \"data\": {\"card_name\": \"Transactions\", \"col\": 6}}, {\"id\": \"pricing-card-1\", \"type\": \"card\", \"data\": {\"card_name\": \"Pricing Policies\", \"col\": 6}}, {\"id\": \"pricing-card-2\", \"type\": \"card\", \"data\": {\"card_name\": \"Reports\", \"col\": 6}}, {\"id\": \"pricing-card-3\", \"type\": \"card\", \"data\": {\"card_name\": \"Settings\", \"col\": 6}}]",
+ "content": "[{\"id\": \"pricing-title\", \"type\": \"header\", \"data\": {\"text\": \"Selling Pricing Engine\", \"col\": 12}}, {\"id\": \"pricing-scope-guidance\", \"type\": \"header\", \"data\": {\"text\": \"Sales Manager Pricing \\u00b7 scope by Price List / Item Group\", \"col\": 12}}, {\"id\": \"pricing-kpi-0\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Sellable Items\", \"col\": 3}}, {\"id\": \"pricing-kpi-1\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Items With Effective Selling Prices\", \"col\": 3}}, {\"id\": \"pricing-kpi-2\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Invalid or Overlapping Selling Prices\", \"col\": 3}}, {\"id\": \"pricing-kpi-3\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Pricing Rows Below Minimum Margin\", \"col\": 3}}, {\"id\": \"pricing-kpi-4\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Fallback Pricing Rows\", \"col\": 3}}, {\"id\": \"pricing-kpi-5\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Branch Selling Prices\", \"col\": 3}}, {\"id\": \"pricing-kpi-6\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Supplier Pricing Rules\", \"col\": 3}}, {\"id\": \"pricing-kpi-7\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Item Group Pricing Rules\", \"col\": 3}}, {\"id\": \"pricing-kpi-8\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Missing Selling Prices\", \"col\": 3}}, {\"id\": \"pricing-kpi-9\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Draft Price Revisions\", \"col\": 3}}, {\"id\": \"pricing-kpi-10\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Price Revisions Awaiting Publication\", \"col\": 3}}, {\"id\": \"pricing-kpi-11\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Blocked Pricing Rows\", \"col\": 3}}, {\"id\": \"pricing-kpi-12\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Pricing Rows Requiring Review\", \"col\": 3}}, {\"id\": \"pricing-kpi-13\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Location Selling Prices\", \"col\": 3}}, {\"id\": \"pricing-kpi-14\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Location Prices Expiring in 30 Days\", \"col\": 3}}, {\"id\": \"pricing-kpi-15\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Price Revisions Published This Month\", \"col\": 3}}, {\"id\": \"pricing-chart-0\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Selling Price Coverage\", \"col\": 6}}, {\"id\": \"pricing-chart-1\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Selling Price Revision Pipeline\", \"col\": 6}}, {\"id\": \"pricing-chart-2\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Selling Price Review Exceptions\", \"col\": 6}}, {\"id\": \"pricing-chart-3\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Selling Price Publication Trend\", \"col\": 6}}, {\"id\": \"pricing-chart-4\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Selling Pricing Policy Coverage\", \"col\": 6}}, {\"id\": \"pricing-chart-5\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Selling Pricing Cost Sources\", \"col\": 6}}, {\"id\": \"pricing-card-0\", \"type\": \"card\", \"data\": {\"card_name\": \"Transactions\", \"col\": 6}}, {\"id\": \"pricing-card-1\", \"type\": \"card\", \"data\": {\"card_name\": \"Pricing Policies\", \"col\": 6}}, {\"id\": \"pricing-card-2\", \"type\": \"card\", \"data\": {\"card_name\": \"Reports\", \"col\": 6}}, {\"id\": \"pricing-card-3\", \"type\": \"card\", \"data\": {\"card_name\": \"Settings\", \"col\": 6}}, {\"id\": \"pricing-manager-reports\", \"type\": \"card\", \"data\": {\"card_name\": \"Sales Manager Dashboard\", \"col\": 6}}, {\"id\": \"pricing-expanded-reports\", \"type\": \"card\", \"data\": {\"card_name\": \"Expanded Pricing Reports\", \"col\": 6}}]",
  "links": [
   {
    "type": "Card Break",
@@ -93,11 +93,146 @@
    "label": "Selling Price Settings",
    "link_type": "DocType",
    "link_to": "Selling Price Settings"
+  },
+  {
+   "type": "Card Break",
+   "label": "Sales Manager Dashboard"
+  },
+  {
+   "type": "Link",
+   "label": "Selling Pricing Manager Overview",
+   "link_type": "Report",
+   "link_to": "Selling Pricing Manager Overview"
+  },
+  {
+   "type": "Card Break",
+   "label": "Expanded Pricing Reports"
+  },
+  {
+   "type": "Link",
+   "label": "Supplier Cost Comparison",
+   "link_type": "Report",
+   "link_to": "Supplier Cost Comparison"
+  },
+  {
+   "type": "Link",
+   "label": "Selling Margin by Location",
+   "link_type": "Report",
+   "link_to": "Selling Margin by Location"
+  },
+  {
+   "type": "Link",
+   "label": "Selling Margin by Price List",
+   "link_type": "Report",
+   "link_to": "Selling Margin by Price List"
+  },
+  {
+   "type": "Link",
+   "label": "Selling Price Fallback Usage",
+   "link_type": "Report",
+   "link_to": "Selling Price Fallback Usage"
   }
  ],
- "shortcuts": [],
- "charts": [],
- "number_cards": [],
+ "shortcuts": [
+  {
+   "label": "Sales Manager Pricing",
+   "type": "Dashboard",
+   "link_to": "Sales Manager Pricing",
+   "color": "Blue"
+  }
+ ],
+ "charts": [
+  {
+   "chart_name": "Selling Price Coverage",
+   "label": "Selling Price Coverage"
+  },
+  {
+   "chart_name": "Selling Price Revision Pipeline",
+   "label": "Selling Price Revision Pipeline"
+  },
+  {
+   "chart_name": "Selling Price Review Exceptions",
+   "label": "Selling Price Review Exceptions"
+  },
+  {
+   "chart_name": "Selling Price Publication Trend",
+   "label": "Selling Price Publication Trend"
+  },
+  {
+   "chart_name": "Selling Pricing Policy Coverage",
+   "label": "Selling Pricing Policy Coverage"
+  },
+  {
+   "chart_name": "Selling Pricing Cost Sources",
+   "label": "Selling Pricing Cost Sources"
+  }
+ ],
+ "number_cards": [
+  {
+   "number_card_name": "Active Sellable Items",
+   "label": "Active Sellable Items"
+  },
+  {
+   "number_card_name": "Items With Effective Selling Prices",
+   "label": "Items With Effective Selling Prices"
+  },
+  {
+   "number_card_name": "Invalid or Overlapping Selling Prices",
+   "label": "Invalid or Overlapping Selling Prices"
+  },
+  {
+   "number_card_name": "Pricing Rows Below Minimum Margin",
+   "label": "Pricing Rows Below Minimum Margin"
+  },
+  {
+   "number_card_name": "Fallback Pricing Rows",
+   "label": "Fallback Pricing Rows"
+  },
+  {
+   "number_card_name": "Active Branch Selling Prices",
+   "label": "Active Branch Selling Prices"
+  },
+  {
+   "number_card_name": "Active Supplier Pricing Rules",
+   "label": "Active Supplier Pricing Rules"
+  },
+  {
+   "number_card_name": "Active Item Group Pricing Rules",
+   "label": "Active Item Group Pricing Rules"
+  },
+  {
+   "number_card_name": "Missing Selling Prices",
+   "label": "Missing Selling Prices"
+  },
+  {
+   "number_card_name": "Draft Price Revisions",
+   "label": "Draft Price Revisions"
+  },
+  {
+   "number_card_name": "Price Revisions Awaiting Publication",
+   "label": "Price Revisions Awaiting Publication"
+  },
+  {
+   "number_card_name": "Blocked Pricing Rows",
+   "label": "Blocked Pricing Rows"
+  },
+  {
+   "number_card_name": "Pricing Rows Requiring Review",
+   "label": "Pricing Rows Requiring Review"
+  },
+  {
+   "number_card_name": "Active Location Selling Prices",
+   "label": "Active Location Selling Prices"
+  },
+  {
+   "number_card_name": "Location Prices Expiring in 30 Days",
+   "label": "Location Prices Expiring in 30 Days"
+  },
+  {
+   "number_card_name": "Price Revisions Published This Month",
+   "label": "Price Revisions Published This Month"
+  }
+ ],
  "quick_lists": [],
  "custom_blocks": [],
  "modified": "2026-11-03 19:30:00.000000"

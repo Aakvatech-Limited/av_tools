@@ -1,6 +1,7 @@
 """Deterministic pricing arithmetic, independent of Frappe and database state."""
 
 from decimal import ROUND_CEILING, ROUND_FLOOR, ROUND_HALF_UP, Decimal, InvalidOperation
+from itertools import pairwise
 
 METHODS = ("Markup Percentage", "Target Gross Margin", "Fixed Addition", "Fixed Selling Price")
 ROUNDING = {"Nearest": ROUND_HALF_UP, "Round Up": ROUND_CEILING, "Round Down": ROUND_FLOOR}
@@ -65,27 +66,68 @@ def calculate(cost, method, value, rounding="No Rounding", increment=1, precisio
 	return raw, rounded
 
 
-def choose_rule(rules, item_code, warehouse, uom, effective_date):
-	"""Item+warehouse > Item > warehouse > list; exact UOM wins within a tier."""
+def rule_priority(rule):
+	"""Documented Phase 2 tiers; warehouse scopes beat independent Branch scopes."""
+	item, group, supplier = (
+		bool(rule.get("item_code")),
+		bool(rule.get("item_group")),
+		bool(rule.get("supplier")),
+	)
+	warehouse, branch = bool(rule.get("warehouse")), bool(rule.get("branch"))
+	if item:
+		return (
+			(100 if supplier else 90)
+			if warehouse
+			else (85 if supplier else 80)
+			if branch
+			else 70
+			if supplier
+			else 60
+		)
+	if group:
+		return 50 if warehouse else 45 if branch else 40
+	if supplier:
+		return 35 if warehouse else 33 if branch else 30
+	return 20 if warehouse else 10 if branch else 0
+
+
+def matching_rules(
+	rules, item_code, warehouse, uom, effective_date, *, supplier=None, branch=None, item_groups=()
+):
 	matches = []
+	groups = list(item_groups)
 	for rule in rules:
 		if rule.get("disabled"):
 			continue
 		if any(
 			rule.get(k) and rule[k] != v
-			for k, v in (("item_code", item_code), ("warehouse", warehouse), ("uom", uom))
+			for k, v in (
+				("item_code", item_code),
+				("warehouse", warehouse),
+				("uom", uom),
+				("supplier", supplier),
+				("branch", branch),
+			)
 		):
+			continue
+		group = rule.get("item_group")
+		if group and (group not in groups or (group != groups[0] and not rule.get("include_child_groups"))):
 			continue
 		if str(rule.get("valid_from") or "0001-01-01") > str(effective_date):
 			continue
 		if str(rule.get("valid_upto") or "9999-12-31") < str(effective_date):
 			continue
-		rank = (2 * bool(rule.get("item_code")) + bool(rule.get("warehouse")), bool(rule.get("uom")))
+		rank = (rule_priority(rule), -groups.index(group) if group else 0, bool(rule.get("uom")))
 		matches.append((rank, rule))
-	if not matches:
-		return None
-	best_rank = max(rank for rank, _rule in matches)
-	best = [rule for rank, rule in matches if rank == best_rank]
-	if len(best) != 1:
-		raise ValueError("Equally specific pricing rules conflict: " + ", ".join(r["name"] for r in best))
-	return best[0]
+	matches.sort(key=lambda pair: pair[0], reverse=True)
+	for (rank, first), (next_rank, second) in pairwise(matches):
+		if rank == next_rank:
+			raise ValueError(
+				"Equally specific pricing rules conflict: " + first["name"] + ", " + second["name"]
+			)
+	return [rule for _rank, rule in matches]
+
+
+def choose_rule(rules, item_code, warehouse, uom, effective_date, **context):
+	matches = matching_rules(rules, item_code, warehouse, uom, effective_date, **context)
+	return matches[0] if matches else None

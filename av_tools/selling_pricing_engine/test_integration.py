@@ -169,3 +169,70 @@ class TestSellingPricingPersistence(IntegrationTestCase):
 		doc.items[0].proposed_rate = 1
 		with self.assertRaises(frappe.ValidationError):
 			doc.save()
+
+	def enable_phase_two(self):
+		from unittest.mock import patch
+
+		from av_tools.selling_pricing_engine import cost_sources
+
+		self.config.enable_phase_2 = 1
+		self.config.save()
+		branch = frappe.get_doc(
+			{"doctype": "Branch", "branch": "SPE " + frappe.generate_hash(length=8)}
+		).insert()
+		frappe.db.set_value("Warehouse", self.warehouse, "custom_spe_branch", branch.name)
+		frappe.clear_document_cache("Warehouse", self.warehouse)
+		patcher = patch.object(cost_sources, "cost", side_effect=lambda *a, **kw: dict(self.cost))
+		patcher.start()
+		self.addCleanup(patcher.stop)
+		return branch.name
+
+	def test_branch_publication_and_warehouse_resolution(self):
+		from av_tools.selling_pricing_engine.locations import resolve
+
+		branch = self.enable_phase_two()
+		doc = self.revision()
+		doc.branch = branch
+		doc.save()
+		doc.calculate()
+		self.assertEqual(doc.items[0].branch, branch)
+		doc.submit()
+		price = frappe.get_doc(LOCATION, doc.items[0].published_price)
+		self.assertFalse(price.warehouse)
+		self.assertEqual(price.branch, branch)
+		result = resolve(
+			self.company,
+			self.price_list,
+			frappe.get_cached_doc("Item", self.item),
+			"Nos",
+			today(),
+			self.warehouse,
+		)
+		self.assertEqual(result["source"], price.name)
+		self.assertEqual(result["resolution"], "Branch")
+
+	def test_item_group_rule_and_new_filters_survive_browser_round_trip(self):
+		self.enable_phase_two()
+		group = frappe.get_cached_value("Item", self.item, "item_group")
+		frappe.get_doc(
+			{
+				"doctype": RULE,
+				"company": self.company,
+				"price_list": self.price_list,
+				"item_group": group,
+				"calculation_mode": "Override",
+				"calculation_method": "Markup Percentage",
+				"calculation_value": 45,
+				"rounding_mode": "Use Default",
+				"valid_from": today(),
+			}
+		).insert()
+		doc = self.revision(self.warehouse)
+		doc.item_group = group
+		doc.save()
+		doc.calculate()
+		self.assertEqual(doc.items[0].proposed_rate, 1450)
+		doc = frappe.get_doc(frappe.parse_json(frappe.as_json(doc.as_dict())))
+		doc.save()
+		doc.submit()
+		self.assertEqual(frappe.get_doc(LOCATION, doc.items[0].published_price).rate, 1450)
