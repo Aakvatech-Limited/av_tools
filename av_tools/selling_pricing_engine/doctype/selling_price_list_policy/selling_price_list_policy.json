@@ -8,18 +8,30 @@
  "editable_grid": 1,
  "track_changes": 1,
  "field_order": [
+  "policy_details_section",
   "company",
   "price_list",
+  "policy_details_column",
   "enabled",
+  "generation_fallback_section",
   "fallback_price_list",
+  "calculation_section",
   "calculation_mode",
   "calculation_method",
+  "calculation_column",
   "calculation_value",
+  "rounding_section",
   "rounding_mode",
   "rounding_method",
+  "rounding_column",
   "rounding_increment"
  ],
  "fields": [
+  {
+   "fieldname": "policy_details_section",
+   "fieldtype": "Section Break",
+   "label": "Policy Details"
+  },
   {
    "fieldname": "company",
    "fieldtype": "Link",
@@ -37,10 +49,19 @@
    "description": "One managed list belongs to one Company. Standard ERPNext Item Prices are shared by everyone using that list."
   },
   {
+   "fieldname": "policy_details_column",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "enabled",
    "fieldtype": "Check",
    "label": "Enabled",
    "default": "1"
+  },
+  {
+   "fieldname": "generation_fallback_section",
+   "fieldtype": "Section Break",
+   "label": "Generation Fallback"
   },
   {
    "fieldname": "fallback_price_list",
@@ -48,6 +69,11 @@
    "label": "Fallback Price List",
    "options": "Price List",
    "description": "Generation fallback only. Must use the same currency. Runtime fallback remains standard Item Price in Phase 1."
+  },
+  {
+   "fieldname": "calculation_section",
+   "fieldtype": "Section Break",
+   "label": "Calculation"
   },
   {
    "fieldname": "calculation_mode",
@@ -66,12 +92,21 @@
    "reqd": false
   },
   {
+   "fieldname": "calculation_column",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "calculation_value",
    "fieldtype": "Float",
    "label": "Calculation Value",
    "precision": "9",
    "default": "0",
    "description": "Percentage or amount. Explicit 0 is valid for markup/addition. Fixed prices require a positive value."
+  },
+  {
+   "fieldname": "rounding_section",
+   "fieldtype": "Section Break",
+   "label": "Rounding"
   },
   {
    "fieldname": "rounding_mode",
@@ -87,6 +122,10 @@
    "label": "Rounding Method",
    "options": "No Rounding\nNearest\nRound Up\nRound Down",
    "default": "No Rounding"
+  },
+  {
+   "fieldname": "rounding_column",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "rounding_increment",

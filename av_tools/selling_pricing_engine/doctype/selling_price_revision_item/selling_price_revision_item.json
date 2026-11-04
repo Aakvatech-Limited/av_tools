@@ -8,44 +8,69 @@
  "editable_grid": 1,
  "track_changes": 0,
  "field_order": [
+  "selection_result_section",
   "selected",
-  "item_code",
-  "warehouse",
-  "uom",
-  "currency",
-  "valid_from",
-  "valid_upto",
+  "selection_result_column",
   "result",
+  "exception_details_section",
   "exception_reason",
+  "item_location_section",
+  "item_code",
+  "uom",
+  "item_location_column",
+  "warehouse",
+  "currency",
+  "validity_section",
+  "valid_from",
+  "validity_column",
+  "valid_upto",
+  "calculation_basis_section",
   "price_source",
-  "fallback_price_list",
   "pricing_rule",
+  "fallback_price_list",
+  "calculation_basis_column",
   "calculation_method",
   "calculation_value",
-  "cost_available",
   "fixed_input_rate",
-  "cost_rate",
+  "price_comparison_section",
   "previous_rate",
   "calculated_rate",
+  "price_comparison_column",
   "rounded_rate",
   "proposed_rate",
+  "margin_review_section",
   "previous_margin",
   "proposed_margin",
+  "margin_review_column",
   "minimum_margin",
+  "cost_evidence_section",
+  "cost_available",
+  "cost_rate",
   "cost_source",
+  "cost_evidence_column",
+  "supplier",
   "source_invoice",
   "source_invoice_item",
-  "supplier",
+  "currency_conversion_section",
   "exchange_rate",
+  "currency_conversion_column",
   "exchange_reference",
+  "review_confirmation_section",
   "acknowledge_unknown_margin",
   "review_note",
-  "calculation_hash",
-  "calculation_snapshot",
+  "publication_section",
   "published_doctype",
-  "published_price"
+  "publication_column",
+  "published_price",
+  "calculation_hash",
+  "calculation_snapshot"
  ],
  "fields": [
+  {
+   "fieldname": "selection_result_section",
+   "fieldtype": "Section Break",
+   "label": "Selection & Result"
+  },
   {
    "fieldname": "selected",
    "fieldtype": "Check",
@@ -54,18 +79,38 @@
    "in_list_view": 1
   },
   {
-   "fieldname": "item_code",
-   "fieldtype": "Link",
-   "label": "Item Code",
-   "options": "Item",
+   "fieldname": "selection_result_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "result",
+   "fieldtype": "Select",
+   "label": "Result",
+   "options": "Ready\nRequires Review\nBlocked\nPublished",
    "read_only": 1,
    "in_list_view": 1
   },
   {
-   "fieldname": "warehouse",
+   "fieldname": "exception_details_section",
+   "fieldtype": "Section Break",
+   "label": "Exception Details"
+  },
+  {
+   "fieldname": "exception_reason",
+   "fieldtype": "Small Text",
+   "label": "Exception Reason",
+   "read_only": 1
+  },
+  {
+   "fieldname": "item_location_section",
+   "fieldtype": "Section Break",
+   "label": "Item & Location"
+  },
+  {
+   "fieldname": "item_code",
    "fieldtype": "Link",
-   "label": "Warehouse",
-   "options": "Warehouse",
+   "label": "Item Code",
+   "options": "Item",
    "read_only": 1,
    "in_list_view": 1
   },
@@ -77,11 +122,28 @@
    "read_only": 1
   },
   {
+   "fieldname": "item_location_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
    "fieldname": "currency",
    "fieldtype": "Link",
    "label": "Currency",
    "options": "Currency",
    "read_only": 1
+  },
+  {
+   "fieldname": "validity_section",
+   "fieldtype": "Section Break",
+   "label": "Validity"
   },
   {
    "fieldname": "valid_from",
@@ -90,29 +152,31 @@
    "read_only": 1
   },
   {
+   "fieldname": "validity_column",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "valid_upto",
    "fieldtype": "Date",
    "label": "Valid Upto",
    "read_only": 1
   },
   {
-   "fieldname": "result",
-   "fieldtype": "Select",
-   "label": "Result",
-   "options": "Ready\nRequires Review\nBlocked\nPublished",
-   "read_only": 1,
-   "in_list_view": 1
-  },
-  {
-   "fieldname": "exception_reason",
-   "fieldtype": "Small Text",
-   "label": "Exception Reason",
-   "read_only": 1
+   "fieldname": "calculation_basis_section",
+   "fieldtype": "Section Break",
+   "label": "Calculation Basis"
   },
   {
    "fieldname": "price_source",
    "fieldtype": "Data",
    "label": "Price Source",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pricing_rule",
+   "fieldtype": "Link",
+   "label": "Pricing Rule",
+   "options": "Selling Price Rule",
    "read_only": 1
   },
   {
@@ -123,11 +187,8 @@
    "read_only": 1
   },
   {
-   "fieldname": "pricing_rule",
-   "fieldtype": "Link",
-   "label": "Pricing Rule",
-   "options": "Selling Price Rule",
-   "read_only": 1
+   "fieldname": "calculation_basis_column",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "calculation_method",
@@ -143,12 +204,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "cost_available",
-   "fieldtype": "Check",
-   "label": "Cost Available",
-   "read_only": 1
-  },
-  {
    "fieldname": "fixed_input_rate",
    "fieldtype": "Currency",
    "label": "Fixed Input Rate",
@@ -158,13 +213,9 @@
    "in_list_view": 0
   },
   {
-   "fieldname": "cost_rate",
-   "fieldtype": "Currency",
-   "label": "Cost Rate",
-   "options": "currency",
-   "precision": "9",
-   "read_only": 1,
-   "in_list_view": 0
+   "fieldname": "price_comparison_section",
+   "fieldtype": "Section Break",
+   "label": "Price Comparison"
   },
   {
    "fieldname": "previous_rate",
@@ -185,6 +236,10 @@
    "in_list_view": 0
   },
   {
+   "fieldname": "price_comparison_column",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "rounded_rate",
    "fieldtype": "Currency",
    "label": "Rounded Rate",
@@ -203,6 +258,11 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "margin_review_section",
+   "fieldtype": "Section Break",
+   "label": "Margin Review"
+  },
+  {
    "fieldname": "previous_margin",
    "fieldtype": "Percent",
    "label": "Previous Margin",
@@ -217,6 +277,10 @@
    "read_only": 1
   },
   {
+   "fieldname": "margin_review_column",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "minimum_margin",
    "fieldtype": "Percent",
    "label": "Minimum Margin",
@@ -224,9 +288,41 @@
    "read_only": 1
   },
   {
+   "fieldname": "cost_evidence_section",
+   "fieldtype": "Section Break",
+   "label": "Cost Evidence",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "cost_available",
+   "fieldtype": "Check",
+   "label": "Cost Available",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cost_rate",
+   "fieldtype": "Currency",
+   "label": "Cost Rate",
+   "options": "currency",
+   "precision": "9",
+   "read_only": 1,
+   "in_list_view": 0
+  },
+  {
    "fieldname": "cost_source",
    "fieldtype": "Data",
    "label": "Cost Source",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cost_evidence_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "Supplier",
    "read_only": 1
   },
   {
@@ -243,11 +339,10 @@
    "read_only": 1
   },
   {
-   "fieldname": "supplier",
-   "fieldtype": "Link",
-   "label": "Supplier",
-   "options": "Supplier",
-   "read_only": 1
+   "fieldname": "currency_conversion_section",
+   "fieldtype": "Section Break",
+   "label": "Currency Conversion",
+   "collapsible": 1
   },
   {
    "fieldname": "exchange_rate",
@@ -257,10 +352,19 @@
    "read_only": 1
   },
   {
+   "fieldname": "currency_conversion_column",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "exchange_reference",
    "fieldtype": "Data",
    "label": "Exchange Reference",
    "read_only": 1
+  },
+  {
+   "fieldname": "review_confirmation_section",
+   "fieldtype": "Section Break",
+   "label": "Review Confirmation"
   },
   {
    "fieldname": "acknowledge_unknown_margin",
@@ -275,6 +379,30 @@
    "label": "Review Note"
   },
   {
+   "fieldname": "publication_section",
+   "fieldtype": "Section Break",
+   "label": "Publication",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "published_doctype",
+   "fieldtype": "Link",
+   "label": "Published Doctype",
+   "options": "DocType",
+   "read_only": 1
+  },
+  {
+   "fieldname": "publication_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "published_price",
+   "fieldtype": "Dynamic Link",
+   "label": "Published Price",
+   "options": "published_doctype",
+   "read_only": 1
+  },
+  {
    "fieldname": "calculation_hash",
    "fieldtype": "Data",
    "label": "Calculation Hash",
@@ -287,20 +415,6 @@
    "label": "Calculation Snapshot",
    "read_only": 1,
    "hidden": 1
-  },
-  {
-   "fieldname": "published_doctype",
-   "fieldtype": "Link",
-   "label": "Published Doctype",
-   "options": "DocType",
-   "read_only": 1
-  },
-  {
-   "fieldname": "published_price",
-   "fieldtype": "Dynamic Link",
-   "label": "Published Price",
-   "options": "published_doctype",
-   "read_only": 1
   }
  ],
  "permissions": [],
