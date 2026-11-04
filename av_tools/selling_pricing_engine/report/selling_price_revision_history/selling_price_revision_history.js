@@ -1,15 +1,47 @@
 frappe.query_reports["Selling Price Revision History"] = {
 	filters: [
-		{ fieldname: "from_date", label: __("From Date"), fieldtype: "Date", default: frappe.datetime.add_months(frappe.datetime.month_start(), -5) },
+		{
+			fieldname: "from_date",
+			label: __("From Date"),
+			fieldtype: "Date",
+			default: frappe.datetime.add_months(frappe.datetime.month_start(), -5),
+		},
 		{ fieldname: "page", label: __("Page"), fieldtype: "Int", default: 1 },
 		{ fieldname: "page_size", label: __("Records per Page"), fieldtype: "Int", default: 500 },
 		{ fieldname: "branch", label: __("Pricing Branch"), fieldtype: "Link", options: "Branch" },
-		{ fieldname: "supplier", label: __("Cost Supplier"), fieldtype: "Link", options: "Supplier" },
-		{ fieldname: "item_group", label: __("Item Group"), fieldtype: "Link", options: "Item Group", description: __("Required for catalogues above 500 Items; dashboard supports 5,000 SKUs per scope.") },
-		{ fieldname: "include_child_groups", label: __("Include Child Item Groups"), fieldtype: "Check" },
+		{
+			fieldname: "supplier",
+			label: __("Cost Supplier"),
+			fieldtype: "Link",
+			options: "Supplier",
+		},
+		{
+			fieldname: "item_group",
+			label: __("Item Group"),
+			fieldtype: "Link",
+			options: "Item Group",
+			description: __(
+				"Required for catalogues above 500 Items; dashboard supports 5,000 SKUs per scope."
+			),
+		},
+		{
+			fieldname: "include_child_groups",
+			label: __("Include Child Item Groups"),
+			fieldtype: "Check",
+		},
 		{ fieldname: "brand", label: __("Brand"), fieldtype: "Link", options: "Brand" },
-		{ fieldname: "source_doctype", label: __("Cost Source Type"), fieldtype: "Select", options: "\nPurchase Invoice\nPurchase Receipt" },
-		{ fieldname: "source_document", label: __("Current Cost Source"), fieldtype: "Dynamic Link", options: "source_doctype" },
+		{
+			fieldname: "source_doctype",
+			label: __("Cost Source Type"),
+			fieldtype: "Select",
+			options: "\nPurchase Invoice\nPurchase Receipt",
+		},
+		{
+			fieldname: "source_document",
+			label: __("Current Cost Source"),
+			fieldtype: "Dynamic Link",
+			options: "source_doctype",
+		},
 
 		{
 			fieldname: "company",
