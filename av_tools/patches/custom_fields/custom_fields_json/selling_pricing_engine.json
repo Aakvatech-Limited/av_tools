@@ -88,5 +88,115 @@
   "read_only": 1,
   "no_copy": 1,
   "insert_after": "custom_spe_revision"
+ },
+ {
+  "dt": "Warehouse",
+  "module": "Selling Pricing Engine",
+  "name": "Warehouse-custom_spe_branch",
+  "fieldname": "custom_spe_branch",
+  "fieldtype": "Link",
+  "label": "Pricing Branch",
+  "options": "Branch",
+  "insert_after": "company",
+  "description": "Explicit pricing mapping. The Warehouse Company scopes this Branch mapping."
+ },
+ {
+  "dt": "Quotation",
+  "module": "Selling Pricing Engine",
+  "name": "Quotation-custom_spe_branch",
+  "fieldname": "custom_spe_branch",
+  "fieldtype": "Link",
+  "label": "Pricing Branch",
+  "options": "Branch",
+  "insert_after": "custom_spe_keep_manual_rates"
+ },
+ {
+  "dt": "Quotation Item",
+  "module": "Selling Pricing Engine",
+  "name": "Quotation Item-custom_spe_resolved_price_list",
+  "fieldname": "custom_spe_resolved_price_list",
+  "fieldtype": "Link",
+  "label": "Resolved Pricing List",
+  "insert_after": "custom_spe_price_source",
+  "read_only": 1,
+  "no_copy": 1,
+  "options": "Price List"
+ },
+ {
+  "dt": "Quotation Item",
+  "module": "Selling Pricing Engine",
+  "name": "Quotation Item-custom_spe_resolution",
+  "fieldname": "custom_spe_resolution",
+  "fieldtype": "Data",
+  "label": "Pricing Resolution",
+  "insert_after": "custom_spe_price_source",
+  "read_only": 1,
+  "no_copy": 1
+ },
+ {
+  "dt": "Sales Order",
+  "module": "Selling Pricing Engine",
+  "name": "Sales Order-custom_spe_branch",
+  "fieldname": "custom_spe_branch",
+  "fieldtype": "Link",
+  "label": "Pricing Branch",
+  "options": "Branch",
+  "insert_after": "custom_spe_keep_manual_rates"
+ },
+ {
+  "dt": "Sales Order Item",
+  "module": "Selling Pricing Engine",
+  "name": "Sales Order Item-custom_spe_resolved_price_list",
+  "fieldname": "custom_spe_resolved_price_list",
+  "fieldtype": "Link",
+  "label": "Resolved Pricing List",
+  "insert_after": "custom_spe_price_source",
+  "read_only": 1,
+  "no_copy": 1,
+  "options": "Price List"
+ },
+ {
+  "dt": "Sales Order Item",
+  "module": "Selling Pricing Engine",
+  "name": "Sales Order Item-custom_spe_resolution",
+  "fieldname": "custom_spe_resolution",
+  "fieldtype": "Data",
+  "label": "Pricing Resolution",
+  "insert_after": "custom_spe_price_source",
+  "read_only": 1,
+  "no_copy": 1
+ },
+ {
+  "dt": "Sales Invoice",
+  "module": "Selling Pricing Engine",
+  "name": "Sales Invoice-custom_spe_branch",
+  "fieldname": "custom_spe_branch",
+  "fieldtype": "Link",
+  "label": "Pricing Branch",
+  "options": "Branch",
+  "insert_after": "custom_spe_keep_manual_rates"
+ },
+ {
+  "dt": "Sales Invoice Item",
+  "module": "Selling Pricing Engine",
+  "name": "Sales Invoice Item-custom_spe_resolved_price_list",
+  "fieldname": "custom_spe_resolved_price_list",
+  "fieldtype": "Link",
+  "label": "Resolved Pricing List",
+  "insert_after": "custom_spe_price_source",
+  "read_only": 1,
+  "no_copy": 1,
+  "options": "Price List"
+ },
+ {
+  "dt": "Sales Invoice Item",
+  "module": "Selling Pricing Engine",
+  "name": "Sales Invoice Item-custom_spe_resolution",
+  "fieldname": "custom_spe_resolution",
+  "fieldtype": "Data",
+  "label": "Pricing Resolution",
+  "insert_after": "custom_spe_price_source",
+  "read_only": 1,
+  "no_copy": 1
  }
 ]

@@ -9,13 +9,19 @@ from av_tools.selling_pricing_engine.access import LOCATION, RULE
 
 
 def publish_row(revision, row):
-	doctype = LOCATION if row.warehouse else "Item Price"
+	doctype = LOCATION if row.warehouse or row.get("branch") else "Item Price"
 	if doctype == "Item Price":
 		# Revision permissions alone must not bypass standard Item Price permissions.
 		frappe.has_permission("Item Price", "write", throw=True)
 		frappe.has_permission("Item Price", "create", throw=True)
 	prices = store.price_rows(
-		revision.company, revision.price_list, row.item_code, row.uom, row.warehouse, lock=True
+		revision.company,
+		revision.price_list,
+		row.item_code,
+		row.uom,
+		row.warehouse,
+		lock=True,
+		**({"branch": row.branch} if row.get("branch") and not row.warehouse else {}),
 	)
 	overlaps = [price for price in prices if store.overlaps(price, row.valid_from, row.valid_upto)]
 	if len(overlaps) > 1:
@@ -30,7 +36,7 @@ def publish_row(revision, row):
 			old = frappe.get_doc(doctype, previous.name, for_update=True)
 			old.valid_upto = add_days(row.valid_from, -1)
 			old.flags.spe_publishing = True
-			old.save(ignore_permissions=bool(row.warehouse))
+			old.save(ignore_permissions=bool(row.warehouse or row.get("branch")))
 		price = frappe.new_doc(doctype)
 	price.update(
 		{
@@ -42,17 +48,20 @@ def publish_row(revision, row):
 			"valid_upto": row.valid_upto,
 		}
 	)
-	if row.warehouse:
+	if row.warehouse or row.get("branch"):
 		price.update(
 			{
 				"company": revision.company,
 				"warehouse": row.warehouse,
+				"branch": row.get("branch"),
 				"rate": row.proposed_rate,
 				"enabled": 1,
 				"cost_rate": row.cost_rate,
 				"cost_available": row.cost_available,
 				"supplier": row.supplier,
 				"source_invoice": row.source_invoice,
+				"source_doctype": row.get("source_doctype"),
+				"source_document": row.get("source_document"),
 				"pricing_rule": row.pricing_rule,
 				"revision": revision.name,
 				"price_source": row.price_source,
@@ -64,11 +73,11 @@ def publish_row(revision, row):
 		price.price_list_rate = row.proposed_rate
 		price.custom_spe_revision = revision.name
 		price.custom_spe_company = revision.company
-	price.save(ignore_permissions=bool(row.warehouse))
+	price.save(ignore_permissions=bool(row.warehouse or row.get("branch")))
 	row.published_doctype, row.published_price = doctype, price.name
 	if row.price_source == "Imported Fixed Price":
 		row.pricing_rule = protect_imported_price(revision, row)
-		if row.warehouse:
+		if row.warehouse or row.get("branch"):
 			# Update provenance inside the same transaction, without changing the rate.
 			price.pricing_rule = row.pricing_rule
 			price.save(ignore_permissions=True)
@@ -82,6 +91,9 @@ def protect_imported_price(revision, row):
 		"item_code": row.item_code,
 		"warehouse": row.warehouse or ["is", "not set"],
 		"uom": row.uom,
+		"branch": ["is", "not set"],
+		"supplier": ["is", "not set"],
+		"item_group": ["is", "not set"],
 		"disabled": 0,
 	}
 	existing = [

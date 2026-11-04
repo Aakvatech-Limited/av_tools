@@ -20,10 +20,21 @@
   "uom",
   "selection_filters_column",
   "warehouse",
+  "branch",
+  "policy_filters_section",
+  "supplier",
+  "brand",
+  "policy_filters_column",
+  "item_group",
+  "include_child_groups",
   "effective_period_section",
   "valid_from",
   "effective_period_column",
   "valid_upto",
+  "current_cost_section",
+  "source_doctype",
+  "current_cost_column",
+  "source_document",
   "price_review_section",
   "items",
   "calculation_publication_history_section",
@@ -110,7 +121,47 @@
    "fieldname": "warehouse",
    "fieldtype": "Link",
    "label": "Warehouse",
-   "options": "Warehouse"
+   "options": "Warehouse",
+   "description": "Optional Warehouse scope. A mapped Branch supplies the independent fallback tier."
+  },
+  {
+   "fieldname": "branch",
+   "label": "Branch",
+   "fieldtype": "Link",
+   "options": "Branch"
+  },
+  {
+   "fieldname": "policy_filters_section",
+   "fieldtype": "Section Break",
+   "label": "Policy Filters"
+  },
+  {
+   "fieldname": "supplier",
+   "label": "Cost Supplier",
+   "fieldtype": "Link",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "brand",
+   "label": "Brand",
+   "fieldtype": "Link",
+   "options": "Brand"
+  },
+  {
+   "fieldname": "policy_filters_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_group",
+   "label": "Item Group",
+   "fieldtype": "Link",
+   "options": "Item Group"
+  },
+  {
+   "fieldname": "include_child_groups",
+   "label": "Include Child Item Groups",
+   "fieldtype": "Check",
+   "default": "0"
   },
   {
    "fieldname": "effective_period_section",
@@ -132,6 +183,27 @@
    "fieldname": "valid_upto",
    "fieldtype": "Date",
    "label": "Valid Upto"
+  },
+  {
+   "fieldname": "current_cost_section",
+   "fieldtype": "Section Break",
+   "label": "Current Cost Source"
+  },
+  {
+   "fieldname": "source_doctype",
+   "label": "Current Source Type",
+   "fieldtype": "Select",
+   "options": "\nPurchase Invoice\nPurchase Receipt"
+  },
+  {
+   "fieldname": "current_cost_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "source_document",
+   "label": "Current Source Document",
+   "fieldtype": "Dynamic Link",
+   "options": "source_doctype"
   },
   {
    "fieldname": "price_review_section",
@@ -217,5 +289,6 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "autoname": "naming_series:",
- "is_submittable": 1
+ "is_submittable": 1,
+ "allow_import": 0
 }

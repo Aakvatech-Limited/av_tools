@@ -18,7 +18,14 @@ STANDARD_ASSETS = (
 
 
 def execute():
-	module_path = Path(frappe.get_app_path("av_tools", "av_tools"))
+	for module in ("av_tools", "selling_pricing_engine"):
+		sync_module(module)
+	validate_dashboard("Manufacturing BOM Variance")
+	validate_dashboard("Sales Manager Pricing")
+
+
+def sync_module(module):
+	module_path = Path(frappe.get_app_path("av_tools", module))
 
 	for doctype, directory in STANDARD_ASSETS:
 		root = module_path / directory
@@ -49,9 +56,9 @@ def execute():
 				if not frappe.db.exists(doctype, name):
 					frappe.throw("Could not synchronize " + doctype + ": " + name)
 
-	# Fail loudly if the BOM dashboard is present but its dependencies are
-	# incomplete, so site migrations cannot silently leave a broken dashboard.
-	name = "Manufacturing BOM Variance"
+
+def validate_dashboard(name):
+	# Fail loudly rather than leave a dashboard with missing dependencies.
 	if frappe.db.exists("Dashboard", name):
 		dashboard = frappe.get_doc("Dashboard", name)
 		for card in dashboard.cards:

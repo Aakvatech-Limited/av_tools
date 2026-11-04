@@ -14,7 +14,13 @@ from av_tools.selling_pricing_engine.access import POLICY, check_context, check_
 from av_tools.selling_pricing_engine.calculation import number
 
 SALES_DOCTYPES = ("Quotation", "Sales Order", "Sales Invoice")
-PRICE_FIELDS = ("price_list_rate", "rate", "custom_spe_price_source")
+PRICE_FIELDS = (
+	"price_list_rate",
+	"rate",
+	"custom_spe_price_source",
+	"custom_spe_resolved_price_list",
+	"custom_spe_resolution",
+)
 
 
 def supported(ctx):
@@ -117,26 +123,49 @@ def resolve_response(ctx, native, doc=None):
 	item = frappe.get_cached_doc("Item", ctx.item_code)
 	if not item.is_sales_item or item.is_fixed_asset or _preserve(ctx, native, doc, config):
 		native["custom_spe_price_source"] = None
+		native["custom_spe_resolved_price_list"] = None
+		native["custom_spe_resolution"] = None
 		return native
 	ctx.uom = ctx.uom or item.sales_uom or item.stock_uom
-	try:
-		price = (
-			repository.valid_price(
-				repository.price_rows(ctx.company, ctx.price_list, ctx.item_code, ctx.uom, ctx.warehouse),
+	if config.get("enable_phase_2"):
+		from av_tools.selling_pricing_engine.locations import resolve
+
+		try:
+			resolved = resolve(
+				ctx.company,
+				ctx.price_list,
+				item,
+				ctx.uom,
 				ctx.transaction_date,
+				ctx.warehouse,
+				(doc or {}).get("custom_spe_branch") or ctx.get("custom_spe_branch"),
 			)
-			if ctx.warehouse
-			else None
-		)
-	except ValueError as exc:
-		frappe.throw(str(exc))
-	if price:
-		rate, source = price.rate, price.name
-		if price.currency != frappe.get_cached_value("Price List", ctx.price_list, "currency"):
-			frappe.throw(_("Published location price currency does not match the Price List."))
+		except ValueError as exc:
+			frappe.throw(str(exc))
+		rate, source = (resolved["rate"], resolved["source"]) if resolved else (None, None)
+		native["custom_spe_resolved_price_list"] = resolved["price_list"] if resolved else None
+		native["custom_spe_resolution"] = resolved["resolution"] if resolved else None
 	else:
-		standard = repository.standard_price(ctx.company, ctx.price_list, item, ctx.uom, ctx.transaction_date)
-		rate, source = (standard.price_list_rate if standard else None), None
+		try:
+			price = (
+				repository.valid_price(
+					repository.price_rows(ctx.company, ctx.price_list, ctx.item_code, ctx.uom, ctx.warehouse),
+					ctx.transaction_date,
+				)
+				if ctx.warehouse
+				else None
+			)
+		except ValueError as exc:
+			frappe.throw(str(exc))
+		if price:
+			rate, source = price.rate, price.name
+			if price.currency != frappe.get_cached_value("Price List", ctx.price_list, "currency"):
+				frappe.throw(_("Published location price currency does not match the Price List."))
+		else:
+			standard = repository.standard_price(
+				ctx.company, ctx.price_list, item, ctx.uom, ctx.transaction_date
+			)
+			rate, source = (standard.price_list_rate if standard else None), None
 	if rate is None or number(rate) <= 0:
 		frappe.throw(
 			_("No valid published selling price for {0}. Generate and publish a revision first.").format(
@@ -232,4 +261,4 @@ def refresh_prices(doc):
 @frappe.whitelist()
 def sales_configuration(company):
 	config = settings(company, require_enabled=False)
-	return {"enabled": bool(config)}
+	return {"enabled": bool(config), "expanded": bool(config and config.get("enable_phase_2"))}

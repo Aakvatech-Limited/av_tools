@@ -22,6 +22,7 @@
 			frm.doc.plc_conversion_rate,
 			frm.doc.transaction_date || frm.doc.posting_date,
 			frm.doc.custom_spe_keep_manual_rates,
+			frm.doc.custom_spe_branch,
 		]);
 		const rows = await frappe.xcall(`${api}.refresh_prices`, { doc: frm.doc });
 		const current = JSON.stringify([
@@ -32,6 +33,7 @@
 			frm.doc.plc_conversion_rate,
 			frm.doc.transaction_date || frm.doc.posting_date,
 			frm.doc.custom_spe_keep_manual_rates,
+			frm.doc.custom_spe_branch,
 		]);
 		if (request !== frm.__spe_request || current !== header) return;
 		for (const result of rows) {
@@ -47,6 +49,8 @@
 				price_list_rate: result.price_list_rate,
 				rate: result.rate,
 				custom_spe_price_source: result.custom_spe_price_source,
+				custom_spe_resolved_price_list: result.custom_spe_resolved_price_list,
+				custom_spe_resolution: result.custom_spe_resolution,
 			});
 		}
 		await frm.trigger("calculate_taxes_and_totals");
@@ -58,6 +62,7 @@
 				configs.delete(frm.doc.company);
 				const config = await configuration(frm.doc.company);
 				frm.toggle_display("custom_spe_keep_manual_rates", !!config.enabled);
+				frm.toggle_display("custom_spe_branch", !!config.expanded);
 				if (config.enabled && frm.doc.docstatus === 0) {
 					frm.add_custom_button(__("Refresh Selling Prices"), () => refresh(frm));
 				}
@@ -74,6 +79,7 @@
 			conversion_rate: schedule,
 			plc_conversion_rate: schedule,
 			custom_spe_keep_manual_rates: schedule,
+			custom_spe_branch: schedule,
 		});
 		frappe.ui.form.on(`${doctype} Item`, {
 			warehouse: schedule,

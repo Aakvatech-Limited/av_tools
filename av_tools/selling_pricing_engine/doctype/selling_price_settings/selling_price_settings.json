@@ -11,12 +11,15 @@
   "company_activation_section",
   "company",
   "enabled",
+  "enable_phase_2",
   "company_activation_column",
   "mode",
   "pricing_basis_section",
   "cost_basis",
   "pricing_basis_column",
   "tax_basis",
+  "cost_fallback_section",
+  "cost_fallbacks",
   "default_calculation_section",
   "calculation_method",
   "default_calculation_column",
@@ -56,6 +59,13 @@
    "default": "0"
   },
   {
+   "fieldname": "enable_phase_2",
+   "fieldtype": "Check",
+   "label": "Enable Expanded Pricing Policies",
+   "default": "0",
+   "description": "Enable Supplier / Item Group / Branch rules, additional cost sources and configured runtime fallback. Existing Phase 1 behavior remains the default."
+  },
+  {
    "fieldname": "company_activation_column",
    "fieldtype": "Column Break"
   },
@@ -76,9 +86,9 @@
    "fieldname": "cost_basis",
    "fieldtype": "Select",
    "label": "Cost Basis",
-   "options": "Latest Submitted Purchase Invoice",
+   "options": "Latest Submitted Purchase Invoice\nCurrent Purchase Invoice\nCurrent Purchase Receipt\nLatest Submitted Purchase Receipt\nLatest Purchase Rate\nSupplier Latest Purchase Rate\nValuation Rate\nWarehouse Valuation Rate",
    "default": "Latest Submitted Purchase Invoice",
-   "read_only": 1
+   "read_only": 0
   },
   {
    "fieldname": "pricing_basis_column",
@@ -91,6 +101,17 @@
    "options": "Tax Exclusive",
    "default": "Tax Exclusive",
    "read_only": 1
+  },
+  {
+   "fieldname": "cost_fallback_section",
+   "fieldtype": "Section Break",
+   "label": "Cost Source Fallbacks"
+  },
+  {
+   "fieldname": "cost_fallbacks",
+   "label": "Cost Source Fallbacks",
+   "fieldtype": "Small Text",
+   "description": "Optional ordered cost source names, one per line. No implicit cost fallback."
   },
   {
    "fieldname": "default_calculation_section",
@@ -211,5 +232,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "autoname": "field:company"
+ "autoname": "field:company",
+ "allow_import": 0
 }

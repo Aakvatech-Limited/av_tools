@@ -44,6 +44,16 @@ def configuration(doc):
 def settings(doc):
 	check_context(doc.company)
 	configuration(doc)
+	from av_tools.selling_pricing_engine.cost_sources import SOURCES
+
+	if doc.cost_basis not in SOURCES:
+		frappe.throw(_("Select a supported cost source."))
+	if not doc.get("enable_phase_2") and (doc.cost_basis != SOURCES[0] or doc.get("cost_fallbacks")):
+		frappe.throw(_("Enable Expanded Pricing Policies before changing cost sources."))
+	if any(
+		line.strip() not in SOURCES for line in (doc.get("cost_fallbacks") or "").splitlines() if line.strip()
+	):
+		frappe.throw(_("Unsupported cost fallback source."))
 	if doc.enabled:
 		check_native_price_writes()
 
@@ -58,6 +68,9 @@ def policy(doc):
 	lock_company(doc.company)
 	check_context(doc.company, doc.price_list)
 	configuration(doc)
+	require_expanded(doc)
+	if doc.get("runtime_fallback") and not doc.fallback_price_list:
+		frappe.throw(_("Select a Fallback Price List before enabling sales fallback."))
 	pl = frappe.get_doc("Price List", doc.price_list)
 	if not pl.enabled or not pl.selling:
 		frappe.throw(_("Select an enabled selling Price List."))
@@ -87,6 +100,20 @@ def rule(doc):
 	check_context(doc.company, doc.price_list, doc.warehouse, doc.item_code)
 	dates(doc)
 	configuration(doc)
+	require_expanded(doc)
+	from av_tools.selling_pricing_engine.policies import check_filters
+
+	check_filters(doc)
+	if doc.get("item_code") and doc.get("item_group"):
+		frappe.throw(_("Choose an Item or an Item Group, not both."))
+	if doc.get("warehouse") and doc.get("branch"):
+		frappe.throw(_("A rule may target a Warehouse or an independent Branch, not both."))
+	if doc.get("item_group") and doc.get("supplier"):
+		frappe.throw(_("Supplier restrictions may be combined with Item rules, not Item Group rules."))
+	if doc.get("branch"):
+		from av_tools.selling_pricing_engine.locations import branch_for
+
+		branch_for(doc.company, branch=doc.branch)
 	if (
 		doc.calculation_mode == "Override"
 		and doc.calculation_method == "Fixed Selling Price"
@@ -104,36 +131,73 @@ def rule(doc):
 		"name": ["!=", doc.name or ""],
 	}
 	peers = frappe.get_all(
-		RULE, filters=filters, fields=["name", "item_code", "warehouse", "uom", "valid_from", "valid_upto"]
+		RULE,
+		filters=filters,
+		fields=[
+			"name",
+			"item_code",
+			"warehouse",
+			"branch",
+			"supplier",
+			"item_group",
+			"uom",
+			"valid_from",
+			"valid_upto",
+		],
 	)
 	for peer in peers:
 		if all(
-			(peer.get(key) or "") == (doc.get(key) or "") for key in ("item_code", "warehouse", "uom")
+			(peer.get(key) or "") == (doc.get(key) or "")
+			for key in ("item_code", "warehouse", "branch", "supplier", "item_group", "uom")
 		) and overlaps(peer, doc.valid_from, doc.valid_upto):
 			frappe.throw(_("Pricing rule overlaps equally specific rule {0}.").format(peer.name))
+
+
+def require_expanded(doc):
+	if any(doc.get(key) for key in ("supplier", "item_group", "branch", "runtime_fallback")) or doc.get(
+		"cost_basis"
+	) not in (None, "", "Use Default"):
+		if not frappe.db.get_value(SETTINGS, doc.company, "enable_phase_2"):
+			frappe.throw(_("Enable Expanded Pricing Policies in Company settings before saving this policy."))
 
 
 def location(doc):
 	if not doc.flags.get("spe_publishing"):
 		frappe.throw(_("Location prices are published through a Selling Price Revision."))
 	check_context(doc.company, doc.price_list, doc.warehouse, doc.item_code)
+	if not doc.warehouse and not doc.get("branch"):
+		frappe.throw(_("A location price requires a Warehouse or Branch."))
+	if doc.get("branch") and not doc.warehouse:
+		from av_tools.selling_pricing_engine.locations import branch_for
+
+		branch_for(doc.company, branch=doc.branch)
 	dates(doc)
 	if number(doc.rate) <= 0:
 		frappe.throw(_("Published rates must be positive."))
 	doc.price_key = digest(
-		[doc.company, doc.price_list, doc.item_code, doc.warehouse, doc.uom, str(doc.valid_from)]
+		[
+			doc.company,
+			doc.price_list,
+			doc.item_code,
+			doc.warehouse or ("Branch:" + doc.branch),
+			doc.uom,
+			str(doc.valid_from),
+		]
 	)
+	filters = {
+		"company": doc.company,
+		"price_list": doc.price_list,
+		"item_code": doc.item_code,
+		"warehouse": doc.warehouse or ["is", "not set"],
+		"uom": doc.uom,
+		"enabled": 1,
+		"name": ["!=", doc.name or ""],
+	}
+	if not doc.warehouse:
+		filters["branch"] = doc.branch
 	peers = frappe.get_all(
 		LOCATION,
-		filters={
-			"company": doc.company,
-			"price_list": doc.price_list,
-			"item_code": doc.item_code,
-			"warehouse": doc.warehouse,
-			"uom": doc.uom,
-			"enabled": 1,
-			"name": ["!=", doc.name or ""],
-		},
+		filters=filters,
 		fields=["name", "valid_from", "valid_upto"],
 	)
 	if doc.enabled and any(overlaps(peer, doc.valid_from, doc.valid_upto) for peer in peers):

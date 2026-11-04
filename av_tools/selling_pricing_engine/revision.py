@@ -15,7 +15,22 @@ from av_tools.selling_pricing_engine.access import (
 from av_tools.selling_pricing_engine.calculation import number
 from av_tools.selling_pricing_engine.import_prices import parse_prices
 
-PARAMETERS = ("company", "price_list", "warehouse", "item_code", "uom", "valid_from", "valid_upto")
+PARAMETERS = (
+	"company",
+	"price_list",
+	"warehouse",
+	"item_code",
+	"uom",
+	"valid_from",
+	"valid_upto",
+	"branch",
+	"supplier",
+	"item_group",
+	"include_child_groups",
+	"brand",
+	"source_doctype",
+	"source_document",
+)
 STAMP_FIELDS = ("status", "input_rows", "calculated_by", "calculated_on", "published_by", "published_on")
 EDITABLE_ROW_FIELDS = {"selected", "acknowledge_unknown_margin", "review_note"}
 
@@ -34,6 +49,10 @@ class SellingPriceRevision(Document):
 	def validate(self):
 		check_context(self.company, self.price_list, self.warehouse, self.item_code)
 		validation.dates(self)
+		if any(self.get(key) for key in ("branch", "supplier", "item_group", "brand", "source_document")):
+			from av_tools.selling_pricing_engine.policies import check_filters
+
+			check_filters(self)
 		if self.flags.get("spe_calculating"):
 			return
 		before = self.get_doc_before_save()
@@ -82,6 +101,12 @@ class SellingPriceRevision(Document):
 	@frappe.whitelist()
 	def import_fixed_prices(self, csv_text):
 		doc = self._working_copy()
+		if doc.get("branch"):
+			frappe.throw(
+				_(
+					"Fixed CSV import requires a standard or Warehouse revision. Use a Branch-scoped fixed rule and Calculate for Branch prices."
+				)
+			)
 		config = settings(doc.company)
 		policy = repository.policy_for(doc.company, doc.price_list)
 		currency = frappe.get_cached_value("Price List", policy.price_list, "currency")
@@ -113,6 +138,10 @@ class SellingPriceRevision(Document):
 
 	def _calculate(self):
 		config = settings(self.company)
+		if not config.get("enable_phase_2") and any(
+			self.get(key) for key in ("branch", "supplier", "item_group", "brand", "source_document")
+		):
+			frappe.throw(_("Enable Expanded Pricing Policies before using Phase 2 filters."))
 		check_native_price_writes()
 		policy = repository.policy_for(self.company, self.price_list)
 		inputs = frappe.parse_json(self.input_rows) if self.input_rows else None
@@ -120,6 +149,10 @@ class SellingPriceRevision(Document):
 			filters = {"disabled": 0, "is_sales_item": 1, "has_variants": 0, "is_fixed_asset": 0}
 			if self.item_code:
 				filters["name"] = self.item_code
+			if config.get("enable_phase_2"):
+				from av_tools.selling_pricing_engine.policies import item_filters
+
+				filters = item_filters(self)
 			items = frappe.get_list(
 				"Item",
 				filters=filters,
@@ -141,6 +174,11 @@ class SellingPriceRevision(Document):
 				"valid_from": str(self.valid_from),
 				"valid_upto": str(self.valid_upto) if self.valid_upto else None,
 			}
+			if config.get("enable_phase_2"):
+				context.update(
+					{key: self.get(key) for key in ("supplier", "source_doctype", "source_document")}
+				)
+				context["branch"] = self.get("branch") if not self.input_rows else None
 			try:
 				result = engine.calculate_row(config, policy, context, fixed_input=row.get("fixed_rate"))
 			except (ValueError, frappe.ValidationError) as exc:

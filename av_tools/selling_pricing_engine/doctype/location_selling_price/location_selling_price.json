@@ -15,6 +15,7 @@
   "price_context_column",
   "price_list",
   "warehouse",
+  "branch",
   "published_price_section",
   "currency",
   "rate",
@@ -36,6 +37,8 @@
   "cost_evidence_column",
   "supplier",
   "source_invoice",
+  "source_doctype",
+  "source_document",
   "price_key"
  ],
  "fields": [
@@ -83,8 +86,14 @@
    "fieldtype": "Link",
    "label": "Warehouse",
    "options": "Warehouse",
-   "reqd": 1,
+   "reqd": 0,
    "in_list_view": 1
+  },
+  {
+   "fieldname": "branch",
+   "label": "Branch",
+   "fieldtype": "Link",
+   "options": "Branch"
   },
   {
    "fieldname": "published_price_section",
@@ -218,6 +227,22 @@
    "read_only": 1
   },
   {
+   "fieldname": "source_doctype",
+   "label": "Cost Source Type",
+   "fieldtype": "Link",
+   "read_only": 1,
+   "permlevel": 1,
+   "options": "DocType"
+  },
+  {
+   "fieldname": "source_document",
+   "label": "Cost Source Document",
+   "fieldtype": "Dynamic Link",
+   "read_only": 1,
+   "permlevel": 1,
+   "options": "source_doctype"
+  },
+  {
    "fieldname": "price_key",
    "fieldtype": "Data",
    "label": "Price Key",
@@ -259,5 +284,6 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "autoname": "hash",
- "allow_rename": 0
+ "allow_rename": 0,
+ "allow_import": 0
 }

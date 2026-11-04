@@ -1,0 +1,84 @@
+{
+ "doctype": "Dashboard",
+ "name": "Sales Manager Pricing",
+ "dashboard_name": "Sales Manager Pricing",
+ "module": "Selling Pricing Engine",
+ "is_standard": 1,
+ "is_default": 0,
+ "cards": [
+  {
+   "card": "Active Sellable Items"
+  },
+  {
+   "card": "Items With Effective Selling Prices"
+  },
+  {
+   "card": "Invalid or Overlapping Selling Prices"
+  },
+  {
+   "card": "Pricing Rows Below Minimum Margin"
+  },
+  {
+   "card": "Fallback Pricing Rows"
+  },
+  {
+   "card": "Active Branch Selling Prices"
+  },
+  {
+   "card": "Active Supplier Pricing Rules"
+  },
+  {
+   "card": "Active Item Group Pricing Rules"
+  },
+  {
+   "card": "Missing Selling Prices"
+  },
+  {
+   "card": "Draft Price Revisions"
+  },
+  {
+   "card": "Price Revisions Awaiting Publication"
+  },
+  {
+   "card": "Blocked Pricing Rows"
+  },
+  {
+   "card": "Pricing Rows Requiring Review"
+  },
+  {
+   "card": "Active Location Selling Prices"
+  },
+  {
+   "card": "Location Prices Expiring in 30 Days"
+  },
+  {
+   "card": "Price Revisions Published This Month"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "Selling Price Coverage",
+   "width": "Half"
+  },
+  {
+   "chart": "Selling Price Revision Pipeline",
+   "width": "Half"
+  },
+  {
+   "chart": "Selling Price Review Exceptions",
+   "width": "Half"
+  },
+  {
+   "chart": "Selling Price Publication Trend",
+   "width": "Half"
+  },
+  {
+   "chart": "Selling Pricing Policy Coverage",
+   "width": "Half"
+  },
+  {
+   "chart": "Selling Pricing Cost Sources",
+   "width": "Half"
+  }
+ ]
+}
