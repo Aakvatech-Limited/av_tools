@@ -1,3 +1,5 @@
+import functools
+
 import frappe
 from frappe import _
 
@@ -7,6 +9,7 @@ def _is_feature_enabled():
 
 
 def trade_in_flag_check(func):
+	@functools.wraps(func)
 	def wrapper(doc, method=None, *args, **kwargs):
 		if not _is_feature_enabled():
 			return  # Skip if the Trade In feature is disabled
@@ -90,7 +93,11 @@ def validate_trade_in_sales_percentage(doc, method):
 	non_trade_in_total = sum(row.amount for row in doc.items if row.item_code != "Trade In")
 
 	# Fetch allowed percentage from the Company doctype
-	trade_in_percentage = frappe.db.get_value("Company", doc.company, "custom_trade_in_sales_percentage") or 0
+	trade_in_percentage = frappe.db.get_value("Company", doc.company, "custom_trade_in_sales_percentage")
+
+	# Skip limit validation if percentage is not configured or zero (unrestricted)
+	if not trade_in_percentage:
+		return
 
 	# Calculate the allowed trade-in value based on the percentage of non-trade-in total
 	allowed_trade_in_value = (trade_in_percentage / 100) * non_trade_in_total
@@ -190,7 +197,9 @@ def create_trade_in_stock_entry(doc, method):
 				{
 					"item_code": item.get("custom_trade_in_item"),
 					"qty": item.get("custom_trade_in_qty"),
-					"uom": item.get("uom") or "Nos",  # Default to "Nos" if UOM is not provided
+					"uom": item.get("custom_trade_in_uom")
+					or item.get("uom")
+					or "Nos",  # Default to custom_trade_in_uom, fallback to uom or "Nos"
 					"basic_rate": item.get("custom_trade_in_incoming_rate"),
 					"batch_no": custom_batch_no,  # Use the custom batch number here
 					"serial_no": item.get("custom_trade_in_serial_no"),  # Custom serial number value
@@ -226,8 +235,7 @@ def create_trade_in_stock_entry(doc, method):
 			)
 		except Exception as e:
 			frappe.throw(_("Error during Stock Entry creation: {0}").format(str(e)))
-	else:
-		frappe.msgprint(_("No valid items found for stock entry."))
+	# If no valid items were found, simply return without misleading notification
 
 
 @trade_in_flag_check
