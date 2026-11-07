@@ -1,0 +1,34 @@
+name: Bank transaction tools
+
+on:
+  pull_request:
+    paths:
+      - "av_tools/banking/**"
+      - "av_tools/av_tools/doctype/bank_transaction_gl_generation/**"
+      - "av_tools/av_tools/report/bank_transaction_statement/**"
+      - "av_tools/patches/**/*bank_transaction*"
+      - "av_tools/public/js/bank_transaction_list.js"
+      - "av_tools/hooks.py"
+      - "av_tools/install.py"
+      - ".github/workflows/bank-transaction-tools.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: python -m unittest av_tools.banking.test_banking -v
+      - run: |
+          node --check av_tools/public/js/bank_transaction_list.js
+          node --check av_tools/av_tools/doctype/bank_transaction_gl_generation/bank_transaction_gl_generation.js
+          node --check av_tools/av_tools/report/bank_transaction_statement/bank_transaction_statement.js
