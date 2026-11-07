@@ -69,6 +69,9 @@ frappe.ui.form.on("Sales Invoice", {
 							item_name: "Trade In",
 							income_account: trade_in_account,
 							qty: 1,
+							uom: "Nos",
+							stock_uom: "Nos",
+							conversion_factor: 1,
 							description: "Trade-In",
 						});
 						frm.refresh_field("items");
@@ -78,7 +81,12 @@ frappe.ui.form.on("Sales Invoice", {
 			frappe.confirm(
 				__('Are you sure you want to remove the "Trade In" item?'),
 				() => {
-					frm.doc.items = frm.doc.items.filter((item) => item.item_code !== "Trade In");
+					const items_to_remove = (frm.doc.items || []).filter(
+						(item) => item.item_code === "Trade In"
+					);
+					items_to_remove.forEach((row) => {
+						frappe.model.clear_doc(row.doctype, row.name);
+					});
 					frm.refresh_field("items");
 				},
 				() => frm.set_value("custom_is_trade_in", 1)
@@ -94,6 +102,16 @@ frappe.ui.form.on("Sales Invoice Item", {
 	custom_trade_in_item: function (frm, cdt, cdn) {
 		// Reset serial numbers when item changes
 		frappe.model.set_value(cdt, cdn, "custom_trade_in_serial_no", "");
+		const row = locals[cdt][cdn];
+		if (row.custom_trade_in_item) {
+			frappe.db.get_value("Item", row.custom_trade_in_item, "stock_uom").then((r) => {
+				if (r && r.message && r.message.stock_uom) {
+					frappe.model.set_value(cdt, cdn, "custom_trade_in_uom", r.message.stock_uom);
+				}
+			});
+		} else {
+			frappe.model.set_value(cdt, cdn, "custom_trade_in_uom", "");
+		}
 	},
 	custom_trade_in_incoming_rate: function (frm, cdt, cdn) {
 		calculate_row_trade_in_value(frm, cdt, cdn);
@@ -148,12 +166,14 @@ function set_trade_in_fields_readonly(frm, row) {
 	const is_trade_in = row.item_code === "Trade In" ? 1 : 0;
 
 	readonly_fields.forEach((fieldname) => {
-		frm.fields_dict.items.grid.update_docfield_property(
-			fieldname,
-			"read_only",
-			is_trade_in,
-			row.idx
-		);
+		if (frm.fields_dict.items.grid.fields_map[fieldname]) {
+			frm.fields_dict.items.grid.update_docfield_property(
+				fieldname,
+				"read_only",
+				is_trade_in,
+				row.idx
+			);
+		}
 	});
 
 	// Refresh the row to reflect the changes
