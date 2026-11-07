@@ -90,7 +90,7 @@ doctype_js = {
 	"Account": ["av_tools/account.js", "public/js/bank_account_setup.js"],
 	"Quotation": "selling_pricing_engine/sales.js",
 }
-# doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+doctype_list_js = {"Bank Transaction": "public/js/bank_transaction_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -152,6 +152,7 @@ after_migrate = [
 	"av_tools.patches.v1_0.upgrade_financial_drilldown_rules_pr04.execute",
 	"av_tools.patches.v1_0.upgrade_financial_drilldown_rules_pr05.execute",
 	"av_tools.patches.v1_0.upgrade_financial_drilldown_rules_pr07.execute",
+	"av_tools.banking.setup.after_migrate",
 ]
 
 # Uninstallation
@@ -219,6 +220,12 @@ extend_bootinfo = "av_tools.av_tools_hooks.parallel_approval.boot_session"
 # 	}
 # }
 doc_events = {
+	"Bank Transaction": {
+		"before_validate": "av_tools.banking.generation.validate_source",
+		"before_insert": "av_tools.banking.generation.require_live_generation",
+		"before_cancel": "av_tools.banking.generation.release_source",
+		"before_discard": "av_tools.banking.generation.release_source",
+	},
 	"Sales Invoice": {
 		"validate": [
 			"av_tools.weigh_bridge.validation.validate_weighbridge_ticket",

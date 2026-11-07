@@ -1,0 +1,47 @@
+[
+ {
+  "dt": "Bank Transaction",
+  "module": "Av Tools",
+  "fieldname": "custom_gl_generation_section",
+  "label": "Generated from General Ledger",
+  "fieldtype": "Section Break",
+  "insert_after": "unallocated_amount",
+  "collapsible": 1
+ },
+ {
+  "dt": "Bank Transaction",
+  "module": "Av Tools",
+  "fieldname": "custom_source_gl_entry",
+  "label": "Source GL Entry",
+  "fieldtype": "Link",
+  "options": "GL Entry",
+  "insert_after": "custom_gl_generation_section",
+  "read_only": 1,
+  "no_copy": 1,
+  "in_standard_filter": 1
+ },
+ {
+  "dt": "Bank Transaction",
+  "module": "Av Tools",
+  "fieldname": "custom_gl_generation_run",
+  "label": "GL Generation Run",
+  "fieldtype": "Link",
+  "options": "Bank Transaction GL Generation",
+  "insert_after": "custom_source_gl_entry",
+  "read_only": 1,
+  "no_copy": 1,
+  "in_standard_filter": 1
+ },
+ {
+  "dt": "Bank Transaction",
+  "module": "Av Tools",
+  "fieldname": "custom_active_gl_key",
+  "label": "Active GL Source Key",
+  "fieldtype": "Data",
+  "insert_after": "custom_gl_generation_run",
+  "read_only": 1,
+  "hidden": 1,
+  "no_copy": 1,
+  "unique": 1
+ }
+]

@@ -1,0 +1,243 @@
+{
+ "doctype": "DocType",
+ "name": "Bank Transaction GL Generation",
+ "module": "Av Tools",
+ "custom": 0,
+ "autoname": "format:BTGL-{YYYY}-{#####}",
+ "allow_rename": 0,
+ "track_changes": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "engine": "InnoDB",
+ "fields": [
+  {
+   "label": "Generation Request",
+   "fieldtype": "Section Break",
+   "fieldname": "request_section",
+   "reqd": 0,
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 0
+  },
+  {
+   "label": "Company",
+   "fieldtype": "Link",
+   "fieldname": "company",
+   "reqd": 1,
+   "options": "Company",
+   "hidden": 0,
+   "in_list_view": 1,
+   "read_only": 0
+  },
+  {
+   "label": "Bank Account",
+   "fieldtype": "Link",
+   "fieldname": "bank_account",
+   "reqd": 0,
+   "options": "Bank Account",
+   "hidden": 0,
+   "in_list_view": 1,
+   "read_only": 0,
+   "description": "Leave blank for all accessible company bank accounts."
+  },
+  {
+   "label": "Preview Only",
+   "fieldtype": "Check",
+   "fieldname": "dry_run",
+   "reqd": 0,
+   "default": "1",
+   "hidden": 0,
+   "in_list_view": 1,
+   "read_only": 0,
+   "description": "Check eligibility and duplicates without creating Bank Transactions."
+  },
+  {
+   "fieldtype": "Column Break",
+   "fieldname": "request_column",
+   "reqd": 0,
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 0
+  },
+  {
+   "label": "From Date",
+   "fieldtype": "Date",
+   "fieldname": "from_date",
+   "reqd": 0,
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 0
+  },
+  {
+   "label": "Cut-off Date (inclusive)",
+   "fieldtype": "Date",
+   "fieldname": "cutoff_date",
+   "reqd": 1,
+   "hidden": 0,
+   "in_list_view": 1,
+   "read_only": 0
+  },
+  {
+   "label": "Progress and Results",
+   "fieldtype": "Section Break",
+   "fieldname": "result_section",
+   "reqd": 0,
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 0
+  },
+  {
+   "label": "Status",
+   "fieldtype": "Select",
+   "fieldname": "status",
+   "reqd": 0,
+   "options": "Queued\nRunning\nCompleted\nCompleted with Errors\nFailed",
+   "default": "Queued",
+   "hidden": 0,
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "label": "Requested By",
+   "fieldtype": "Link",
+   "fieldname": "requested_by",
+   "reqd": 0,
+   "options": "User",
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 1
+  },
+  {
+   "label": "Started At",
+   "fieldtype": "Datetime",
+   "fieldname": "started_at",
+   "reqd": 0,
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 1
+  },
+  {
+   "label": "Finished At",
+   "fieldtype": "Datetime",
+   "fieldname": "finished_at",
+   "reqd": 0,
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 1
+  },
+  {
+   "fieldtype": "Column Break",
+   "fieldname": "result_column",
+   "reqd": 0,
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 0
+  },
+  {
+   "label": "GL Entries Checked",
+   "fieldtype": "Int",
+   "fieldname": "scanned_count",
+   "reqd": 0,
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 1
+  },
+  {
+   "label": "Eligible GL Entries",
+   "fieldtype": "Int",
+   "fieldname": "eligible_count",
+   "reqd": 0,
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 1
+  },
+  {
+   "label": "Drafts Created",
+   "fieldtype": "Int",
+   "fieldname": "created_count",
+   "reqd": 0,
+   "hidden": 0,
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "label": "Skipped",
+   "fieldtype": "Int",
+   "fieldname": "skipped_count",
+   "reqd": 0,
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 1
+  },
+  {
+   "label": "Errors",
+   "fieldtype": "Int",
+   "fieldname": "failed_count",
+   "reqd": 0,
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 1
+  },
+  {
+   "label": "Result Details",
+   "fieldtype": "Section Break",
+   "fieldname": "log_section",
+   "reqd": 0,
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 0
+  },
+  {
+   "label": "Result Log",
+   "fieldtype": "Code",
+   "fieldname": "result_log",
+   "reqd": 0,
+   "options": "JSON",
+   "hidden": 0,
+   "in_list_view": 0,
+   "read_only": 1,
+   "description": "Lists source GL entries, created drafts and skip/error reasons."
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "create": 1,
+   "write": 0,
+   "delete": 0,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 0,
+   "share": 0
+  },
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "create": 1,
+   "write": 0,
+   "delete": 0,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 0,
+   "share": 0
+  },
+  {
+   "role": "Accounts User",
+   "read": 1,
+   "create": 1,
+   "write": 0,
+   "delete": 0,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 0,
+   "share": 0
+  }
+ ],
+ "links": [],
+ "actions": [],
+ "states": []
+}

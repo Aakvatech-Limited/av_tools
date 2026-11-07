@@ -42,6 +42,33 @@ Optional company-based pricing with fixed Item/Warehouse overrides, cost calcula
 
 See the [Phase 1 setup, user guide and validation checklist](av_tools/selling_pricing_engine/README.md).
 
+### Bank transactions from GL and statement report (v16)
+
+Open **Bank Transaction** and choose **Generate from GL Entries**. Select a company,
+one bank account (or all accessible company bank accounts), an optional From Date
+and a mandatory inclusive Cut-off Date. **Preview Only** defaults to enabled.
+The background run lists each eligible, skipped and created record. Clear Preview
+Only to create one draft per individual GL Entry, including split voucher rows.
+
+Each draft retains its source GL Entry, source voucher and generation run. An
+existing active source GL link prevents a duplicate. An existing voucher link
+without GL identification reserves that voucher on the same bank GL account,
+including draft reservations. Tagged sibling GL rows remain separately eligible.
+Cancelled/discarded transactions release their active source key. No transactions
+are submitted by generation; standard allocation and voucher clearance occur when
+the drafts are submitted. GL-derived transactions represent book history, so use
+actual bank statements for independent reconciliation.
+
+**Bank Transaction Statement** offers Transaction Detail with running balance and
+Monthly Summary with opening balance, deposits, withdrawals and closing balance.
+It includes submitted transactions only. Opening balances use earlier imported
+transactions and depend on complete history. Relative periods resolve on the
+server whenever the report runs.
+
+Both features use only the standard **System Manager**, **Accounts Manager** and
+**Accounts User** roles, plus existing document/company permissions. No custom
+roles are created. See the [migration and validation notes](docs/bank_transaction_tools.md).
+
 ### License
 
 mit
