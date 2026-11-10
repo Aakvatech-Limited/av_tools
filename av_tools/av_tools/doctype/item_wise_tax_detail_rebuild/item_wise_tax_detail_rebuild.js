@@ -11,7 +11,7 @@ frappe.ui.form.on("Item Wise Tax Detail Rebuild", {
             frm.enable_save();
             frm.add_custom_button("Preview", async () => {
                 if (frm.is_new() || frm.is_dirty()) await frm.save();
-                await frm.call({method: "preview", freeze: true, freeze_message: "Checking saved rates and posted tax totals..."});
+                await frm.call({method: "preview", doc: frm.doc, freeze: true, freeze_message: "Checking saved rates and posted tax totals..."});
                 await frm.reload_doc();
             });
         } else {
@@ -20,7 +20,7 @@ frappe.ui.form.on("Item Wise Tax Detail Rebuild", {
         if (frm.doc.status === "Previewed" && frm.doc.ready_count) {
             frm.add_custom_button("Rebuild Ready Invoices", () => {
                 frappe.confirm(`Replace the derived item-wise tax details for ${frm.doc.ready_count} previewed invoices? Invoice financial fields and GL entries will not be recalculated.`, async () => {
-                    await frm.call({method: "rebuild", freeze: true, freeze_message: "Queuing rebuild..."});
+                    await frm.call({method: "rebuild", doc: frm.doc, freeze: true, freeze_message: "Queuing rebuild..."});
                     await frm.reload_doc();
                 });
             });

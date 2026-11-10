@@ -25,6 +25,7 @@ jobs:
         with:
           node-version: "22"
       - run: python -m unittest av_tools.tax_detail_rebuild.test_calculation av_tools.tax_detail_rebuild.test_service -v
+      - run: node --test av_tools/tax_detail_rebuild/test_form.cjs
       - run: |
           node --check av_tools/public/js/item_wise_tax_detail_rebuild.js
           node --check av_tools/public/js/item_wise_tax_detail_rebuild_list.js
