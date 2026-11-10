@@ -35,7 +35,10 @@ def semantic_rows(rows):
 		values = [str(row.get("item_row") or ""), str(row.get("tax_row") or "")]
 		for field in ("rate", "amount", "taxable_amount"):
 			try:
-				values.append(str(number(row.get(field), field).normalize()))
+				value = number(row.get(field), field)
+				# DECIMAL storage loses the sign of zero. Zero tax on a negative
+				# exempt adjustment must compare equal to the database's positive 0.
+				values.append("0" if value.is_zero() else str(value.normalize()))
 			except CannotRebuild:
 				values.append("invalid:" + str(row.get(field)))
 		result.append(tuple(values))
@@ -107,9 +110,9 @@ def reconstruct(source, precision=2, tolerance="0.5"):
 				{
 					"item_row": item["name"],
 					"tax_row": tax["name"],
-					"rate": float(rate),
+					"rate": float(rate) if rate else 0.0,
 					"amount": amount,
-					"taxable_amount": float(base * sign),
+					"taxable_amount": float(base * sign) if base else 0.0,
 				}
 			)
 		actual = sum((row["amount"] for row in rows), Decimal(0))
@@ -128,7 +131,7 @@ def reconstruct(source, precision=2, tolerance="0.5"):
 				raise CannotRebuild(f"{label}: rounding would reverse a row's tax sign")
 			target["amount"] = adjusted
 		for row in rows:
-			row["amount"] = float(row["amount"])
+			row["amount"] = float(row["amount"]) if row["amount"] else 0.0
 		controls.append(
 			{
 				"tax_row": tax["name"],

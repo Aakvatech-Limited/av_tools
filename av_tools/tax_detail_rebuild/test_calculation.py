@@ -4,7 +4,7 @@ import copy
 import json
 import unittest
 
-from av_tools.tax_detail_rebuild.calculation import CannotRebuild, fingerprint, reconstruct
+from av_tools.tax_detail_rebuild.calculation import CannotRebuild, fingerprint, reconstruct, semantic_rows
 
 
 def invoice():
@@ -51,6 +51,37 @@ def invoice():
 
 
 class TestCalculation(unittest.TestCase):
+	def test_semantic_rows_ignore_zero_sign_for_every_numeric_field(self):
+		for field in ("rate", "amount", "taxable_amount"):
+			for negative_zero in (-0.0, "-0.0000", "-0E-8"):
+				with self.subTest(field=field, value=negative_zero):
+					stored = {
+						"item_row": "item",
+						"tax_row": "tax",
+						"rate": 0,
+						"amount": 0,
+						"taxable_amount": 0,
+					}
+					proposed = dict(stored)
+					proposed[field] = negative_zero
+					self.assertEqual(semantic_rows([proposed]), semantic_rows([stored]))
+
+	def test_semantic_rows_keep_nonzero_sign_and_amount_checks(self):
+		row = {"item_row": "item", "tax_row": "tax", "rate": 0, "amount": 0, "taxable_amount": -0.03}
+		for field, changed in (("taxable_amount", 0.03), ("amount", 0.0001), ("rate", 0.0001)):
+			with self.subTest(field=field):
+				other = dict(row)
+				other[field] = changed
+				self.assertNotEqual(semantic_rows([row]), semantic_rows([other]))
+
+	def test_negative_exempt_adjustment_proposes_positive_zero_vat(self):
+		doc = invoice()
+		doc["items"][1]["base_net_amount"] = -0.03
+		result = reconstruct(doc)
+		self.assertEqual(str(result["rows"][1]["amount"]), "0.0")
+		self.assertEqual(result["rows"][1]["taxable_amount"], -0.03)
+		self.assertEqual(result["rows"][0]["amount"], 15)
+
 	def test_inclusive_price_uses_saved_exclusive_net_for_sales_and_purchases(self):
 		for doctype in ("Sales Invoice", "Purchase Invoice"):
 			with self.subTest(doctype=doctype):
