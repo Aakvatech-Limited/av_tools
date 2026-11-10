@@ -7,6 +7,8 @@ on:
       - "av_tools/av_tools/doctype/item_wise_tax_detail_rebuild*/**"
       - "av_tools/public/js/item_wise_tax_detail_rebuild*.js"
       - "av_tools/hooks.py"
+      - "av_tools/patches/v1_0/backfill_item_tax_rebuild_connections.py"
+      - "av_tools/patches.txt"
       - ".github/workflows/item-wise-tax-detail-rebuild.yml"
   workflow_dispatch:
 
@@ -24,7 +26,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: python -m unittest av_tools.tax_detail_rebuild.test_calculation av_tools.tax_detail_rebuild.test_service -v
+      - run: python -m unittest av_tools.tax_detail_rebuild.test_calculation av_tools.tax_detail_rebuild.test_service av_tools.tax_detail_rebuild.test_connections -v
       - run: node --test av_tools/tax_detail_rebuild/test_form.cjs
       - run: |
           node --check av_tools/public/js/item_wise_tax_detail_rebuild.js

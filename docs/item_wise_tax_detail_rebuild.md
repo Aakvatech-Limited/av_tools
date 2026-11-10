@@ -33,6 +33,24 @@ Only Accounts Manager and System Manager can use this maintenance tool, and
 source read/write permissions plus company restrictions still apply. Other users
 need no new roles to read the corrected invoice data through their normal access.
 
+## Invoice Connections
+
+Sales Invoice and Purchase Invoice show **Item Wise Tax Detail Rebuild** under
+**Connections > Tax Detail Maintenance** whenever that invoice appears in a
+request's Results child table. The connection includes Ready, Unchanged, Blocked,
+Rebuilt and Failed entries, including batch requests with no Single Invoice filter.
+Click the connection to see the matching request list, then open a request for its
+status and before/after details. Existing ERPNext and Asset Reconciliation
+connections are preserved.
+
+Separate read-only typed invoice Link fields on result rows prevent a Sales
+Invoice and Purchase Invoice with identical names from matching each other's
+requests. Counts are by request, not by matching child rows. The post-model-sync
+patch backfills these links on existing entries without changing source invoices,
+request status, snapshots or audit timestamps. Future previews populate them
+immediately. Run migrate and reload Desk after deployment; connections respect
+the standard target DocType access controls.
+
 ## Supported reconstruction
 
 - Uses each invoice item's **saved** `item_tax_rate` for the exact tax account.
@@ -107,6 +125,18 @@ The suite uses synthetic values only and covers repeated codes with zero rates,
 inclusive prices, signed/credit adjustments, FX, rounding, multiple accounts, exclusions, permissions,
 stale source/proposal checks, repeated runs and per-invoice rollback boundaries.
 These checks use mocked Frappe persistence, not a live database.
+
+Native Connections count and child-filter routing integration test (disposable
+ERPNext v16 site, after migrate):
+
+```bash
+bench --site SITE run-tests --app av_tools --module av_tools.tax_detail_rebuild.test_connections_integration
+```
+
+This test creates synthetic relation-only request/entry records inside the test
+transaction, not financial invoices. It checks duplicate child matches count as
+one request and identical Sales/Purchase Invoice names stay separate.
+
 
 On a Frappe v16 test site additionally verify DocType synchronization, request
 immutability, user/company restrictions, preview with no source writes, the

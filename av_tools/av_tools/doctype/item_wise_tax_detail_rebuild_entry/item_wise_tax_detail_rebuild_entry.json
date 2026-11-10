@@ -9,6 +9,8 @@
  "field_order": [
   "source_doctype",
   "source_invoice",
+  "rebuild_sales_invoice",
+  "rebuild_purchase_invoice",
   "status",
   "reason",
   "old_row_count",
@@ -96,6 +98,24 @@
    "fieldtype": "Data",
    "read_only": 1,
    "hidden": 1
+  },
+  {
+   "fieldname": "rebuild_sales_invoice",
+   "label": "Sales Invoice",
+   "fieldtype": "Link",
+   "options": "Sales Invoice",
+   "read_only": 1,
+   "hidden": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "rebuild_purchase_invoice",
+   "label": "Purchase Invoice",
+   "fieldtype": "Link",
+   "options": "Purchase Invoice",
+   "read_only": 1,
+   "hidden": 1,
+   "search_index": 1
   }
  ],
  "permissions": []
