@@ -1,0 +1,102 @@
+{
+ "doctype": "DocType",
+ "name": "Item Wise Tax Detail Rebuild Entry",
+ "module": "Av Tools",
+ "custom": 0,
+ "istable": 1,
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "source_doctype",
+  "source_invoice",
+  "status",
+  "reason",
+  "old_row_count",
+  "new_row_count",
+  "snapshot_hash",
+  "controls",
+  "before_details",
+  "proposed_details",
+  "proposal_hash"
+ ],
+ "fields": [
+  {
+   "fieldname": "source_doctype",
+   "label": "Transaction Type",
+   "fieldtype": "Data",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "source_invoice",
+   "label": "Invoice",
+   "fieldtype": "Dynamic Link",
+   "options": "source_doctype",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "label": "Status",
+   "fieldtype": "Select",
+   "options": "Ready\nUnchanged\nBlocked\nRebuilt\nFailed",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "reason",
+   "label": "Details",
+   "fieldtype": "Small Text",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "old_row_count",
+   "label": "Existing Rows",
+   "fieldtype": "Int",
+   "read_only": 1
+  },
+  {
+   "fieldname": "new_row_count",
+   "label": "Proposed Rows",
+   "fieldtype": "Int",
+   "read_only": 1
+  },
+  {
+   "fieldname": "snapshot_hash",
+   "label": "Preview Fingerprint",
+   "fieldtype": "Data",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "controls",
+   "label": "Reconciliation by Tax Account",
+   "fieldtype": "Code",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "before_details",
+   "label": "Before \u2014 Stored Details",
+   "fieldtype": "Code",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "proposed_details",
+   "label": "After \u2014 Proposed Details",
+   "fieldtype": "Code",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "proposal_hash",
+   "label": "Proposal Fingerprint",
+   "fieldtype": "Data",
+   "read_only": 1,
+   "hidden": 1
+  }
+ ],
+ "permissions": []
+}

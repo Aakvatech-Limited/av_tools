@@ -1,0 +1,31 @@
+name: Item-wise tax detail rebuild
+
+on:
+  pull_request:
+    paths:
+      - "av_tools/tax_detail_rebuild/**"
+      - "av_tools/av_tools/doctype/item_wise_tax_detail_rebuild*/**"
+      - "av_tools/public/js/item_wise_tax_detail_rebuild*.js"
+      - "av_tools/hooks.py"
+      - ".github/workflows/item-wise-tax-detail-rebuild.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: python -m unittest av_tools.tax_detail_rebuild.test_calculation av_tools.tax_detail_rebuild.test_service -v
+      - run: |
+          node --check av_tools/public/js/item_wise_tax_detail_rebuild.js
+          node --check av_tools/public/js/item_wise_tax_detail_rebuild_list.js
+          node --check av_tools/av_tools/doctype/item_wise_tax_detail_rebuild/item_wise_tax_detail_rebuild.js

@@ -61,6 +61,7 @@ doctype_js = {
 		"authotp/api/sales_invoice.js",
 		"av_tools/sales_invoice.js",
 		"av_tools/item_remaining_qty.js",
+		"public/js/item_wise_tax_detail_rebuild.js",
 	],
 	"Delivery Note": [
 		"weigh_bridge/doctype/delivery_note_weighbridge_ticket.js",
@@ -79,6 +80,7 @@ doctype_js = {
 	"Purchase Invoice": [
 		"weigh_bridge/doctype/purchase_invoice_weighbridge_ticket.js",
 		"public/js/purchase_invoice_assets.js",
+		"public/js/item_wise_tax_detail_rebuild.js",
 	],
 	"Purchase Receipt": "weigh_bridge/doctype/purchase_receipt_weighbridge_ticket.js",
 	"Material Request": "av_tools/material_request.js",
@@ -90,7 +92,11 @@ doctype_js = {
 	"Account": ["av_tools/account.js", "public/js/bank_account_setup.js"],
 	"Quotation": "selling_pricing_engine/sales.js",
 }
-doctype_list_js = {"Bank Transaction": "public/js/bank_transaction_list.js"}
+doctype_list_js = {
+	"Bank Transaction": "public/js/bank_transaction_list.js",
+	"Sales Invoice": "public/js/item_wise_tax_detail_rebuild_list.js",
+	"Purchase Invoice": "public/js/item_wise_tax_detail_rebuild_list.js",
+}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
