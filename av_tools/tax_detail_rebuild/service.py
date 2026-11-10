@@ -12,6 +12,7 @@ from av_tools.tax_detail_rebuild.calculation import (
 	reconstruct,
 	semantic_rows,
 )
+from av_tools.tax_detail_rebuild.connections import reference_fields
 
 RUN = "Item Wise Tax Detail Rebuild"
 ENTRY = "Item Wise Tax Detail Rebuild Entry"
@@ -110,6 +111,7 @@ def preview(run_name):
 		values = {
 			"source_doctype": run.source_doctype,
 			"source_invoice": name,
+			**reference_fields(run.source_doctype, name),
 			"status": "Blocked",
 			"reason": "",
 			"snapshot_hash": "",

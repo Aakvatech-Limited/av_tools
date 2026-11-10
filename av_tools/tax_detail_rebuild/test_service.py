@@ -205,6 +205,8 @@ class TestService(unittest.TestCase):
 			counts = self.service.preview(self.run.name)
 			self.assertEqual(counts["ready_count"], 1)
 			self.assertEqual(insert.call_args.args[0], self.service.ENTRY)
+			self.assertEqual(insert.call_args.args[4]["rebuild_purchase_invoice"], self.doc.name)
+			self.assertIsNone(insert.call_args.args[4]["rebuild_sales_invoice"])
 		self.doc.save.assert_not_called()
 		self.f.qb.from_.assert_not_called()
 		self.f.get_list.return_value = ["invoice"] * 101

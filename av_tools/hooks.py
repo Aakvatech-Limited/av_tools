@@ -359,7 +359,11 @@ extend_doctype_class = {
 # }
 override_doctype_dashboards = {
 	"Asset": "av_tools.asset_reconciliation.dashboard.asset",
-	"Purchase Invoice": "av_tools.asset_reconciliation.dashboard.purchase_invoice",
+	"Purchase Invoice": [
+		"av_tools.asset_reconciliation.dashboard.purchase_invoice",
+		"av_tools.tax_detail_rebuild.connections.purchase_invoice",
+	],
+	"Sales Invoice": "av_tools.tax_detail_rebuild.connections.sales_invoice",
 	"Journal Entry": "av_tools.asset_reconciliation.dashboard.journal_entry",
 }
 
