@@ -1,0 +1,247 @@
+{
+ "doctype": "DocType",
+ "name": "Item Wise Tax Detail Rebuild",
+ "module": "Av Tools",
+ "custom": 0,
+ "autoname": "format:ITAX-{YYYY}-{#####}",
+ "track_changes": 1,
+ "engine": "InnoDB",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "field_order": [
+  "scope_section",
+  "company",
+  "source_doctype",
+  "source_invoice",
+  "scope_column",
+  "from_date",
+  "to_date",
+  "max_invoices",
+  "rounding_tolerance",
+  "progress_section",
+  "status",
+  "currency",
+  "requested_by",
+  "previewed_at",
+  "started_at",
+  "finished_at",
+  "counts_column",
+  "scanned_count",
+  "ready_count",
+  "unchanged_count",
+  "blocked_count",
+  "rebuilt_count",
+  "failed_count",
+  "results_section",
+  "entries",
+  "failure_reason"
+ ],
+ "fields": [
+  {
+   "fieldname": "scope_section",
+   "label": "Source Transactions",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "company",
+   "label": "Company",
+   "fieldtype": "Link",
+   "options": "Company",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "source_doctype",
+   "label": "Transaction Type",
+   "fieldtype": "Select",
+   "options": "Sales Invoice\nPurchase Invoice",
+   "default": "Purchase Invoice",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "source_invoice",
+   "label": "Single Invoice (optional)",
+   "fieldtype": "Dynamic Link",
+   "options": "source_doctype"
+  },
+  {
+   "fieldname": "scope_column",
+   "label": "",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "from_date",
+   "label": "From Posting Date",
+   "fieldtype": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "to_date",
+   "label": "To Posting Date",
+   "fieldtype": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "max_invoices",
+   "label": "Maximum Invoices",
+   "fieldtype": "Int",
+   "default": "100",
+   "reqd": 1,
+   "description": "Up to 200 per request. Narrow the dates if more match."
+  },
+  {
+   "fieldname": "rounding_tolerance",
+   "label": "Maximum Rounding Difference",
+   "fieldtype": "Currency",
+   "options": "currency",
+   "default": "0.5",
+   "reqd": 1,
+   "description": "Company currency; maximum 0.5 per tax row. Larger differences are blocked."
+  },
+  {
+   "fieldname": "progress_section",
+   "label": "Progress and Audit",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "status",
+   "label": "Status",
+   "fieldtype": "Select",
+   "read_only": 1,
+   "options": "Draft\nPreviewed\nQueued\nRunning\nCompleted\nCompleted with Errors\nFailed",
+   "default": "Draft",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "currency",
+   "label": "Company Currency",
+   "fieldtype": "Link",
+   "read_only": 1,
+   "options": "Currency"
+  },
+  {
+   "fieldname": "requested_by",
+   "label": "Previewed By",
+   "fieldtype": "Link",
+   "read_only": 1,
+   "options": "User"
+  },
+  {
+   "fieldname": "previewed_at",
+   "label": "Previewed At",
+   "fieldtype": "Datetime",
+   "read_only": 1
+  },
+  {
+   "fieldname": "started_at",
+   "label": "Started At",
+   "fieldtype": "Datetime",
+   "read_only": 1
+  },
+  {
+   "fieldname": "finished_at",
+   "label": "Finished At",
+   "fieldtype": "Datetime",
+   "read_only": 1
+  },
+  {
+   "fieldname": "counts_column",
+   "label": "",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "scanned_count",
+   "label": "Scanned",
+   "fieldtype": "Int",
+   "read_only": 1,
+   "default": "0",
+   "in_list_view": 0
+  },
+  {
+   "fieldname": "ready_count",
+   "label": "Ready at Preview",
+   "fieldtype": "Int",
+   "read_only": 1,
+   "default": "0",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "unchanged_count",
+   "label": "Already Correct",
+   "fieldtype": "Int",
+   "read_only": 1,
+   "default": "0",
+   "in_list_view": 0
+  },
+  {
+   "fieldname": "blocked_count",
+   "label": "Blocked",
+   "fieldtype": "Int",
+   "read_only": 1,
+   "default": "0",
+   "in_list_view": 0
+  },
+  {
+   "fieldname": "rebuilt_count",
+   "label": "Rebuilt",
+   "fieldtype": "Int",
+   "read_only": 1,
+   "default": "0",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "failed_count",
+   "label": "Failed",
+   "fieldtype": "Int",
+   "read_only": 1,
+   "default": "0",
+   "in_list_view": 0
+  },
+  {
+   "fieldname": "results_section",
+   "label": "Invoice Results \u2014 expand a row for before/after details",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "entries",
+   "label": "Results",
+   "fieldtype": "Table",
+   "options": "Item Wise Tax Detail Rebuild Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "failure_reason",
+   "label": "Job Failure Reason",
+   "fieldtype": "Small Text",
+   "read_only": 1
+  }
+ ],
+ "permissions": [
+  {
+   "role": "Accounts Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 0,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "share": 0
+  },
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 0,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "share": 0
+  }
+ ],
+ "actions": [],
+ "links": [],
+ "states": []
+}
