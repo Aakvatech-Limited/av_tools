@@ -51,6 +51,67 @@ def invoice():
 
 
 class TestCalculation(unittest.TestCase):
+	def test_inclusive_price_uses_saved_exclusive_net_for_sales_and_purchases(self):
+		for doctype in ("Sales Invoice", "Purchase Invoice"):
+			with self.subTest(doctype=doctype):
+				doc = invoice()
+				doc["doctype"] = doctype
+				doc["taxes"][0]["included_in_print_rate"] = 1
+				doc["items"][0].update(amount=115, base_amount=115, net_amount=100)
+				doc["items"][1].update(amount=50, base_amount=50, net_amount=50)
+				doc.update(total=165, base_total=165, net_total=150, base_net_total=150, grand_total=165)
+				result = reconstruct(doc)
+				self.assertEqual([row["amount"] for row in result["rows"]], [15, 0])
+				self.assertEqual([row["taxable_amount"] for row in result["rows"]], [100, 50])
+
+	def test_inclusive_foreign_currency_does_not_strip_or_convert_tax_twice(self):
+		doc = invoice()
+		doc["conversion_rate"] = 54
+		doc["currency"] = "EUR"
+		doc["taxes"][0].update(included_in_print_rate=1, base_tax_amount_after_discount_amount=810)
+		doc["items"][0].update(amount=115, base_amount=6210, net_amount=100, base_net_amount=5400)
+		doc["items"][1].update(amount=50, base_amount=2700, net_amount=50, base_net_amount=2700)
+		result = reconstruct(doc)
+		self.assertEqual([row["amount"] for row in result["rows"]], [810, 0])
+		self.assertEqual(result["rows"][0]["taxable_amount"], 5400)
+
+	def test_multiple_inclusive_percentage_accounts_share_exclusive_net(self):
+		doc = invoice()
+		doc["taxes"][0]["included_in_print_rate"] = 1
+		doc["taxes"].append(
+			{
+				"name": "t2",
+				"idx": 2,
+				"account_head": "Levy",
+				"rate": 5,
+				"charge_type": "On Net Total",
+				"included_in_print_rate": 1,
+				"base_tax_amount_after_discount_amount": 5,
+			}
+		)
+		for item in doc["items"]:
+			rates = json.loads(item["item_tax_rate"])
+			rates["Levy"] = 5 if item["name"] == "r1" else 0
+			item["item_tax_rate"] = json.dumps(rates)
+		doc["items"][0].update(amount=120, base_amount=120, net_amount=100)
+		self.assertEqual([row["amount"] for row in reconstruct(doc)["rows"]], [15, 0, 5, 0])
+
+	def test_inclusive_credit_note_keeps_negative_net_and_vat(self):
+		doc = invoice()
+		doc["taxes"][0].update(included_in_print_rate=1, base_tax_amount_after_discount_amount=-15)
+		doc["items"][0].update(amount=-115, base_amount=-115, net_amount=-100, base_net_amount=-100)
+		self.assertEqual(reconstruct(doc)["rows"][0]["amount"], -15)
+
+	def test_inclusive_does_not_guess_when_saved_net_is_wrong_or_tax_is_compound(self):
+		doc = invoice()
+		doc["taxes"][0]["included_in_print_rate"] = 1
+		doc["items"][0].update(amount=115, base_amount=115, base_net_amount=115)
+		with self.assertRaisesRegex(CannotRebuild, "exceeds tolerance"):
+			reconstruct(doc)
+		doc["taxes"][0]["charge_type"] = "On Previous Row Total"
+		with self.assertRaisesRegex(CannotRebuild, "unsupported charge"):
+			reconstruct(doc)
+
 	def test_explicit_zero_with_duplicate_item_codes(self):
 		doc = invoice()
 		before = copy.deepcopy(doc)

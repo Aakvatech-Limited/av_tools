@@ -42,6 +42,14 @@ need no new roles to read the corrected invoice data through their normal access
   items may use the rate saved on the invoice's tax row.
 - Uses signed `base_net_amount`, preserving credit notes and negative adjustment
   lines; amounts already in base currency are not converted again.
+- Supports tax-inclusive prices (`included_in_print_rate = 1`) for the supported
+  percentage-on-net charges. ERPNext's saved `base_net_amount` is already net of
+  inclusive tax: an inclusive price of 115 at 15% has net 100 and VAT 15. The tool
+  uses that saved net; it neither applies 15% to gross 115 nor removes the tax a
+  second time. Mixed taxable/exempt items, inclusive credit notes, foreign
+  currencies and multiple independent inclusive percentage accounts follow the
+  same rule. Wrong/missing saved net values cannot be guessed from today's
+  templates; unexplained differences remain blocked.
 - Supports On Net Total percentage charges, including simple Deduct rows, and
   works independently for every tax account. Current-template rates, invoice
   totals and GL entries are never recalculated.
@@ -96,7 +104,7 @@ python -m unittest av_tools.tax_detail_rebuild.test_calculation av_tools.tax_det
 ```
 
 The suite uses synthetic values only and covers repeated codes with zero rates,
-signed/credit adjustments, FX, rounding, multiple accounts, exclusions, permissions,
+inclusive prices, signed/credit adjustments, FX, rounding, multiple accounts, exclusions, permissions,
 stale source/proposal checks, repeated runs and per-invoice rollback boundaries.
 These checks use mocked Frappe persistence, not a live database.
 
