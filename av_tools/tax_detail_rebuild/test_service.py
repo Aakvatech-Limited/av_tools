@@ -149,6 +149,22 @@ class TestService(unittest.TestCase):
 			self.service.rebuild_one(self.run, self.entry)
 		self.doc.add_comment.assert_not_called()
 
+	def test_database_zero_canonicalization_does_not_reject_exempt_adjustment(self):
+		self.doc.data["items"][1]["base_net_amount"] = -0.03
+		self.entry.snapshot_hash = fingerprint(self.doc.as_dict())
+		proposal = self.service._proposal(self.run, self.doc)
+		self.entry.proposal_hash = fingerprint(proposal)
+		stored = copy.deepcopy(proposal["rows"])
+		for row in stored:
+			for field in ("rate", "amount", "taxable_amount"):
+				if row[field] == 0:
+					row[field] = 0
+		self.f.get_doc.return_value = self.doc
+		self.f.get_all.return_value = stored
+		with patch.object(self.service, "_insert_child"):
+			self.assertEqual(self.service.rebuild_one(self.run, self.entry), "Rebuilt")
+		self.doc.save.assert_not_called()
+
 	def test_repeated_repair_is_unchanged(self):
 		self.doc.data["item_wise_tax_details"] = reconstruct(self.doc.as_dict())["rows"]
 		self.entry.snapshot_hash = fingerprint(self.doc.as_dict())
