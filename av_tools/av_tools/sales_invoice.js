@@ -53,17 +53,24 @@ frappe.ui.form.on("Sales Invoice", {
 	},
 
 	custom_is_trade_in: function (frm) {
+		// Discard responses and confirmations belonging to an earlier checkbox action.
+		const request_id = (frm._trade_in_request_id || 0) + 1;
+		frm._trade_in_request_id = request_id;
+		const is_current_request = () => frm._trade_in_request_id === request_id;
+
 		if (frm.doc.custom_is_trade_in) {
 			const reset_trade_in_checkbox = () => {
-				frm.set_value("custom_is_trade_in", 0);
-				frm.refresh_field("custom_is_trade_in");
+				if (is_current_request() && frm.doc.custom_is_trade_in) {
+					frm.set_value("custom_is_trade_in", 0);
+				}
 			};
 
 			frappe.db
 				.get_value("Company", frm.doc.company, ["custom_trade_in_control_account"])
 				.then((company_res) => {
-					// Check if user unticked while company lookup was in flight
-					if (!frm.doc.custom_is_trade_in) return;
+					if (!is_current_request() || !frm.doc.custom_is_trade_in) return;
+					if ((frm.doc.items || []).some((item) => item.item_code === "Trade In"))
+						return;
 
 					const trade_in_account = company_res?.message?.custom_trade_in_control_account;
 					if (!trade_in_account) {
@@ -77,8 +84,7 @@ frappe.ui.form.on("Sales Invoice", {
 					frappe.db
 						.get_value("Item", "Trade In", "stock_uom")
 						.then((item_res) => {
-							// Check if user unticked or row was already added while lookup was in flight
-							if (!frm.doc.custom_is_trade_in) return;
+							if (!is_current_request() || !frm.doc.custom_is_trade_in) return;
 							if (
 								(frm.doc.items || []).some((item) => item.item_code === "Trade In")
 							)
@@ -108,6 +114,7 @@ frappe.ui.form.on("Sales Invoice", {
 							frm.refresh_field("items");
 						})
 						.catch((err) => {
+							if (!is_current_request() || !frm.doc.custom_is_trade_in) return;
 							reset_trade_in_checkbox();
 							frappe.msgprint(
 								__('Failed to fetch details for "Trade In" item: {0}', [
@@ -117,25 +124,31 @@ frappe.ui.form.on("Sales Invoice", {
 						});
 				})
 				.catch((err) => {
+					if (!is_current_request() || !frm.doc.custom_is_trade_in) return;
 					reset_trade_in_checkbox();
 					frappe.msgprint(
 						__("Failed to fetch Company settings: {0}", [err.message || err])
 					);
 				});
 		} else {
-			const trade_in_items = (frm.doc.items || []).filter(
-				(item) => item.item_code === "Trade In"
-			);
-			if (trade_in_items.length > 0) {
+			if ((frm.doc.items || []).some((item) => item.item_code === "Trade In")) {
 				frappe.confirm(
 					__('Are you sure you want to remove the "Trade In" item?'),
 					() => {
-						trade_in_items.forEach((row) => {
+						if (!is_current_request() || frm.doc.custom_is_trade_in) return;
+						const items_to_remove = (frm.doc.items || []).filter(
+							(item) => item.item_code === "Trade In"
+						);
+						items_to_remove.forEach((row) => {
 							frappe.model.clear_doc(row.doctype, row.name);
 						});
 						frm.refresh_field("items");
 					},
-					() => frm.set_value("custom_is_trade_in", 1)
+					() => {
+						if (is_current_request() && !frm.doc.custom_is_trade_in) {
+							frm.set_value("custom_is_trade_in", 1);
+						}
+					}
 				);
 			}
 		}
