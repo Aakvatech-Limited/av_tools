@@ -1,60 +1,72 @@
+// This file is loaded via doctype_js and concatenated into meta.__js after
+// other scripts that may not end with a semicolon. It must NOT start with
+// "(", "[" or a template literal, otherwise it is parsed as a call on the
+// previous script's last expression ("frappe.ui.form.on(...) is not a function").
+// The namespace below is the first statement and also holds the module state.
 frappe.provide("av_tools.selling_pricing_engine");
 
 (() => {
-	if (frappe.__selling_pricing_engine_loaded) return;
-	frappe.__selling_pricing_engine_loaded = true;
+	const spe = av_tools.selling_pricing_engine;
+	if (spe.loaded) return;
+	spe.loaded = true;
 
-	const api = "av_tools.selling_pricing_engine.sales";
-	const configs = new Map();
+	const API = "av_tools.selling_pricing_engine.sales";
+	const DOCTYPES = ["Quotation", "Sales Order", "Sales Invoice"];
+	spe.configs = new Map();
 
-	const getConfiguration = async (company) => {
-		if (!company) return { enabled: false };
-		if (!configs.has(company)) {
-			try {
-				const conf = await frappe.xcall(`${api}.sales_configuration`, { company });
-				configs.set(company, conf || { enabled: false });
-			} catch (err) {
-				console.warn("SPE: Failed to load company pricing configuration", err);
-				configs.set(company, { enabled: false });
-			}
+	// Cache the promise (not the value) so simultaneous triggers share one request.
+	// On failure, drop the cache entry so a transient error is retried next time.
+	const getConfiguration = (company) => {
+		if (!company) return Promise.resolve({ enabled: false });
+		if (!spe.configs.has(company)) {
+			const request = frappe
+				.xcall(`${API}.sales_configuration`, { company })
+				.then((config) => config || { enabled: false })
+				.catch((error) => {
+					console.warn("SPE: failed to load pricing configuration", error);
+					spe.configs.delete(company);
+					return { enabled: false };
+				});
+			spe.configs.set(company, request);
 		}
-		return configs.get(company);
+		return spe.configs.get(company);
 	};
 
+	const headerSnapshot = (doc) =>
+		JSON.stringify([
+			doc.company,
+			doc.selling_price_list,
+			doc.currency,
+			doc.conversion_rate,
+			doc.plc_conversion_rate,
+			doc.transaction_date || doc.posting_date,
+			doc.custom_spe_keep_manual_rates,
+			doc.custom_spe_branch,
+		]);
+
+	const isDraft = (frm) => !!frm && !!frm.doc && frm.doc.docstatus === 0;
+
 	async function refresh(frm) {
-		// Only run on draft documents
-		if (!frm || !frm.doc || frm.doc.docstatus !== 0) return;
+		if (!isDraft(frm)) return;
 
 		const config = await getConfiguration(frm.doc.company);
-		if (!config || !config.enabled) return;
+		if (!config.enabled) return;
 
 		const request = (frm.__spe_request || 0) + 1;
 		frm.__spe_request = request;
+		const header = headerSnapshot(frm.doc);
 
-		const getHeaderSnapshot = () => JSON.stringify([
-			frm.doc.company,
-			frm.doc.selling_price_list,
-			frm.doc.currency,
-			frm.doc.conversion_rate,
-			frm.doc.plc_conversion_rate,
-			frm.doc.transaction_date || frm.doc.posting_date,
-			frm.doc.custom_spe_keep_manual_rates,
-			frm.doc.custom_spe_branch,
-		]);
-
-		const header = getHeaderSnapshot();
-
-		let rows = [];
+		let rows;
 		try {
-			rows = await frappe.xcall(`${api}.refresh_prices`, { doc: frm.doc });
-		} catch (err) {
-			console.warn("SPE: Price refresh skipped or failed on server", err);
+			rows = await frappe.xcall(`${API}.refresh_prices`, { doc: frm.doc });
+		} catch (error) {
+			// Server messages (frappe.throw) are already shown by the request handler.
+			console.warn("SPE: price refresh failed", error);
 			return;
 		}
 
-		// Discard stale responses if user continued typing or editing
-		if (request !== frm.__spe_request || getHeaderSnapshot() !== header) return;
-
+		// Discard stale responses if the user changed the header or triggered another refresh.
+		if (request !== frm.__spe_request || headerSnapshot(frm.doc) !== header) return;
 		if (!Array.isArray(rows) || !rows.length) return;
 
 		for (const result of rows) {
@@ -81,27 +93,25 @@ frappe.provide("av_tools.selling_pricing_engine");
 	}
 
 	const schedule = (frm) => {
-		if (frm && frm.doc && frm.doc.docstatus === 0) {
-			frappe.after_ajax(() => refresh(frm));
-		}
+		if (isDraft(frm)) frappe.after_ajax(() => refresh(frm));
 	};
 
-	for (const doctype of ["Quotation", "Sales Order", "Sales Invoice"]) {
+	const toggle = (frm, fieldname, show) => {
+		if (frm.fields_dict[fieldname]) frm.toggle_display(fieldname, show);
+	};
+
+	for (const doctype of DOCTYPES) {
 		frappe.ui.form.on(doctype, {
 			async refresh(frm) {
-				if (!frm.doc || !frm.doc.company) return;
+				if (!frm.doc.company) return;
 
-				configs.delete(frm.doc.company);
+				spe.configs.delete(frm.doc.company);
 				const config = await getConfiguration(frm.doc.company);
 
-				if (frm.fields_dict.custom_spe_keep_manual_rates) {
-					frm.toggle_display("custom_spe_keep_manual_rates", !!config.enabled);
-				}
-				if (frm.fields_dict.custom_spe_branch) {
-					frm.toggle_display("custom_spe_branch", !!config.expanded);
-				}
+				toggle(frm, "custom_spe_keep_manual_rates", !!config.enabled);
+				toggle(frm, "custom_spe_branch", !!config.expanded);
 
-				if (config.enabled && frm.doc.docstatus === 0) {
+				if (config.enabled && isDraft(frm)) {
 					frm.add_custom_button(__("Refresh Selling Prices"), () => refresh(frm));
 				}
 			},
