@@ -64,17 +64,20 @@ frappe.ui.form.on("Sales Invoice", {
 						);
 
 					if (!frm.doc.items.some((item) => item.item_code === "Trade In")) {
-						frm.add_child("items", {
-							item_code: "Trade In",
-							item_name: "Trade In",
-							income_account: trade_in_account,
-							qty: 1,
-							uom: "Nos",
-							stock_uom: "Nos",
-							conversion_factor: 1,
-							description: "Trade-In",
+						frappe.db.get_value("Item", "Trade In", "stock_uom").then((item_res) => {
+							const trade_in_uom = item_res?.message?.stock_uom || "Nos";
+							frm.add_child("items", {
+								item_code: "Trade In",
+								item_name: "Trade In",
+								income_account: trade_in_account,
+								qty: 1,
+								uom: trade_in_uom,
+								stock_uom: trade_in_uom,
+								conversion_factor: 1,
+								description: "Trade-In",
+							});
+							frm.refresh_field("items");
 						});
-						frm.refresh_field("items");
 					}
 				});
 		} else {
