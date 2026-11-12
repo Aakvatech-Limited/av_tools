@@ -53,44 +53,104 @@ frappe.ui.form.on("Sales Invoice", {
 	},
 
 	custom_is_trade_in: function (frm) {
+		// Discard responses and confirmations belonging to an earlier checkbox action.
+		const request_id = (frm._trade_in_request_id || 0) + 1;
+		frm._trade_in_request_id = request_id;
+		const is_current_request = () => frm._trade_in_request_id === request_id;
+
 		if (frm.doc.custom_is_trade_in) {
+			const reset_trade_in_checkbox = () => {
+				if (is_current_request() && frm.doc.custom_is_trade_in) {
+					frm.set_value("custom_is_trade_in", 0);
+				}
+			};
+
 			frappe.db
 				.get_value("Company", frm.doc.company, ["custom_trade_in_control_account"])
 				.then((company_res) => {
+					if (!is_current_request() || !frm.doc.custom_is_trade_in) return;
+					if ((frm.doc.items || []).some((item) => item.item_code === "Trade In"))
+						return;
+
 					const trade_in_account = company_res?.message?.custom_trade_in_control_account;
-					if (!trade_in_account)
-						frappe.throw(
+					if (!trade_in_account) {
+						reset_trade_in_checkbox();
+						frappe.msgprint(
 							__("Trade-In Control Account is not set in Company settings.")
 						);
-
-					if (!frm.doc.items.some((item) => item.item_code === "Trade In")) {
-						frm.add_child("items", {
-							item_code: "Trade In",
-							item_name: "Trade In",
-							income_account: trade_in_account,
-							qty: 1,
-							uom: "Nos",
-							stock_uom: "Nos",
-							conversion_factor: 1,
-							description: "Trade-In",
-						});
-						frm.refresh_field("items");
+						return;
 					}
+
+					frappe.db
+						.get_value("Item", "Trade In", "stock_uom")
+						.then((item_res) => {
+							if (!is_current_request() || !frm.doc.custom_is_trade_in) return;
+							if (
+								(frm.doc.items || []).some((item) => item.item_code === "Trade In")
+							)
+								return;
+
+							const trade_in_uom = item_res?.message?.stock_uom;
+							if (!trade_in_uom) {
+								reset_trade_in_checkbox();
+								frappe.msgprint(
+									__(
+										'Item "Trade In" is missing or does not have a default Stock UOM configured.'
+									)
+								);
+								return;
+							}
+
+							frm.add_child("items", {
+								item_code: "Trade In",
+								item_name: "Trade In",
+								income_account: trade_in_account,
+								qty: 1,
+								uom: trade_in_uom,
+								stock_uom: trade_in_uom,
+								conversion_factor: 1,
+								description: "Trade-In",
+							});
+							frm.refresh_field("items");
+						})
+						.catch((err) => {
+							if (!is_current_request() || !frm.doc.custom_is_trade_in) return;
+							reset_trade_in_checkbox();
+							frappe.msgprint(
+								__('Failed to fetch details for "Trade In" item: {0}', [
+									err.message || err,
+								])
+							);
+						});
+				})
+				.catch((err) => {
+					if (!is_current_request() || !frm.doc.custom_is_trade_in) return;
+					reset_trade_in_checkbox();
+					frappe.msgprint(
+						__("Failed to fetch Company settings: {0}", [err.message || err])
+					);
 				});
 		} else {
-			frappe.confirm(
-				__('Are you sure you want to remove the "Trade In" item?'),
-				() => {
-					const items_to_remove = (frm.doc.items || []).filter(
-						(item) => item.item_code === "Trade In"
-					);
-					items_to_remove.forEach((row) => {
-						frappe.model.clear_doc(row.doctype, row.name);
-					});
-					frm.refresh_field("items");
-				},
-				() => frm.set_value("custom_is_trade_in", 1)
-			);
+			if ((frm.doc.items || []).some((item) => item.item_code === "Trade In")) {
+				frappe.confirm(
+					__('Are you sure you want to remove the "Trade In" item?'),
+					() => {
+						if (!is_current_request() || frm.doc.custom_is_trade_in) return;
+						const items_to_remove = (frm.doc.items || []).filter(
+							(item) => item.item_code === "Trade In"
+						);
+						items_to_remove.forEach((row) => {
+							frappe.model.clear_doc(row.doctype, row.name);
+						});
+						frm.refresh_field("items");
+					},
+					() => {
+						if (is_current_request() && !frm.doc.custom_is_trade_in) {
+							frm.set_value("custom_is_trade_in", 1);
+						}
+					}
+				);
+			}
 		}
 	},
 });
