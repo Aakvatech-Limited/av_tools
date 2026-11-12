@@ -2,7 +2,8 @@ import json
 import re
 
 import frappe
-from frappe import scrub
+from erpnext.selling.doctype.party_specific_item.party_specific_item import get_allowed_items_condition
+from erpnext.stock.doctype.company_restriction.company_restriction import get_restriction_criterion
 from frappe.desk.search import search_link as original_search_link
 from frappe.desk.search import search_widget as original_search_widget
 from frappe.query_builder.functions import IfNull
@@ -102,6 +103,7 @@ def item_query(
 	page_len: int,
 	filters: str | dict | list | None,
 	as_dict: bool = False,
+	reference_doctype: str | None = None,
 ):
 	doctype = "Item"
 	search_terms = split_search_terms(txt)
@@ -129,34 +131,20 @@ def item_query(
 		)
 	)
 
-	if filters and isinstance(filters, dict):
-		if filters.get("customer") or filters.get("supplier"):
-			party = filters.get("customer") or filters.get("supplier")
-			item_rules_list = frappe.get_all(
-				"Party Specific Item",
-				filters={"party": party},
-				fields=["restrict_based_on", "based_on_value"],
-			)
-
-			filters_dict = {}
-			for rule in item_rules_list:
-				if rule["restrict_based_on"] == "Item":
-					rule["restrict_based_on"] = "name"
-				filters_dict[rule.restrict_based_on] = []
-
-			for rule in item_rules_list:
-				filters_dict[rule.restrict_based_on].append(rule.based_on_value)
-
-			for filter in filters_dict:
-				filters[scrub(filter)] = ["in", filters_dict[filter]]
-
-			if filters.get("customer"):
-				del filters["customer"]
-			else:
-				del filters["supplier"]
-		else:
-			filters.pop("customer", None)
-			filters.pop("supplier", None)
+	# These are search context, not columns on Item. ERPNext v16 enforces
+	# both through dedicated criteria rather than regular Item filters.
+	company = None
+	party_type = None
+	party = None
+	if isinstance(filters, dict):
+		filters = filters.copy()
+		company = filters.pop("company", None)
+		if filters.get("customer"):
+			party_type, party = "Customer", filters["customer"]
+		elif filters.get("supplier"):
+			party_type, party = "Supplier", filters["supplier"]
+		filters.pop("customer", None)
+		filters.pop("supplier", None)
 
 	Item = frappe.qb.DocType("Item")
 	Barcode = frappe.qb.DocType("Item Barcode")
@@ -165,7 +153,16 @@ def item_query(
 		fields=select_fields,
 		filters=filters,
 		ignore_permissions=False,
+		reference_doctype=reference_doctype,
 	)
+	if company:
+		query = query.where(get_restriction_criterion("Item", [company]))
+	if party:
+		# Includes customer/supplier-group ancestors, Item Group descendants,
+		# variants and OR-combined rules from ERPNext's native implementation.
+		allowed_items = get_allowed_items_condition(party_type, party)
+		if allowed_items is not None:
+			query = query.where(allowed_items)
 	query = (
 		query.where(Item.docstatus < 2)
 		.where(Item.disabled == 0)
