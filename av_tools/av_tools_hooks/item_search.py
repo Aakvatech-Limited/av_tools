@@ -103,6 +103,7 @@ def item_query(
 	page_len: int,
 	filters: str | dict | list | None,
 	as_dict: bool = False,
+	reference_doctype: str | None = None,
 ):
 	doctype = "Item"
 	search_terms = split_search_terms(txt)
@@ -152,6 +153,7 @@ def item_query(
 		fields=select_fields,
 		filters=filters,
 		ignore_permissions=False,
+		reference_doctype=reference_doctype,
 	)
 	if company:
 		query = query.where(get_restriction_criterion("Item", [company]))
