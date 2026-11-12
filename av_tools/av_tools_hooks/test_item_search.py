@@ -1,6 +1,6 @@
 import re
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import patch, sentinel
 
 from av_tools.av_tools_hooks import item_search
 
@@ -54,3 +54,80 @@ class TestItemSearch(TestCase):
 			self.assertIsNotNone(match, field)
 			self.assertEqual([params[match.group(1)], params[match.group(2)]], ["%blue%", "%chair%"])
 		self.assertIn("%blue%chair%", values.values())
+
+	def test_item_query_respects_company_and_party_restrictions(self):
+		for party_field, party_type, party_name in (
+			("customer", "Customer", "Kamal Refinery Limited"),
+			("supplier", "Supplier", "Test Supplier"),
+		):
+			with self.subTest(party_type=party_type):
+				filters = {
+					"is_sales_item": 1,
+					"has_variants": 0,
+					"company": "Aakvatech Limited",
+					party_field: party_name,
+				}
+				with (
+					patch.object(item_search.frappe, "get_meta") as get_meta,
+					patch.object(item_search.frappe.qb, "get_query") as get_query,
+					patch.object(item_search.frappe.db, "count", return_value=50000),
+					patch.object(
+						item_search, "get_restriction_criterion", return_value=sentinel.company_condition
+					) as company_restriction,
+					patch.object(
+						item_search, "get_allowed_items_condition", return_value=sentinel.party_condition
+					) as party_restriction,
+				):
+					get_meta.return_value.get_search_fields.return_value = ["item_name"]
+					query = get_query.return_value
+					for method in ("where", "orderby", "offset", "limit"):
+						getattr(query, method).return_value = query
+					query.run.return_value = []
+
+					result = item_search.item_query.__wrapped__(
+						doctype="Item",
+						txt="hosting",
+						searchfield="name",
+						start=0,
+						page_len=20,
+						filters=filters,
+					)
+
+					self.assertEqual(result, [])
+					self.assertEqual(
+						get_query.call_args.kwargs["filters"],
+						{"is_sales_item": 1, "has_variants": 0},
+					)
+					self.assertEqual(filters["company"], "Aakvatech Limited")
+					self.assertEqual(filters[party_field], party_name)
+					company_restriction.assert_called_once_with("Item", ["Aakvatech Limited"])
+					party_restriction.assert_called_once_with(party_type, party_name)
+					query.where.assert_any_call(sentinel.company_condition)
+					query.where.assert_any_call(sentinel.party_condition)
+
+	def test_item_query_allows_parties_without_specific_item_rules(self):
+		with (
+			patch.object(item_search.frappe, "get_meta") as get_meta,
+			patch.object(item_search.frappe.qb, "get_query") as get_query,
+			patch.object(item_search.frappe.db, "count", return_value=50000),
+			patch.object(item_search, "get_allowed_items_condition", return_value=None) as party_restriction,
+			patch.object(item_search, "get_restriction_criterion") as company_restriction,
+		):
+			get_meta.return_value.get_search_fields.return_value = ["item_name"]
+			query = get_query.return_value
+			for method in ("where", "orderby", "offset", "limit"):
+				getattr(query, method).return_value = query
+			query.run.return_value = []
+
+			item_search.item_query.__wrapped__(
+				doctype="Item",
+				txt="hosting",
+				searchfield="name",
+				start=0,
+				page_len=20,
+				filters={"customer": "Kamal Refinery Limited", "is_sales_item": 1},
+			)
+
+			self.assertEqual(get_query.call_args.kwargs["filters"], {"is_sales_item": 1})
+			party_restriction.assert_called_once_with("Customer", "Kamal Refinery Limited")
+			company_restriction.assert_not_called()
