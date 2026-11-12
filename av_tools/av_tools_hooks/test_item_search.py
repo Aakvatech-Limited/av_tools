@@ -1,3 +1,4 @@
+import inspect
 import re
 from unittest import TestCase
 from unittest.mock import patch, sentinel
@@ -29,7 +30,7 @@ class TestItemSearch(TestCase):
 			patch.object(database, "count", return_value=10),
 			patch.object(database, "sql", wraps=database.sql) as sql_spy,
 		):
-			item_search.item_query.__wrapped__(
+			inspect.unwrap(item_search.item_query)(
 				doctype="Item",
 				txt=txt,
 				searchfield="name",
@@ -84,13 +85,14 @@ class TestItemSearch(TestCase):
 						getattr(query, method).return_value = query
 					query.run.return_value = []
 
-					result = item_search.item_query.__wrapped__(
+					result = inspect.unwrap(item_search.item_query)(
 						doctype="Item",
 						txt="hosting",
 						searchfield="name",
 						start=0,
 						page_len=20,
 						filters=filters,
+						reference_doctype="Quotation",
 					)
 
 					self.assertEqual(result, [])
@@ -98,6 +100,8 @@ class TestItemSearch(TestCase):
 						get_query.call_args.kwargs["filters"],
 						{"is_sales_item": 1, "has_variants": 0},
 					)
+					self.assertEqual(get_query.call_args.kwargs["reference_doctype"], "Quotation")
+					self.assertFalse(get_query.call_args.kwargs["ignore_permissions"])
 					self.assertEqual(filters["company"], "Aakvatech Limited")
 					self.assertEqual(filters[party_field], party_name)
 					company_restriction.assert_called_once_with("Item", ["Aakvatech Limited"])
@@ -119,7 +123,7 @@ class TestItemSearch(TestCase):
 				getattr(query, method).return_value = query
 			query.run.return_value = []
 
-			item_search.item_query.__wrapped__(
+			inspect.unwrap(item_search.item_query)(
 				doctype="Item",
 				txt="hosting",
 				searchfield="name",
@@ -129,5 +133,6 @@ class TestItemSearch(TestCase):
 			)
 
 			self.assertEqual(get_query.call_args.kwargs["filters"], {"is_sales_item": 1})
+			self.assertIsNone(get_query.call_args.kwargs["reference_doctype"])
 			party_restriction.assert_called_once_with("Customer", "Kamal Refinery Limited")
 			company_restriction.assert_not_called()
