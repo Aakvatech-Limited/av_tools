@@ -3,8 +3,8 @@
     "dt": "Payroll Settings",
     "fieldname": "custom_fixed_30_day_month",
     "fieldtype": "Check",
-    "label": "Fixed 30-Day Month for Monthly Payroll",
-    "description": "When enabled, monthly Salary Slips use the configured fixed monthly divisor (default 30).",
+    "label": "Use Fixed Monthly Salary Divisor",
+    "description": "Enable the configurable monthly salary divisor below (default 30 days; 26 supported).",
     "insert_after": "payroll_based_on",
     "default": "0",
     "module": "Av Tools"
