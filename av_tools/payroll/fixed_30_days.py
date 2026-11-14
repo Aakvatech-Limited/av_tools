@@ -1,4 +1,4 @@
-"""Configurable 30-day monthly payroll proration for Frappe HRMS.
+"""Configurable fixed-divisor monthly payroll proration for Frappe HRMS.
 
 Uses the upstream attendance/leave calculation first. Never replaces HRMS
 statutory deduction, loan or journal-entry logic.
@@ -19,15 +19,19 @@ def fixed_30_payment_days(
     actual_end_date,
     mode="Deduction",
     crossover_days=15,
+    divisor=30,
 ):
-    """Calculate payable days with a fixed divisor of 30.
+    """Calculate payable days with a configurable fixed divisor.
 
-    Deduction: 30 minus equivalent unpaid/absent days for a complete month.
+    Deduction: divisor minus equivalent unpaid/absent days for a complete month.
     Attendance: actual payable working days reported by HRMS.
     Automatic: Deduction until unpaid days reach crossover, then Attendance.
     Regardless of mode, a full month with zero payable days pays zero.
     For partial pay periods or eligibility, actual payable days are used.
     """
+    divisor = cint(divisor)
+    if divisor < 1 or divisor > 31:
+        raise ValueError("Monthly payroll divisor must be between 1 and 31")
     actual_payment = flt(actual_payment_days)
     working = flt(actual_working_days)
     if actual_payment <= 0:
@@ -47,22 +51,22 @@ def fixed_30_payment_days(
     )
 
     if not full_month:
-        return max(0.0, min(30.0, actual_payment))
+        return max(0.0, min(float(divisor), actual_payment))
 
     unpaid = max(0.0, working - actual_payment)
     if unpaid == 0:
-        return 30.0
+        return float(divisor)
     if mode == "Automatic":
         mode = "Attendance" if unpaid >= flt(crossover_days) else "Deduction"
 
     if mode == "Attendance":
         payable = actual_payment
     elif mode == "Deduction":
-        payable = 30.0 - unpaid
+        payable = float(divisor) - unpaid
     else:
         raise ValueError("Unsupported fixed 30-day payroll proration mode")
 
-    return max(0.0, min(30.0, payable))
+    return max(0.0, min(float(divisor), payable))
 
 
 class FixedThirtyDaySalarySlip:
@@ -88,6 +92,7 @@ class FixedThirtyDaySalarySlip:
         settings = frappe.db.get_single_value
         mode = settings("Payroll Settings", "custom_fixed_30_proration_mode") or "Deduction"
         crossover = settings("Payroll Settings", "custom_fixed_30_crossover_days")
+        divisor = settings("Payroll Settings", "custom_monthly_payroll_divisor") or 30
         self.payment_days = fixed_30_payment_days(
             self.payment_days,
             self.total_working_days,
@@ -97,6 +102,7 @@ class FixedThirtyDaySalarySlip:
             self.actual_end_date,
             mode=mode,
             crossover_days=crossover if crossover is not None else 15,
+            divisor=divisor,
         )
-        self.total_working_days = 30
+        self.total_working_days = cint(divisor)
         return result
