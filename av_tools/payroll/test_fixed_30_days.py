@@ -55,5 +55,61 @@ class TestFixedThirtyDayPayroll(unittest.TestCase):
         self.check(30, 31, 31, "2026-07-01", "2026-07-30")
 
 
+    def test_february_2027_all_28_days_unpaid_zero_pay(self):
+        self.check(0, 0, 28, "2027-02-01", "2027-02-28")
+
+    def test_february_2027_27_days_unpaid_deduction_mode(self):
+        self.check(3, 1, 28, "2027-02-01", "2027-02-28")
+
+    def test_february_2027_27_days_unpaid_attendance_mode(self):
+        self.assertEqual(
+            fixed_30_payment_days(1, 28, "2027-02-01", "2027-02-28",
+                                  "2027-02-01", "2027-02-28", mode="Attendance"),
+            1,
+        )
+
+    def test_attendance_mode_full_february_paid_in_full(self):
+        self.assertEqual(
+            fixed_30_payment_days(28, 28, "2027-02-01", "2027-02-28",
+                                  "2027-02-01", "2027-02-28", mode="Attendance"),
+            30,
+        )
+
+    def test_auto_below_crossover_uses_deduction_mode(self):
+        self.assertEqual(
+            fixed_30_payment_days(14, 28, "2027-02-01", "2027-02-28",
+                                  "2027-02-01", "2027-02-28",
+                                  mode="Automatic", crossover_days=15),
+            16,
+        )
+
+    def test_auto_at_crossover_uses_attendance_mode(self):
+        self.assertEqual(
+            fixed_30_payment_days(13, 28, "2027-02-01", "2027-02-28",
+                                  "2027-02-01", "2027-02-28",
+                                  mode="Automatic", crossover_days=15),
+            13,
+        )
+
+    def test_zero_pay_in_31_day_month(self):
+        self.check(0, 0, 31, "2027-07-01", "2027-07-31")
+
+    def test_attendance_mode_zero_pay_in_leap_february(self):
+        self.assertEqual(
+            fixed_30_payment_days(0, 29, "2028-02-01", "2028-02-29",
+                                  "2028-02-01", "2028-02-29", mode="Attendance"),
+            0,
+        )
+
+    def test_full_month_with_holidays_excluded_and_no_attendance(self):
+        self.check(0, 0, 22, "2027-02-01", "2027-02-28")
+
+    def test_one_unpaid_february_deduction_vs_attendance(self):
+        args = (27, 28, "2027-02-01", "2027-02-28",
+                "2027-02-01", "2027-02-28")
+        self.assertEqual(fixed_30_payment_days(*args, mode="Deduction"), 29)
+        self.assertEqual(fixed_30_payment_days(*args, mode="Attendance"), 27)
+
+
 if __name__ == "__main__":
     unittest.main()
