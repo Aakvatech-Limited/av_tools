@@ -1,0 +1,12 @@
+[
+  {
+    "dt": "Payroll Settings",
+    "fieldname": "custom_fixed_30_day_month",
+    "fieldtype": "Check",
+    "label": "Fixed 30-Day Month for Monthly Payroll",
+    "description": "When enabled, monthly Salary Slips use a fixed 30-day divisor. Full calendar months pay 100% before LWP and absence deductions; partial periods use eligible payable days / 30.",
+    "insert_after": "payroll_based_on",
+    "default": "0",
+    "module": "Av Tools"
+  }
+]
