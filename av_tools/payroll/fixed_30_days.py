@@ -1,8 +1,7 @@
-"""Opt-in fixed-30-day monthly salary proration for Frappe HRMS.
+"""Configurable 30-day monthly payroll proration for Frappe HRMS.
 
-Keep upstream attendance/leave logic intact; only adjust the ratio used for
-payment-day dependent salary components. Other payroll frequencies and
-timesheet-based wages retain upstream behavior.
+Uses the upstream attendance/leave calculation first. Never replaces HRMS
+statutory deduction, loan or journal-entry logic.
 """
 
 import calendar
@@ -12,34 +11,60 @@ from frappe.utils import cint, flt, getdate
 
 
 def fixed_30_payment_days(
-    actual_payment_days, actual_working_days, start_date, end_date,
-    actual_start_date, actual_end_date
+    actual_payment_days,
+    actual_working_days,
+    start_date,
+    end_date,
+    actual_start_date,
+    actual_end_date,
+    mode="Deduction",
+    crossover_days=15,
 ):
-    """Return payable days on a 30-day basis, preserving full monthly pay.
+    """Calculate payable days with a fixed divisor of 30.
 
-    Whole calendar months: 30 minus unpaid/absent days as evaluated by HRMS.
-    Partial eligibility (joining, leaving, partial pay period): use actual
-    eligible payable days / 30, capped at 30 for overlength months.
+    Deduction: 30 minus equivalent unpaid/absent days for a complete month.
+    Attendance: actual payable working days reported by HRMS.
+    Automatic: Deduction until unpaid days reach crossover, then Attendance.
+    Regardless of mode, a full month with zero payable days pays zero.
+    For partial pay periods or eligibility, actual payable days are used.
     """
+    actual_payment = flt(actual_payment_days)
+    working = flt(actual_working_days)
+    if actual_payment <= 0:
+        return 0.0
+
     start = getdate(start_date)
     end = getdate(end_date)
-    actual_start = getdate(actual_start_date)
-    actual_end = getdate(actual_end_date)
-    full_calendar_month = (
+    eligible_start = getdate(actual_start_date)
+    eligible_end = getdate(actual_end_date)
+    full_month = (
         start.year == end.year
         and start.month == end.month
         and start.day == 1
         and end.day == calendar.monthrange(end.year, end.month)[1]
+        and eligible_start <= start
+        and eligible_end >= end
     )
-    full_eligibility = actual_start <= start and actual_end >= end
-    if full_calendar_month and full_eligibility:
-        unpaid_days = max(flt(actual_working_days) - flt(actual_payment_days), 0)
-        return max(30.0 - unpaid_days, 0.0)
-    return min(max(flt(actual_payment_days), 0.0), 30.0)
+
+    if not full_month:
+        return max(0.0, min(30.0, actual_payment))
+
+    unpaid = max(0.0, working - actual_payment)
+    if mode == "Automatic":
+        mode = "Attendance" if unpaid >= flt(crossover_days) else "Deduction"
+
+    if mode == "Attendance":
+        payable = actual_payment
+    elif mode == "Deduction":
+        payable = 30.0 - unpaid
+    else:
+        raise ValueError("Unsupported fixed 30-day payroll proration mode")
+
+    return max(0.0, min(30.0, payable))
 
 
 class FixedThirtyDaySalarySlip:
-    """Mixin attached through extend_doctype_class, not an HRMS replacement."""
+    """Mixin registered via extend_doctype_class (HRMS v16)."""
 
     def get_working_days_details(self, lwp=None, for_preview=0, lwp_days_corrected=None):
         result = super().get_working_days_details(
@@ -53,21 +78,23 @@ class FixedThirtyDaySalarySlip:
         ):
             return result
 
-        if not all(
-            self.get(field)
-            for field in ("start_date", "end_date", "actual_start_date", "actual_end_date")
-        ):
+        if not all(self.get(field) for field in (
+            "start_date", "end_date", "actual_start_date", "actual_end_date"
+        )):
             return result
 
-        original_working_days = flt(self.total_working_days)
-        original_payment_days = flt(self.payment_days)
+        settings = frappe.db.get_single_value
+        mode = settings("Payroll Settings", "custom_fixed_30_proration_mode") or "Deduction"
+        crossover = settings("Payroll Settings", "custom_fixed_30_crossover_days")
         self.payment_days = fixed_30_payment_days(
-            original_payment_days,
-            original_working_days,
+            self.payment_days,
+            self.total_working_days,
             self.start_date,
             self.end_date,
             self.actual_start_date,
             self.actual_end_date,
+            mode=mode,
+            crossover_days=crossover if crossover is not None else 15,
         )
         self.total_working_days = 30
         return result
