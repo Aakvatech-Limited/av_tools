@@ -1,0 +1,42 @@
+{
+  "doctype": "DocType",
+  "name": "Payroll Deduction Protection Rule",
+  "module": "Av Tools",
+  "custom": 0,
+  "is_submittable": 0,
+  "istable": 1,
+  "autoname": "hash",
+  "field_order": [
+    "salary_component",
+    "enabled",
+    "priority"
+  ],
+  "fields": [
+    {
+      "fieldname": "salary_component",
+      "fieldtype": "Link",
+      "label": "Salary Component",
+      "options": "Salary Component",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "enabled",
+      "fieldtype": "Check",
+      "label": "Enabled",
+      "default": "1",
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "priority",
+      "fieldtype": "Int",
+      "label": "Deduction Priority",
+      "default": "100",
+      "reqd": 1,
+      "in_list_view": 1
+    }
+  ],
+  "permissions": [],
+  "links": [],
+  "actions": []
+}
