@@ -8,5 +8,28 @@
     "insert_after": "payroll_based_on",
     "default": "0",
     "module": "Av Tools"
+  },
+  {
+    "dt": "Payroll Settings",
+    "fieldname": "custom_fixed_30_proration_mode",
+    "fieldtype": "Select",
+    "label": "30-Day Salary Proration Mode",
+    "options": "Deduction\nAttendance\nAutomatic",
+    "default": "Deduction",
+    "insert_after": "custom_fixed_30_day_month",
+    "depends_on": "eval:doc.custom_fixed_30_day_month",
+    "description": "Deduction: 30 minus unpaid days. Attendance: actual payable days when some unpaid leave exists. Automatic: switches to Attendance when unpaid days reach crossover.",
+    "module": "Av Tools"
+  },
+  {
+    "dt": "Payroll Settings",
+    "fieldname": "custom_fixed_30_crossover_days",
+    "fieldtype": "Float",
+    "label": "30-Day Proration Crossover (Unpaid Days)",
+    "default": "15",
+    "insert_after": "custom_fixed_30_proration_mode",
+    "depends_on": "eval:doc.custom_fixed_30_day_month && doc.custom_fixed_30_proration_mode == 'Automatic'",
+    "description": "When unpaid-day equivalents reach this threshold, Automatic switches to Attendance mode.",
+    "module": "Av Tools"
   }
 ]
