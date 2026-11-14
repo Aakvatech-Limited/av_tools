@@ -1,0 +1,13 @@
+[
+  {
+    "dt": "Salary Slip",
+    "fieldname": "custom_deduction_recovery_plan",
+    "fieldtype": "Long Text",
+    "label": "Deduction Recovery Plan (Internal)",
+    "hidden": 1,
+    "read_only": 1,
+    "no_copy": 1,
+    "module": "Av Tools",
+    "insert_after": "total_deduction"
+  }
+]
