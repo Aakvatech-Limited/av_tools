@@ -111,5 +111,70 @@ class TestFixedThirtyDayPayroll(unittest.TestCase):
         self.assertEqual(fixed_30_payment_days(*args, mode="Attendance"), 27)
 
 
+    def test_26_day_divisor_full_february(self):
+        self.assertEqual(
+            fixed_30_payment_days(
+                28, 28, "2027-02-01", "2027-02-28",
+                "2027-02-01", "2027-02-28", divisor=26
+            ),
+            26,
+        )
+
+    def test_26_day_divisor_one_unpaid_day(self):
+        self.assertEqual(
+            fixed_30_payment_days(
+                27, 28, "2027-02-01", "2027-02-28",
+                "2027-02-01", "2027-02-28", divisor=26
+            ),
+            25,
+        )
+
+    def test_26_day_divisor_zero_out_february(self):
+        self.assertEqual(
+            fixed_30_payment_days(
+                0, 28, "2027-02-01", "2027-02-28",
+                "2027-02-01", "2027-02-28", divisor=26
+            ),
+            0,
+        )
+
+    def test_26_day_divisor_31_day_month_cap(self):
+        self.assertEqual(
+            fixed_30_payment_days(
+                31, 31, "2027-07-01", "2027-07-31",
+                "2027-07-01", "2027-07-31", divisor=26
+            ),
+            26,
+        )
+
+    def test_26_day_divisor_partial_month_cap(self):
+        self.assertEqual(
+            fixed_30_payment_days(
+                28, 31, "2027-07-01", "2027-07-31",
+                "2027-07-01", "2027-07-28", divisor=26
+            ),
+            26,
+        )
+
+    def test_26_day_divisor_attendance_mode(self):
+        self.assertEqual(
+            fixed_30_payment_days(
+                20, 26, "2027-04-01", "2027-04-30",
+                "2027-04-01", "2027-04-30",
+                mode="Attendance", divisor=26
+            ),
+            20,
+        )
+
+    def test_invalid_divisor_rejected(self):
+        for divisor in (0, -1, 32):
+            with self.subTest(divisor=divisor):
+                with self.assertRaises(ValueError):
+                    fixed_30_payment_days(
+                        28, 28, "2027-02-01", "2027-02-28",
+                        "2027-02-01", "2027-02-28", divisor=divisor
+                    )
+
+
 if __name__ == "__main__":
     unittest.main()
