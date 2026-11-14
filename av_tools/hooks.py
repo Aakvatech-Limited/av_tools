@@ -345,6 +345,7 @@ override_whitelisted_methods = {
 # nosemgrep: frappe-semgrep-rules.rules.override-doctype-class
 override_doctype_class = {"Report": "av_tools.av_tools_hooks.report_override.ReportOverride"}
 extend_doctype_class = {
+	"Salary Slip": ["av_tools.payroll.fixed_30_days.FixedThirtyDaySalarySlip"],
 	"Purchase Invoice": ["av_tools.asset_reconciliation.purchase_assets.NoTimeAppropriationPurchaseInvoice"],
 	"Quotation": ["av_tools.selling_pricing_engine.sales.SellingPricingMixin"],
 	"Sales Order": ["av_tools.selling_pricing_engine.sales.SellingPricingMixin"],
