@@ -50,6 +50,8 @@ def fixed_30_payment_days(
         return max(0.0, min(30.0, actual_payment))
 
     unpaid = max(0.0, working - actual_payment)
+    if unpaid == 0:
+        return 30.0
     if mode == "Automatic":
         mode = "Attendance" if unpaid >= flt(crossover_days) else "Deduction"
 
