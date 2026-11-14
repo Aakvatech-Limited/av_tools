@@ -186,6 +186,16 @@ def make_entries(slip):
             entry.submit()
     for d in plan["prior"]:
         if flt(d["recovered"]) > 0:
+            # Recheck after preview: another submitted payroll may already have
+            # recovered this deferred balance. Fail closed on stale plans.
+            source = frappe.get_doc(LEDGER, d["arrear_reference"])
+            if source.docstatus != 1 or source.entry_type != "Deferred":
+                frappe.throw(_("Original deferral is no longer available."))
+            remaining = next((a["amount"] for a in get_open_arrears(
+                slip.employee, slip.company, d["component"]
+            ) if a["arrear_reference"] == source.name), 0)
+            if flt(d["recovered"]) > remaining + 0.001:
+                frappe.throw(_("Recovery plan is stale; regenerate Salary Slip before submitting."))
             entry = frappe.get_doc({
                 "doctype": LEDGER, "employee": slip.employee, "company": slip.company,
                 "salary_slip": slip.name, "posting_date": slip.end_date,
@@ -214,6 +224,10 @@ def cancel_entries(slip):
 
 class ProtectedSalarySlip:
     """Cooperative v16 extension: leave upstream payroll and tax logic intact."""
+
+    def calculate_net_pay(self, skip_tax_breakup_computation=False):
+        self._av_protection_applied = False
+        return super().calculate_net_pay(skip_tax_breakup_computation=skip_tax_breakup_computation)
 
     def set_net_pay(self):
         policy = policy_for(self.company) if self.company and self.employee else None
