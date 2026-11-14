@@ -1,0 +1,47 @@
+[
+  {
+    "dt": "Payroll Settings",
+    "fieldname": "custom_fixed_30_day_month",
+    "fieldtype": "Check",
+    "label": "Use Fixed Monthly Salary Divisor",
+    "description": "Enable the configurable monthly salary divisor below (default 30 days; 26 supported).",
+    "insert_after": "payroll_based_on",
+    "default": "0",
+    "module": "Av Tools"
+  },
+  {
+    "dt": "Payroll Settings",
+    "fieldname": "custom_monthly_payroll_divisor",
+    "fieldtype": "Int",
+    "label": "Monthly Salary Divisor (Days)",
+    "description": "Fixed payroll-day denominator for monthly Salary Slips. Default 30; set 26 for a 26-day payroll convention. Allowed 1 to 31.",
+    "default": "30",
+    "reqd": 1,
+    "insert_after": "custom_fixed_30_day_month",
+    "depends_on": "eval:doc.custom_fixed_30_day_month",
+    "module": "Av Tools"
+  },
+  {
+    "dt": "Payroll Settings",
+    "fieldname": "custom_fixed_30_proration_mode",
+    "fieldtype": "Select",
+    "label": "Monthly Salary Proration Mode",
+    "options": "Deduction\nAttendance\nAutomatic",
+    "default": "Deduction",
+    "insert_after": "custom_monthly_payroll_divisor",
+    "depends_on": "eval:doc.custom_fixed_30_day_month",
+    "description": "Deduction: fixed divisor minus unpaid days. Attendance: actual payable days when unpaid leave exists. Automatic: switches at the configured threshold.",
+    "module": "Av Tools"
+  },
+  {
+    "dt": "Payroll Settings",
+    "fieldname": "custom_fixed_30_crossover_days",
+    "fieldtype": "Float",
+    "label": "Proration Crossover (Unpaid Days)",
+    "default": "15",
+    "insert_after": "custom_fixed_30_proration_mode",
+    "depends_on": "eval:doc.custom_fixed_30_day_month && doc.custom_fixed_30_proration_mode == 'Automatic'",
+    "description": "When unpaid-day equivalents reach this threshold, Automatic switches to Attendance mode.",
+    "module": "Av Tools"
+  }
+]
