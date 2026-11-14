@@ -1,0 +1,116 @@
+{
+  "doctype": "DocType",
+  "name": "Payroll Deduction Recovery Entry",
+  "module": "Av Tools",
+  "custom": 0,
+  "is_submittable": 1,
+  "istable": 0,
+  "autoname": "hash",
+  "field_order": [
+    "employee",
+    "company",
+    "salary_slip",
+    "posting_date",
+    "salary_component",
+    "entry_type",
+    "arrear_reference",
+    "amount"
+  ],
+  "fields": [
+    {
+      "fieldname": "employee",
+      "fieldtype": "Link",
+      "label": "Employee",
+      "options": "Employee",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "company",
+      "fieldtype": "Link",
+      "label": "Company",
+      "options": "Company",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "salary_slip",
+      "fieldtype": "Link",
+      "label": "Salary Slip",
+      "options": "Salary Slip",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "posting_date",
+      "fieldtype": "Date",
+      "label": "Payroll Period End",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "salary_component",
+      "fieldtype": "Link",
+      "label": "Salary Component",
+      "options": "Salary Component",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "entry_type",
+      "fieldtype": "Select",
+      "label": "Entry Type",
+      "options": "Deferred\nRecovered",
+      "reqd": 1,
+      "in_list_view": 1
+    },
+    {
+      "fieldname": "arrear_reference",
+      "fieldtype": "Link",
+      "label": "Original Deferred Entry",
+      "options": "Payroll Deduction Recovery Entry",
+      "depends_on": "eval:doc.entry_type=='Recovered'"
+    },
+    {
+      "fieldname": "amount",
+      "fieldtype": "Currency",
+      "label": "Amount",
+      "reqd": 1,
+      "in_list_view": 1
+    }
+  ],
+  "permissions": [
+    {
+      "role": "System Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "delete": 1,
+      "submit": 1,
+      "cancel": 1
+    },
+    {
+      "role": "HR Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "submit": 1,
+      "cancel": 1
+    },
+    {
+      "role": "Payroll Manager",
+      "read": 1,
+      "write": 1,
+      "create": 1,
+      "submit": 1,
+      "cancel": 1
+    },
+    {
+      "role": "Accounts Manager",
+      "read": 1,
+      "report": 1
+    }
+  ],
+  "links": [],
+  "actions": []
+}
