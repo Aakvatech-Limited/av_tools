@@ -50,10 +50,11 @@
     },
     {
       "fieldname": "protected_percentage",
-      "fieldtype": "Percent",
+      "fieldtype": "Float",
       "label": "Protected Earnings Percentage",
       "default": "33.333333",
-      "reqd": 1
+      "reqd": 1,
+      "precision": "6"
     },
     {
       "fieldname": "minimum_protected_amount",
