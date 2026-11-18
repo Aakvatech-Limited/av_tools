@@ -353,6 +353,7 @@ extend_doctype_class = {
 	"Quotation": ["av_tools.selling_pricing_engine.sales.SellingPricingMixin"],
 	"Sales Order": ["av_tools.selling_pricing_engine.sales.SellingPricingMixin"],
 	"Sales Invoice": ["av_tools.selling_pricing_engine.sales.SellingPricingMixin"],
+	"Journal Entry": ["av_tools.compatibility.journal_entry_cancel.JournalEntryCancellationCompatibility"],
 }
 #
 # each overriding function accepts a `data` argument;
