@@ -7,20 +7,148 @@ Falls back to a lightweight resilient engine when no employee is selected.
 
 from __future__ import annotations
 
+import ast
 import json
+import math
 import re
 
 import frappe
 from frappe import _
-from frappe.utils import cint, cstr, flt
+from frappe.utils import cint, cstr, flt, getdate, nowdate
 
 # ── Public API ───────────────────────────────────────────────────────
+
+
+_ASSIGNMENT = "Salary Structure Assignment"
+_INPUT_TYPES = {"Check", "Currency", "Float", "Int", "Percent"}
+_INTERNAL_INPUTS = {"base", "docstatus", "idx", "taxable_earnings_till_date", "tax_deducted_till_date"}
+
+
+def _get_structure(name):
+	structure = frappe.get_cached_doc("Salary Structure", name)
+	structure.check_permission("read")
+	return structure
+
+
+def _assignment_fields(structure):
+	"""Find assignment fields referenced by this structure's conditions or formulas."""
+	references = set()
+	for table in ("earnings", "deductions", "employer_contributions"):
+		for row in structure.get(table) or []:
+			for expression in (row.formula, row.condition):
+				if expression:
+					try:
+						tree = ast.parse(expression.strip(), mode="eval")
+					except SyntaxError:
+						continue
+					references.update(node.id for node in ast.walk(tree) if isinstance(node, ast.Name))
+
+	meta = frappe.get_meta(_ASSIGNMENT)
+	readable = set(meta.get_permitted_fieldnames(permission_type="read", with_virtual_fields=False))
+	writable = set(meta.get_permitted_fieldnames(permission_type="write", with_virtual_fields=False))
+	return {
+		df.fieldname: df
+		for df in meta.fields
+		if df.fieldname in references & readable & writable
+		and df.fieldname not in _INTERNAL_INPUTS
+		and df.fieldtype in _INPUT_TYPES
+		and not (df.read_only or df.hidden or df.fetch_from)
+	}
+
+
+def _assignment_source(structure, employee, from_date):
+	if not employee:
+		return None
+	employee_doc = frappe.get_cached_doc("Employee", employee)
+	employee_doc.check_permission("read")
+	if employee_doc.company != structure.company:
+		frappe.throw(_("The employee and salary structure must belong to the same company."))
+	frappe.has_permission(_ASSIGNMENT, "read", throw=True)
+	matches = frappe.get_list(
+		_ASSIGNMENT,
+		filters={
+			"employee": employee, "salary_structure": structure.name,
+			"from_date": ("<=", from_date), "docstatus": 1,
+		},
+		order_by="from_date desc",
+		limit_page_length=1,
+	)
+	if matches:
+		source = frappe.get_doc(_ASSIGNMENT, matches[0].name)
+		source.check_permission("read")
+		return source
+	return None
+
+
+def _assignment_values(fields, source=None, supplied=None):
+	if isinstance(supplied, str):
+		supplied = json.loads(supplied)
+	if supplied is None:
+		supplied = {}
+	if not isinstance(supplied, dict) or supplied.keys() - fields.keys():
+		frappe.throw(_("Invalid salary assignment inputs. Reload the assignment fields and try again."))
+	values = {}
+	for name, df in fields.items():
+		default = source.get(name) if source else df.default
+		raw = supplied.get(name, default)
+		if df.fieldtype == "Check":
+			if raw not in (None, "", 0, 1, "0", "1"):
+				frappe.throw(_("Invalid value for {0}.").format(df.label))
+			values[name] = cint(raw)
+			continue
+		try:
+			value = float(raw or 0)
+		except (ValueError, TypeError, OverflowError):
+			frappe.throw(_("Enter a valid amount for {0}.").format(df.label))
+		if not math.isfinite(value) or (df.fieldtype == "Int" and not value.is_integer()):
+			frappe.throw(_("Enter a valid amount for {0}.").format(df.label))
+		values[name] = int(value) if df.fieldtype == "Int" else value
+	return values
+
+
+def _proposed_assignment(structure, employee, from_date, base, source, values, income_tax_slab=None):
+	assignment = frappe.new_doc(_ASSIGNMENT)
+	assignment.update({
+		"employee": employee,
+		"salary_structure": structure.name,
+		"company": structure.company,
+		"currency": structure.currency,
+		"from_date": from_date,
+		"base": base,
+		"variable": source.variable if source else 0,
+		"income_tax_slab": (
+			income_tax_slab if income_tax_slab is not None else (source.income_tax_slab if source else None)
+		),
+	})
+	if assignment.income_tax_slab:
+		slab = frappe.get_cached_doc("Income Tax Slab", assignment.income_tax_slab)
+		slab.check_permission("read")
+	assignment.update(values)
+	return assignment
+
+
+@frappe.whitelist()
+def get_assignment_inputs(salary_structure, employee=None, from_date=None):
+	structure = _get_structure(salary_structure)
+	source = _assignment_source(structure, employee, getdate(from_date or nowdate()))
+	fields = _assignment_fields(structure)
+	values = _assignment_values(fields, source)
+	return {
+		"currency": structure.currency,
+		"company": structure.company,
+		"source": source.name if source else None,
+		"income_tax_slab": source.income_tax_slab if source else None,
+		"fields": [
+			{"fieldname": name, "label": df.label, "fieldtype": df.fieldtype, "value": values[name]}
+			for name, df in fields.items()
+		],
+	}
 
 
 @frappe.whitelist()
 def get_salary_structure_components(salary_structure):
 	"""Return earnings/deductions for a salary structure with unique keys."""
-	structure = frappe.get_cached_doc("Salary Structure", salary_structure)
+	structure = _get_structure(salary_structure)
 
 	def serialize(rows, prefix):
 		return [
@@ -54,6 +182,9 @@ def run_calculation(
 	selected_components=None,
 	earning_overrides=None,
 	employee=None,
+	assignment_values=None,
+	from_date=None,
+	income_tax_slab=None,
 ):
 	"""Calculate salary. Uses HRMS when employee provided, else lightweight fallback."""
 	if isinstance(selected_components, str):
@@ -68,9 +199,22 @@ def run_calculation(
 	if target_amount <= 0:
 		return _empty_result()
 
-	structure = frappe.get_cached_doc("Salary Structure", salary_structure)
+	structure = _get_structure(salary_structure)
 	precision = 0 if cstr(structure.currency) == "TZS" else 2
 	target_amount = flt(target_amount, precision)
+	if assignment_values is not None or from_date:
+		date = getdate(from_date or nowdate())
+		source = _assignment_source(structure, employee, date)
+		values = _assignment_values(_assignment_fields(structure), source, assignment_values)
+		if employee:
+			assignment = _proposed_assignment(structure, employee, date, 0, source, values, income_tax_slab)
+			result = _solve_via_hrms(
+				salary_structure, employee, target_field, target_amount, precision, proposed=assignment
+			)
+			return _with_calculation_status(result, target_field, target_amount, precision)
+		selected = [row.salary_component for row in structure.earnings + structure.deductions]
+		result = _fallback_solve(structure, target_field, target_amount, precision, selected, inputs=values)
+		return _with_calculation_status(result, target_field, target_amount, precision, estimated=True)
 	if employee:
 		try:
 			result = _solve_via_hrms(
@@ -103,6 +247,8 @@ def get_salary_slip_preview(
 	earnings_data,
 	deductions_data,
 	employee=None,
+	employer_contributions=None,
+	total_deductions=None,
 ):
 	"""Render a salary slip preview from calculated data."""
 	if isinstance(earnings_data, str):
@@ -110,25 +256,28 @@ def get_salary_slip_preview(
 	if isinstance(deductions_data, str):
 		deductions_data = json.loads(deductions_data)
 
+	if isinstance(employer_contributions, str):
+		employer_contributions = json.loads(employer_contributions)
+	structure = _get_structure(salary_structure)
 	emp = frappe.get_cached_doc("Employee", employee) if employee else None
-	currency = frappe.get_cached_value("Salary Structure", salary_structure, "currency") or "TZS"
+	if emp:
+		emp.check_permission("read")
+	currency = structure.currency or "TZS"
 	fmt = (lambda a: format(flt(a), ",.0f")) if currency == "TZS" else (lambda a: format(flt(a), ",.2f"))
 
-	# CTC = Gross Pay + employer-cost contributions (deduction components flagged
-	# do_not_include_in_total, e.g. employer NSSF/pension/SDL/WCF).
-	ctc = flt(gross_pay)
-	comp_names = [d.get("salary_component") for d in deductions_data if d.get("salary_component")]
-	if comp_names:
-		employer_comps = set(
-			frappe.get_all(
-				"Salary Component",
-				filters={"name": ["in", comp_names], "do_not_include_in_total": 1},
-				pluck="name",
-			)
-		)
-		for d in deductions_data:
-			if d.get("salary_component") in employer_comps:
-				ctc += flt(d.get("amount"))
+	# Legacy structures book employer contributions in excluded deduction and
+	# expense pairs. The deduction row represents the cost once.
+	employer_rows = list(employer_contributions or [])
+	employer_names = {row.get("salary_component") for row in employer_rows}
+	included_deductions = []
+	for row in deductions_data:
+		if row.get("do_not_include_in_total"):
+			if row.get("salary_component") not in employer_names:
+				employer_rows.append(row)
+		else:
+			included_deductions.append(row)
+	included_earnings = [row for row in earnings_data if not row.get("do_not_include_in_total")]
+	employer_total = sum(flt(row.get("amount")) for row in employer_rows)
 
 	# The template path is a hardcoded literal shipped in this app and the template
 	# has no include, import or extends. Only context values vary.
@@ -146,19 +295,27 @@ def get_salary_slip_preview(
 			"base": flt(base),
 			"gross_pay": flt(gross_pay),
 			"net_pay": flt(net_pay),
-			"ctc": flt(ctc),
-			"total_earning": sum(flt(e.get("amount")) for e in earnings_data),
-			"total_deduction": sum(flt(d.get("amount")) for d in deductions_data),
-			"earnings": earnings_data,
-			"deductions": deductions_data,
+			"ctc": flt(gross_pay) + employer_total,
+			"total_earning": flt(gross_pay),
+			"total_deduction": (
+				flt(total_deductions) if total_deductions is not None
+				else sum(flt(d.get("amount")) for d in included_deductions)
+			),
+			"earnings": included_earnings,
+			"deductions": included_deductions,
+			"employer_contributions": employer_rows,
+			"employer_total": employer_total,
 			"format_amount": fmt,
 		},
 	)
 
 
-@frappe.whitelist()
-def create_salary_structure_assignment(employee, salary_structure, from_date, base=0):
+@frappe.whitelist(methods=["POST"])
+def create_salary_structure_assignment(
+	employee, salary_structure, from_date, base=0, assignment_values=None, income_tax_slab=None, target=None,
+):
 	"""Create and submit a Salary Structure Assignment."""
+	frappe.has_permission(_ASSIGNMENT, "create", throw=True)
 	if frappe.db.exists(
 		"Salary Structure Assignment",
 		{
@@ -176,12 +333,21 @@ def create_salary_structure_assignment(employee, salary_structure, from_date, ba
 			)
 		)
 
-	ssa = frappe.new_doc("Salary Structure Assignment")
-	ssa.employee = employee
-	ssa.salary_structure = salary_structure
-	ssa.from_date = from_date
-	ssa.base = flt(base)
-	ssa.company = frappe.get_cached_value("Employee", employee, "company")
+	structure = _get_structure(salary_structure)
+	date = getdate(from_date)
+	source = _assignment_source(structure, employee, date)
+	values = _assignment_values(_assignment_fields(structure), source, assignment_values)
+	ssa = _proposed_assignment(structure, employee, date, flt(base), source, values, income_tax_slab)
+	if target is not None:
+		if isinstance(target, str):
+			target = json.loads(target)
+		field = target.get("field") if isinstance(target, dict) else None
+		if field not in ("gross_pay", "net_pay") or flt(target.get("amount")) <= 0:
+			frappe.throw(_("Enter a valid pay target."))
+		result = _format_slip_result(_make_proposed_slip(ssa, ssa.base))
+		precision = 0 if structure.currency == "TZS" else 2
+		if flt(result[field] - flt(target["amount"], precision), precision):
+			frappe.throw(_("The calculation no longer matches the pay target. Recalculate before submitting."))
 	ssa.save()
 	ssa.submit()
 	return ssa.name
@@ -232,6 +398,52 @@ def _make_preview_slip(salary_structure, employee, base_override=None, earning_o
 	return ss
 
 
+def _make_proposed_slip(assignment, base):
+	"""Mirror the HRMS salary-structure mapping, with an in-memory assignment."""
+	from frappe.model.mapper import get_mapped_doc
+
+	assignment.base = base
+
+	def process(source, slip):
+		slip.employee = assignment.employee
+		slip.posting_date = assignment.from_date
+		slip._salary_structure_assignment = assignment.as_dict()
+		slip._ssa_doc = assignment
+		if hasattr(assignment, "get_evaluated_components"):
+			slip._evaluated_components = assignment.get_evaluated_components()
+			slip.gross_pay = sum(
+				flt(row.default_amount)
+				for row in slip._evaluated_components["earnings"]
+				if not row.statistical_component and not row.do_not_include_in_total
+			)
+		slip.run_method("process_salary_structure", for_preview=1)
+
+	return get_mapped_doc(
+		"Salary Structure",
+		assignment.salary_structure,
+		{
+			"Salary Structure": {
+				"doctype": "Salary Slip",
+				"field_map": {"name": "salary_structure", "total_earning": "gross_pay"},
+			},
+		},
+		postprocess=process,
+		ignore_child_tables=True,
+		cached=True,
+	)
+
+
+def _slip_component_rows(rows):
+	return [
+		{
+			"salary_component": row.salary_component,
+			"amount": flt(row.amount),
+			"do_not_include_in_total": cint(row.do_not_include_in_total),
+		}
+		for row in rows
+	]
+
+
 def _format_slip_result(ss):
 	"""Extract a result dict from a salary slip object."""
 	currency = cstr(getattr(ss, "currency", ""))
@@ -246,14 +458,15 @@ def _format_slip_result(ss):
 		"gross_pay": flt(ss.gross_pay, precision),
 		"net_pay": flt(ss.net_pay, precision),
 		"total_deductions": flt(ss.total_deduction, precision),
-		"earnings": [{"salary_component": r.salary_component, "amount": flt(r.amount)} for r in ss.earnings],
-		"deductions": [
-			{"salary_component": r.salary_component, "amount": flt(r.amount)} for r in ss.deductions
-		],
+		"earnings": _slip_component_rows(ss.earnings),
+		"deductions": _slip_component_rows(ss.deductions),
+		"employer_contributions": _slip_component_rows(ss.get("employer_contributions") or []),
 	}
 
 
-def _solve_via_hrms(salary_structure, employee, target_field, target_amount, precision, earning_overrides=None):
+def _solve_via_hrms(
+	salary_structure, employee, target_field, target_amount, precision, earning_overrides=None, proposed=None,
+):
 	"""Bracket the target, then search the currency's representable base amounts."""
 	scale = 10**precision
 	target = round(target_amount * scale)
@@ -262,7 +475,11 @@ def _solve_via_hrms(salary_structure, employee, target_field, target_amount, pre
 
 	def evaluate(base):
 		nonlocal best, best_difference
-		slip = _make_preview_slip(salary_structure, employee, base / scale, earning_overrides)
+		slip = (
+			_make_proposed_slip(proposed, base / scale)
+			if proposed is not None
+			else _make_preview_slip(salary_structure, employee, base / scale, earning_overrides)
+		)
 		result = _format_slip_result(slip)
 		difference = round(result[target_field] * scale) - target
 		if abs(difference) < best_difference:
@@ -299,14 +516,14 @@ def _solve_via_hrms(salary_structure, employee, target_field, target_amount, pre
 _SAFE_GLOBALS = {"int": int, "float": float, "round": round, "abs": abs, "min": min, "max": max, "flt": flt}
 
 
-def _fallback_solve(structure, target_field, target_amount, precision, selected, overrides=None):
+def _fallback_solve(structure, target_field, target_amount, precision, selected, overrides=None, inputs=None):
 	overrides = overrides or {}
 	tol = 1 if precision == 0 else 0.05
 	lo, hi = 0.0, max(target_amount, 1)
 	best, best_diff = None, None
 
 	for i in range(20):
-		r = _fallback_calc(structure, hi, precision, selected, overrides)
+		r = _fallback_calc(structure, hi, precision, selected, overrides, inputs)
 		val = flt(r[target_field], precision)
 		if val >= target_amount:
 			best, best_diff = r, abs(val - target_amount)
@@ -320,7 +537,7 @@ def _fallback_solve(structure, target_field, target_amount, precision, selected,
 
 	for _iteration in range(60):
 		mid = (lo + hi) / 2
-		r = _fallback_calc(structure, mid, precision, selected, overrides)
+		r = _fallback_calc(structure, mid, precision, selected, overrides, inputs)
 		diff = flt(r[target_field], precision) - target_amount
 		if abs(diff) < (best_diff or float("inf")):
 			best, best_diff = r, abs(diff)
@@ -336,7 +553,7 @@ def _fallback_solve(structure, target_field, target_amount, precision, selected,
 		cand = base_int + offset
 		if cand < 0:
 			continue
-		r = _fallback_calc(structure, cand, precision, selected, overrides)
+		r = _fallback_calc(structure, cand, precision, selected, overrides, inputs)
 		d = abs(flt(r[target_field], precision) - target_amount)
 		if d < best_diff or (
 			d == best_diff and flt(r[target_field], precision) >= flt(best[target_field], precision)
@@ -346,7 +563,7 @@ def _fallback_solve(structure, target_field, target_amount, precision, selected,
 	return best
 
 
-def _fallback_calc(structure, base_amount, precision, selected, overrides=None):
+def _fallback_calc(structure, base_amount, precision, selected, overrides=None, inputs=None):
 	overrides = overrides or {}
 	rows = {
 		"earnings": [_norm_row(r, "Earning", precision) for r in structure.earnings],
@@ -357,6 +574,7 @@ def _fallback_calc(structure, base_amount, precision, selected, overrides=None):
 
 	for _iteration in range(10):
 		ctx = {
+			**(inputs or {}),
 			"base": flt(base_amount, precision),
 			"gross_pay": gross_pay,
 			"net_pay": net_pay,
@@ -393,7 +611,7 @@ def _fallback_calc(structure, base_amount, precision, selected, overrides=None):
 		name = cstr(r.salary_component)
 		if name:
 			amounts[name] = flt(amounts.get(name, 0) + flt(r.amount, precision), precision)
-			comp_types[name] = r.component_type
+			comp_types[name] = (r.component_type, r.do_not_include_in_total)
 
 	# Always include all selected components so they appear in the preview
 	seen = set()
@@ -402,10 +620,15 @@ def _fallback_calc(structure, base_amount, precision, selected, overrides=None):
 		if c in seen:
 			continue
 		seen.add(c)
-		entry = {"salary_component": c, "amount": flt(amounts.get(c, 0), precision)}
-		if comp_types.get(c) == "Earning":
+		component_type, excluded = comp_types.get(c, (None, 0))
+		entry = {
+			"salary_component": c,
+			"amount": flt(amounts.get(c, 0), precision),
+			"do_not_include_in_total": excluded,
+		}
+		if component_type == "Earning":
 			result_earnings.append(entry)
-		elif comp_types.get(c) == "Deduction":
+		elif component_type == "Deduction":
 			result_deductions.append(entry)
 
 	return {
@@ -426,6 +649,7 @@ def _norm_row(row, ctype, precision):
 		condition=cstr(row.condition),
 		formula=cstr(row.formula),
 		amount=flt(row.amount, precision),
+		configured_amount=flt(row.amount, precision),
 		amount_based_on_formula=cint(row.amount_based_on_formula),
 		do_not_include_in_total=cint(row.do_not_include_in_total),
 		statistical_component=cint(row.statistical_component),
@@ -492,7 +716,7 @@ def _eval_rows(rows, base_ctx, precision, selected, overrides=None):
 		elif row.amount_based_on_formula and row.formula:
 			amt = _safe_eval_formula(row.formula, ctx, precision)
 		else:
-			amt = row.amount if not row.amount_based_on_formula else 0
+			amt = row.configured_amount if not row.amount_based_on_formula else 0
 		row.amount = flt(amt, precision)
 		result.append(row)
 		if row.abbr:
