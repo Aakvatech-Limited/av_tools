@@ -6,12 +6,23 @@
 	background: var(--fg-color);
 }
 
-.salary-calculator-page [hidden] { display: none !important; }
+.salary-calculator-page [hidden] {
+	display: none !important;
+}
 
-.salary-calculator-page .sc-section { padding: 16px; }
-.salary-calculator-page .sc-section + .sc-section { border-top: 1px solid var(--border-color); }
-.salary-calculator-page .sc-assignment { padding-top: 12px; border-top: 1px solid var(--border-color); }
-.salary-calculator-page .sc-preview > h4 { margin-bottom: 10px; }
+.salary-calculator-page .sc-section {
+	padding: 16px;
+}
+.salary-calculator-page .sc-section + .sc-section {
+	border-top: 1px solid var(--border-color);
+}
+.salary-calculator-page .sc-assignment {
+	padding-top: 12px;
+	border-top: 1px solid var(--border-color);
+}
+.salary-calculator-page .sc-preview > h4 {
+	margin-bottom: 10px;
+}
 
 .salary-calculator-page .sc-fields,
 .salary-calculator-page .sc-dynamic-fields {
@@ -20,7 +31,9 @@
 	gap: 0 12px;
 }
 
-.salary-calculator-page .sc-field { min-width: 0; }
+.salary-calculator-page .sc-field {
+	min-width: 0;
+}
 .salary-calculator-page .sc-dynamic-fields .frappe-control[data-fieldtype="Check"] label {
 	min-height: 36px;
 	display: flex;
@@ -41,23 +54,50 @@
 	background: var(--bg-color);
 }
 
-.salary-calculator-page .sc-net strong { font-size: clamp(1.25rem, 3vw, 1.8rem); }
-.salary-calculator-page .sc-status { width: fit-content; margin: 4px 0; overflow-wrap: anywhere; }
-.salary-calculator-page .sc-status-matched { color: var(--text-on-green); background: var(--green-avatar-bg); }
-.salary-calculator-page .sc-status-estimate { color: var(--text-on-orange); background: var(--orange-avatar-bg); }
+.salary-calculator-page .sc-net strong {
+	font-size: clamp(1.25rem, 3vw, 1.8rem);
+}
+.salary-calculator-page .sc-status {
+	width: fit-content;
+	margin: 4px 0;
+	overflow-wrap: anywhere;
+}
+.salary-calculator-page .sc-status-matched {
+	color: var(--text-on-green);
+	background: var(--green-avatar-bg);
+}
+.salary-calculator-page .sc-status-estimate {
+	color: var(--text-on-orange);
+	background: var(--orange-avatar-bg);
+}
 .salary-calculator-page .sc-status-matched,
-.salary-calculator-page .sc-status-estimate { border-radius: var(--border-radius-md); padding: 3px 8px; }
+.salary-calculator-page .sc-status-estimate {
+	border-radius: var(--border-radius-md);
+	padding: 3px 8px;
+}
 
-.sc-totals { margin: 0; padding: 5px 14px; }
+.sc-totals {
+	margin: 0;
+	padding: 5px 14px;
+}
 .sc-totals > div {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 	gap: 8px;
 	padding-block: 7px;
 }
-.sc-totals > div + div { border-top: 1px solid var(--border-color); }
-.sc-totals dt { color: var(--text-muted); font-weight: 500; }
-.sc-totals dd { margin: 0; text-align: end; font-weight: 600; }
+.sc-totals > div + div {
+	border-top: 1px solid var(--border-color);
+}
+.sc-totals dt {
+	color: var(--text-muted);
+	font-weight: 500;
+}
+.sc-totals dd {
+	margin: 0;
+	text-align: end;
+	font-weight: 600;
+}
 
 .salary-calculator-page .sc-ledgers {
 	display: grid;
@@ -66,30 +106,74 @@
 	margin-top: 14px;
 }
 
-.salary-calculator-page .sc-ledger { width: 100%; table-layout: fixed; }
+.salary-calculator-page .sc-ledger {
+	width: 100%;
+	table-layout: fixed;
+}
 .salary-calculator-page .sc-ledger th,
-.salary-calculator-page .sc-ledger td { padding: 6px 8px; border-bottom: 1px solid var(--border-color); }
-.salary-calculator-page .sc-ledger thead { background: var(--control-bg); }
+.salary-calculator-page .sc-ledger td {
+	padding: 6px 8px;
+	border-bottom: 1px solid var(--border-color);
+}
+.salary-calculator-page .sc-ledger thead {
+	background: var(--control-bg);
+}
 .salary-calculator-page .sc-ledger th:last-child,
-.salary-calculator-page .sc-ledger td:last-child { width: 42%; text-align: end; }
-.salary-calculator-page .sc-ledger tfoot td { font-weight: 600; }
+.salary-calculator-page .sc-ledger td:last-child {
+	width: 42%;
+	text-align: end;
+}
+.salary-calculator-page .sc-ledger tfoot td {
+	font-weight: 600;
+}
 .salary-calculator-page .sc-ledger th,
 .salary-calculator-page .sc-ledger td,
 .salary-calculator-page .sc-net,
-.sc-totals { overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
-.salary-calculator-page .sc-employer { margin-top: 12px; }
-.salary-calculator-page .sc-employer summary { padding-block: 9px; cursor: pointer; font-weight: 600; }
-.salary-calculator-page .sc-employer summary span { float: inline-end; }
-.salary-calculator-page .sc-mobile-review { display: none; }
+.sc-totals {
+	overflow-wrap: anywhere;
+	font-variant-numeric: tabular-nums;
+}
+.salary-calculator-page .sc-employer {
+	margin-top: 12px;
+}
+.salary-calculator-page .sc-employer summary {
+	padding-block: 9px;
+	cursor: pointer;
+	font-weight: 600;
+}
+.salary-calculator-page .sc-employer summary span {
+	float: inline-end;
+}
+.salary-calculator-page .sc-mobile-review {
+	display: none;
+}
 
 @media (max-width: 576px) {
-	.salary-calculator-page .sc-section { padding: 12px; }
+	.salary-calculator-page .sc-section {
+		padding: 12px;
+	}
 	.salary-calculator-page .sc-fields,
-	.salary-calculator-page .sc-dynamic-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.salary-calculator-page .sc-dynamic-fields {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
 	.salary-calculator-page .sc-summary,
-	.salary-calculator-page .sc-ledgers { grid-template-columns: minmax(0, 1fr); }
-	.salary-calculator-page .sc-net { border-right: 0; border-bottom: 1px solid var(--border-color); }
-	.salary-calculator-page .sc-field :is(input:not([type="checkbox"]), select) { min-height: 44px; }
-	.salary-calculator-page .sc-dynamic-fields .frappe-control[data-fieldtype="Check"] label { min-height: 44px; }
-	.salary-calculator-page .sc-mobile-review { display: block; width: 100%; margin-top: 10px; min-height: 44px; }
+	.salary-calculator-page .sc-ledgers {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.salary-calculator-page .sc-net {
+		border-right: 0;
+		border-bottom: 1px solid var(--border-color);
+	}
+	.salary-calculator-page .sc-field :is(input:not([type="checkbox"]), select) {
+		min-height: 44px;
+	}
+	.salary-calculator-page .sc-dynamic-fields .frappe-control[data-fieldtype="Check"] label {
+		min-height: 44px;
+	}
+	.salary-calculator-page .sc-mobile-review {
+		display: block;
+		width: 100%;
+		margin-top: 10px;
+		min-height: 44px;
+	}
 }

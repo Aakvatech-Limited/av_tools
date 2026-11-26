@@ -67,8 +67,10 @@ def _assignment_source(structure, employee, from_date):
 	matches = frappe.get_list(
 		_ASSIGNMENT,
 		filters={
-			"employee": employee, "salary_structure": structure.name,
-			"from_date": ("<=", from_date), "docstatus": 1,
+			"employee": employee,
+			"salary_structure": structure.name,
+			"from_date": ("<=", from_date),
+			"docstatus": 1,
 		},
 		order_by="from_date desc",
 		limit_page_length=1,
@@ -108,18 +110,22 @@ def _assignment_values(fields, source=None, supplied=None):
 
 def _proposed_assignment(structure, employee, from_date, base, source, values, income_tax_slab=None):
 	assignment = frappe.new_doc(_ASSIGNMENT)
-	assignment.update({
-		"employee": employee,
-		"salary_structure": structure.name,
-		"company": structure.company,
-		"currency": structure.currency,
-		"from_date": from_date,
-		"base": base,
-		"variable": source.variable if source else 0,
-		"income_tax_slab": (
-			income_tax_slab if income_tax_slab is not None else (source.income_tax_slab if source else None)
-		),
-	})
+	assignment.update(
+		{
+			"employee": employee,
+			"salary_structure": structure.name,
+			"company": structure.company,
+			"currency": structure.currency,
+			"from_date": from_date,
+			"base": base,
+			"variable": source.variable if source else 0,
+			"income_tax_slab": (
+				income_tax_slab
+				if income_tax_slab is not None
+				else (source.income_tax_slab if source else None)
+			),
+		}
+	)
 	if assignment.income_tax_slab:
 		slab = frappe.get_cached_doc("Income Tax Slab", assignment.income_tax_slab)
 		slab.check_permission("read")
@@ -298,7 +304,8 @@ def get_salary_slip_preview(
 			"ctc": flt(gross_pay) + employer_total,
 			"total_earning": flt(gross_pay),
 			"total_deduction": (
-				flt(total_deductions) if total_deductions is not None
+				flt(total_deductions)
+				if total_deductions is not None
 				else sum(flt(d.get("amount")) for d in included_deductions)
 			),
 			"earnings": included_earnings,
@@ -312,7 +319,13 @@ def get_salary_slip_preview(
 
 @frappe.whitelist(methods=["POST"])
 def create_salary_structure_assignment(
-	employee, salary_structure, from_date, base=0, assignment_values=None, income_tax_slab=None, target=None,
+	employee,
+	salary_structure,
+	from_date,
+	base=0,
+	assignment_values=None,
+	income_tax_slab=None,
+	target=None,
 ):
 	"""Create and submit a Salary Structure Assignment."""
 	frappe.has_permission(_ASSIGNMENT, "create", throw=True)
@@ -347,7 +360,9 @@ def create_salary_structure_assignment(
 		result = _format_slip_result(_make_proposed_slip(ssa, ssa.base))
 		precision = 0 if structure.currency == "TZS" else 2
 		if flt(result[field] - flt(target["amount"], precision), precision):
-			frappe.throw(_("The calculation no longer matches the pay target. Recalculate before submitting."))
+			frappe.throw(
+				_("The calculation no longer matches the pay target. Recalculate before submitting.")
+			)
 	ssa.save()
 	ssa.submit()
 	return ssa.name
@@ -465,7 +480,13 @@ def _format_slip_result(ss):
 
 
 def _solve_via_hrms(
-	salary_structure, employee, target_field, target_amount, precision, earning_overrides=None, proposed=None,
+	salary_structure,
+	employee,
+	target_field,
+	target_amount,
+	precision,
+	earning_overrides=None,
+	proposed=None,
 ):
 	"""Bracket the target, then search the currency's representable base amounts."""
 	scale = 10**precision

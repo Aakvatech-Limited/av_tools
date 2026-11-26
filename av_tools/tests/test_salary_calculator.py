@@ -89,8 +89,11 @@ class TestSalaryCalculatorAssignmentInputs(TestCase):
 		meta.fields = [
 			frappe._dict(fieldname=name, label=name, fieldtype=fieldtype)
 			for name, fieldtype in (
-				("base", "Currency"), ("duty", "Currency"), ("transport", "Currency"),
-				("heslb", "Check"), ("protected_flag", "Check"),
+				("base", "Currency"),
+				("duty", "Currency"),
+				("transport", "Currency"),
+				("heslb", "Check"),
+				("protected_flag", "Check"),
 			)
 		]
 		meta.get_permitted_fieldnames.side_effect = [
@@ -111,8 +114,13 @@ class TestSalaryCalculatorAssignmentInputs(TestCase):
 
 	def test_proposed_values_reach_hrms_before_evaluation(self):
 		assignment = PreviewAssignment(
-			base=0, duty=150000, transport=80000, heslb=0,
-			salary_structure=STRUCTURE, employee="EMP-1", from_date="2026-12-01",
+			base=0,
+			duty=150000,
+			transport=80000,
+			heslb=0,
+			salary_structure=STRUCTURE,
+			employee="EMP-1",
+			from_date="2026-12-01",
 		)
 		slip = Mock()
 		slip.run_method.side_effect = lambda *args, **kwargs: self.assertEqual(

@@ -59,30 +59,49 @@ class SalaryCalculatorPage {
 	create_fields() {
 		const fields = [
 			{
-				fieldname: "salary_structure", label: __("Salary Structure"), fieldtype: "Link",
-				options: "Salary Structure", reqd: 1, change: () => this.load_assignment(),
+				fieldname: "salary_structure",
+				label: __("Salary Structure"),
+				fieldtype: "Link",
+				options: "Salary Structure",
+				reqd: 1,
+				change: () => this.load_assignment(),
 				get_query: () => ({ filters: { is_active: "Yes", docstatus: 1 } }),
 			},
 			{
-				fieldname: "employee", label: __("Employee"), fieldtype: "Link", options: "Employee",
+				fieldname: "employee",
+				label: __("Employee"),
+				fieldtype: "Link",
+				options: "Employee",
 				change: () => this.load_assignment(),
-				get_query: () => ({ filters: this.context ? { company: this.context.company } : {} }),
+				get_query: () => ({
+					filters: this.context ? { company: this.context.company } : {},
+				}),
 			},
 			{
-				fieldname: "mode", label: __("Calculate based on"), fieldtype: "Select",
+				fieldname: "mode",
+				label: __("Calculate based on"),
+				fieldtype: "Select",
 				options: [
 					{ label: __("Target net pay"), value: "Net Pay" },
 					{ label: __("Target gross pay"), value: "Gross Pay" },
 				],
-				default: "Net Pay", change: () => this.change_mode(),
+				default: "Net Pay",
+				change: () => this.change_mode(),
 			},
 			{
-				fieldname: "target", label: __("Target net pay"), fieldtype: "Currency",
-				reqd: 1, change: () => this.schedule_calculation(),
+				fieldname: "target",
+				label: __("Target net pay"),
+				fieldtype: "Currency",
+				reqd: 1,
+				change: () => this.schedule_calculation(),
 			},
 			{
-				fieldname: "from_date", label: __("Effective date"), fieldtype: "Date",
-				default: frappe.datetime.get_today(), reqd: 1, change: () => this.load_assignment(),
+				fieldname: "from_date",
+				label: __("Effective date"),
+				fieldtype: "Date",
+				default: frappe.datetime.get_today(),
+				reqd: 1,
+				change: () => this.load_assignment(),
 			},
 		];
 		for (const df of fields) this.fields[df.fieldname] = this.add_field(df);
@@ -126,22 +145,34 @@ class SalaryCalculatorPage {
 			const controls = [];
 			const values = [];
 			for (const { value, ...df } of context.fields) {
-				const control = this.add_field({
-					...df,
-					options: df.fieldtype === "Currency" ? context.currency : undefined,
-					precision: df.fieldtype === "Currency" && context.currency === "TZS" ? 0 : undefined,
-					change: () => this.schedule_calculation(),
-				}, $fields);
+				const control = this.add_field(
+					{
+						...df,
+						options: df.fieldtype === "Currency" ? context.currency : undefined,
+						precision:
+							df.fieldtype === "Currency" && context.currency === "TZS"
+								? 0
+								: undefined,
+						change: () => this.schedule_calculation(),
+					},
+					$fields
+				);
 				controls.push(control);
 				values.push(control.set_value(value));
 			}
 			let tax_slab;
 			if (this.val("employee")) {
-				tax_slab = this.add_field({
-					fieldname: "income_tax_slab", label: __("Income Tax Slab"), fieldtype: "Link",
-					options: "Income Tax Slab", change: () => this.schedule_calculation(),
-					get_query: () => ({ filters: { company: context.company, docstatus: 1 } }),
-				}, $fields);
+				tax_slab = this.add_field(
+					{
+						fieldname: "income_tax_slab",
+						label: __("Income Tax Slab"),
+						fieldtype: "Link",
+						options: "Income Tax Slab",
+						change: () => this.schedule_calculation(),
+						get_query: () => ({ filters: { company: context.company, docstatus: 1 } }),
+					},
+					$fields
+				);
 				values.push(tax_slab.set_value(context.income_tax_slab || ""));
 			}
 			await Promise.all(values);
@@ -155,11 +186,14 @@ class SalaryCalculatorPage {
 			this.fields.target.refresh();
 			this.$(".sc-assignment").prop("hidden", !controls.length && !tax_slab);
 			if (context.source) {
-				this.$(".sc-source").text(__("Source assignment {0}", [context.source])).prop("hidden", false);
+				this.$(".sc-source")
+					.text(__("Source assignment {0}", [context.source]))
+					.prop("hidden", false);
 			}
 			this.schedule_calculation();
 		} catch {
-			if (revision === this.context_revision) this.set_status(__("Could not load assignment inputs."), true);
+			if (revision === this.context_revision)
+				this.set_status(__("Could not load assignment inputs."), true);
 		}
 	}
 
@@ -174,7 +208,9 @@ class SalaryCalculatorPage {
 	}
 
 	set_status(message, warning = false) {
-		this.$(".sc-status").text(message).removeClass("sc-status-matched sc-status-estimate")
+		this.$(".sc-status")
+			.text(message)
+			.removeClass("sc-status-matched sc-status-estimate")
 			.toggleClass("text-danger", warning)
 			.toggleClass("text-muted", !warning);
 	}
@@ -195,20 +231,34 @@ class SalaryCalculatorPage {
 		const calculate_based_on = this.val("mode") || "Net Pay";
 		const target_field = calculate_based_on === "Gross Pay" ? "gross_pay" : "net_pay";
 		const target_amount = flt(this.val("target"));
-		const assignment_values = Object.fromEntries(this.assignment_fields.map((control) => [
-			control.df.fieldname, control.get_value(),
-		]));
+		const assignment_values = Object.fromEntries(
+			this.assignment_fields.map((control) => [control.df.fieldname, control.get_value()])
+		);
 		const income_tax_slab = this.tax_slab ? this.tax_slab.get_value() || "" : undefined;
-		const input = { salary_structure, employee, from_date, assignment_values, income_tax_slab };
+		const input = {
+			salary_structure,
+			employee,
+			from_date,
+			assignment_values,
+			income_tax_slab,
+		};
 		try {
 			const result = await frappe.xcall(salary_calculator_api + "run_calculation", {
-				...input, calculate_based_on, [target_field]: target_amount,
+				...input,
+				calculate_based_on,
+				[target_field]: target_amount,
 			});
 			if (revision !== this.calculation_revision) return;
 			const html = await frappe.xcall(salary_calculator_api + "get_salary_slip_preview", {
-				salary_structure, employee, base: result.base, gross_pay: result.gross_pay, net_pay: result.net_pay,
-				earnings_data: result.earnings, deductions_data: result.deductions,
-				employer_contributions: result.employer_contributions, total_deductions: result.total_deductions,
+				salary_structure,
+				employee,
+				base: result.base,
+				gross_pay: result.gross_pay,
+				net_pay: result.net_pay,
+				earnings_data: result.earnings,
+				deductions_data: result.deductions,
+				employer_contributions: result.employer_contributions,
+				total_deductions: result.total_deductions,
 			});
 			if (revision !== this.calculation_revision) return;
 
@@ -217,23 +267,39 @@ class SalaryCalculatorPage {
 			const success = result.target_matched && !result.estimated;
 			const messages = [];
 			if (result.estimated) messages.push(__("Estimate"));
-			messages.push(result.target_matched ? __("Target matched") : __("Target missed by {0}", [
-				this.format_amount(Math.abs(target_amount - result[target_field])),
-			]));
-			const $status = this.$(".sc-status").text(messages.join(" · "))
+			messages.push(
+				result.target_matched
+					? __("Target matched")
+					: __("Target missed by {0}", [
+							this.format_amount(Math.abs(target_amount - result[target_field])),
+					  ])
+			);
+			const $status = this.$(".sc-status")
+				.text(messages.join(" · "))
 				.removeClass("text-muted text-danger")
-				.toggleClass("sc-status-matched", success).toggleClass("sc-status-estimate", !success);
+				.toggleClass("sc-status-matched", success)
+				.toggleClass("sc-status-estimate", !success);
 			$status.appendTo(this.$(".sc-net"));
 			if (success && employee) {
-				const review = () => this.review_assignment({
-					...input, base: result.base, target: { field: target_field, amount: target_amount },
-				}, revision, result);
+				const review = () =>
+					this.review_assignment(
+						{
+							...input,
+							base: result.base,
+							target: { field: target_field, amount: target_amount },
+						},
+						revision,
+						result
+					);
 				this.page.set_primary_action(__("Review assignment"), review);
-				$('<button class="btn btn-primary sc-mobile-review"></button>').text(__("Review assignment"))
-					.on("click", review).insertAfter(this.$(".sc-summary"));
+				$('<button class="btn btn-primary sc-mobile-review"></button>')
+					.text(__("Review assignment"))
+					.on("click", review)
+					.insertAfter(this.$(".sc-summary"));
 			}
 		} catch {
-			if (revision === this.calculation_revision) this.set_status(__("Could not calculate this salary."), true);
+			if (revision === this.calculation_revision)
+				this.set_status(__("Could not calculate this salary."), true);
 		}
 	}
 
@@ -250,12 +316,19 @@ class SalaryCalculatorPage {
 			primary_action_label: __("Create & Submit"),
 			primary_action: async () => {
 				if (revision !== this.calculation_revision) {
-					frappe.msgprint(__("The calculation changed. Review the current preview before submitting."));
+					frappe.msgprint(
+						__(
+							"The calculation changed. Review the current preview before submitting."
+						)
+					);
 					return;
 				}
 				const $button = dialog.get_primary_btn().prop("disabled", true);
 				try {
-					const name = await frappe.xcall(salary_calculator_api + "create_salary_structure_assignment", input);
+					const name = await frappe.xcall(
+						salary_calculator_api + "create_salary_structure_assignment",
+						input
+					);
 					dialog.hide();
 					frappe.set_route("Form", "Salary Structure Assignment", name);
 				} catch {
@@ -275,13 +348,21 @@ class SalaryCalculatorPage {
 		if (input.income_tax_slab) items.push([__("Income Tax Slab"), input.income_tax_slab]);
 		for (const { df } of this.assignment_fields) {
 			const value = input.assignment_values[df.fieldname];
-			const label = df.fieldtype === "Check" ? (cint(value) ? __("Yes") : __("No"))
-				: df.fieldtype === "Currency" ? this.format_amount(value) : cstr(value);
+			const label =
+				df.fieldtype === "Check"
+					? cint(value)
+						? __("Yes")
+						: __("No")
+					: df.fieldtype === "Currency"
+					? this.format_amount(value)
+					: cstr(value);
 			items.push([df.label, label]);
 		}
 		const $summary = $("<dl class='sc-totals'></dl>");
 		for (const [label, value] of items) {
-			$("<div></div>").append($("<dt></dt>").text(label), $("<dd></dd>").text(value)).appendTo($summary);
+			$("<div></div>")
+				.append($("<dt></dt>").text(label), $("<dd></dd>").text(value))
+				.appendTo($summary);
 		}
 		dialog.fields_dict.summary.$wrapper.empty().append($summary);
 		dialog.show();
