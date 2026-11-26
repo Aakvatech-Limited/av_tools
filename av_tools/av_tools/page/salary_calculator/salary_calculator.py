@@ -68,18 +68,30 @@ def run_calculation(
 	if target_amount <= 0:
 		return _empty_result()
 
-	if employee:
-		try:
-			return _solve_via_hrms(salary_structure, employee, target_field, target_amount, overrides)
-		except Exception:
-			pass  # Fall through to fallback
-
-	selected = list(dict.fromkeys(selected_components or []))
 	structure = frappe.get_cached_doc("Salary Structure", salary_structure)
 	precision = 0 if cstr(structure.currency) == "TZS" else 2
-	return _fallback_solve(
-		structure, target_field, flt(target_amount, precision), precision, selected, overrides
-	)
+	target_amount = flt(target_amount, precision)
+	if employee:
+		try:
+			result = _solve_via_hrms(
+				salary_structure, employee, target_field, target_amount, precision, overrides
+			)
+		except Exception:
+			pass  # Fall through to fallback
+		else:
+			return _with_calculation_status(result, target_field, target_amount, precision)
+
+	selected = list(dict.fromkeys(selected_components or []))
+	result = _fallback_solve(structure, target_field, target_amount, precision, selected, overrides)
+	return _with_calculation_status(result, target_field, target_amount, precision, estimated=True)
+
+
+def _with_calculation_status(result, target_field, target_amount, precision, estimated=False):
+	return {
+		**result,
+		"target_matched": flt(result[target_field] - target_amount, precision) == 0,
+		"estimated": estimated,
+	}
 
 
 @frappe.whitelist()
@@ -190,6 +202,19 @@ def _make_preview_slip(salary_structure, employee, base_override=None, earning_o
 
 	if base_override is not None:
 		ss._salary_structure_assignment["base"] = flt(base_override)
+		if hasattr(ss, "_get_ssa_doc"):
+			# HRMS uses the assignment's default amounts to prorate payment-days
+			# components. Recompute them from a copy using this trial's base.
+			assignment = frappe.get_doc(ss._get_ssa_doc().as_dict())
+			assignment.base = flt(base_override)
+			ss._ssa_doc = assignment
+			ss._evaluated_components = assignment.get_evaluated_components()
+			ss.gross_pay = sum(
+				flt(row.default_amount)
+				for row in ss._evaluated_components["earnings"]
+				if not row.statistical_component and not row.do_not_include_in_total
+			)
+			ss.set("employer_contributions", [])
 		ss.set("earnings", [])
 		ss.set("deductions", [])
 		ss.process_salary_structure(for_preview=1)
@@ -228,38 +253,45 @@ def _format_slip_result(ss):
 	}
 
 
-def _solve_via_hrms(salary_structure, employee, target_field, target_amount, earning_overrides=None):
-	"""Binary-search for the base that produces the target gross/net using HRMS."""
-	lo, hi = 0.0, max(target_amount * 3, 1)
-	best, best_val = None, None
+def _solve_via_hrms(salary_structure, employee, target_field, target_amount, precision, earning_overrides=None):
+	"""Bracket the target, then search the currency's representable base amounts."""
+	scale = 10**precision
+	target = round(target_amount * scale)
+	lo, hi = 0, max(target, 1)
+	best, best_difference = None, float("inf")
+
+	def evaluate(base):
+		nonlocal best, best_difference
+		slip = _make_preview_slip(salary_structure, employee, base / scale, earning_overrides)
+		result = _format_slip_result(slip)
+		difference = round(result[target_field] * scale) - target
+		if abs(difference) < best_difference:
+			best, best_difference = result, abs(difference)
+		return difference
 
 	# Suppress repeated msgprint calls during binary search iterations
 	original_messages = frappe.local.message_log[:]
+	original_mute = frappe.flags.mute_messages
 	frappe.flags.mute_messages = True
 	try:
-		for i in range(60):
-			mid = (lo + hi) / 2
-			ss = _make_preview_slip(
-				salary_structure, employee, base_override=mid, earning_overrides=earning_overrides
-			)
-			val = flt(ss.gross_pay) if target_field == "gross_pay" else flt(ss.net_pay)
-
-			if best is None or abs(val - target_amount) < abs(best_val - target_amount):
-				best, best_val = ss, val
-
-			if abs(val - target_amount) <= 1:
+		for _ in range(10):
+			if evaluate(hi) >= 0:
 				break
-			if i > 2 and val == 0:
-				return _empty_result()
-			if val < target_amount:
-				lo = mid
+			lo, hi = hi + 1, hi * 2
+		else:
+			return best
+
+		while lo < hi and best_difference:
+			mid = (lo + hi) // 2
+			if evaluate(mid) < 0:
+				lo = mid + 1
 			else:
 				hi = mid
 	finally:
-		frappe.flags.mute_messages = False
+		frappe.flags.mute_messages = original_mute
 		frappe.local.message_log = original_messages
 
-	return _format_slip_result(best) if best else _empty_result()
+	return best
 
 
 # ── Fallback Engine (no employee) ────────────────────────────────────

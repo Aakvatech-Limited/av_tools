@@ -15,8 +15,6 @@ class SalaryCalculatorPage {
 			salary_structure: "",
 			employee: "",
 			calculate_based_on: "Net Pay",
-			gross_pay: 0,
-			net_pay: 0,
 		};
 		this.structure_data = null;
 		this.active_keys = new Set();
@@ -24,6 +22,8 @@ class SalaryCalculatorPage {
 		this.result = null;
 		this.currency = "TZS";
 		this._calc_timer = null;
+		this.calculation_revision = 0;
+		this.structure_revision = 0;
 
 		this.render_layout();
 		this.create_fields();
@@ -76,6 +76,7 @@ class SalaryCalculatorPage {
 								</svg>
 								<p>Select a salary structure and enter an amount to begin</p>
 							</div>
+							<div class="sc-calculation-status text-warning" role="status"></div>
 							<div class="sc-preview-content" style="display:none"></div>
 						</div>
 					</div>
@@ -145,11 +146,7 @@ class SalaryCalculatorPage {
 					fieldname: name,
 					precision: 0,
 					label: name === "gross_pay" ? "Gross Pay" : "Net Pay",
-					change: () => {
-						this.state.gross_pay = flt(this.val("gross_pay"));
-						this.state.net_pay = flt(this.val("net_pay"));
-						this.schedule_calc();
-					},
+						change: () => this.schedule_calc(),
 				},
 				parent: $w,
 				render_input: true,
@@ -181,7 +178,10 @@ class SalaryCalculatorPage {
 
 	on_structure_change() {
 		const value = this.val("salary_structure");
+		const revision = ++this.structure_revision;
 		this.state.salary_structure = value;
+		this.structure_data = null;
+		this.schedule_calc();
 
 		if (!value) {
 			this.structure_data = null;
@@ -199,6 +199,7 @@ class SalaryCalculatorPage {
 				{ salary_structure: value }
 			)
 			.then((data) => {
+				if (revision !== this.structure_revision) return;
 				this.structure_data = data;
 				this.currency = data.currency || "TZS";
 				this.earning_overrides = {};
@@ -418,17 +419,20 @@ class SalaryCalculatorPage {
 
 	schedule_calc() {
 		if (this._applying_result) return;
+		const revision = ++this.calculation_revision;
 		clearTimeout(this._calc_timer);
-		this._calc_timer = setTimeout(() => this.run_calculation(), 300);
+		this.result = null;
+		this.show_placeholder();
+		this._calc_timer = setTimeout(() => this.run_calculation(revision), 300);
 	}
 
-	run_calculation() {
+	run_calculation(revision) {
 		const ss = this.state.salary_structure;
 		const mode = this.state.calculate_based_on;
-		if (!ss || !mode) return;
+		if (!ss || !mode || !this.structure_data) return;
 
 		const target = mode === "Net Pay" ? flt(this.val("net_pay")) : flt(this.val("gross_pay"));
-		if (!target) {
+		if (target <= 0) {
 			this.result = null;
 			this.show_placeholder();
 			return;
@@ -438,14 +442,14 @@ class SalaryCalculatorPage {
 			.xcall("av_tools.av_tools.page.salary_calculator.salary_calculator.run_calculation", {
 				salary_structure: ss,
 				calculate_based_on: mode,
-				gross_pay: this.state.gross_pay,
-				net_pay: this.state.net_pay,
+				gross_pay: mode === "Gross Pay" ? target : 0,
+				net_pay: mode === "Net Pay" ? target : 0,
 				selected_components: this.get_selected_names(),
 				earning_overrides: this.earning_overrides,
 				employee: this.state.employee || undefined,
 			})
 			.then((r) => {
-				if (!r) return;
+				if (!r || revision !== this.calculation_revision) return;
 				this.result = r;
 
 				// Update computed field without retriggering calculation
@@ -457,9 +461,24 @@ class SalaryCalculatorPage {
 				}
 				this._applying_result = false;
 
-				this.refresh_preview();
+				const messages = [];
+				if (r.estimated) messages.push(__("Estimate from salary structure formulas."));
+				if (!r.target_matched) {
+					const calculated = mode === "Net Pay" ? r.net_pay : r.gross_pay;
+					messages.push(
+						__("Target {0} {1} {2}. Calculated {0} {1} {3}.", [
+							__(mode),
+							this.currency,
+							this.fmt(target),
+							this.fmt(calculated),
+						])
+					);
+				}
+				this.$(".sc-calculation-status").text(messages.join(" "));
+				return this.refresh_preview(revision);
 			})
 			.catch((err) => {
+				if (revision !== this.calculation_revision) return;
 				this.result = null;
 				frappe.show_alert(
 					{
@@ -473,7 +492,7 @@ class SalaryCalculatorPage {
 
 	// ── Preview ──────────────────────────────────────────────────────────
 
-	refresh_preview() {
+	refresh_preview(revision) {
 		const ss = this.state.salary_structure;
 		const r = this.result;
 
@@ -487,7 +506,7 @@ class SalaryCalculatorPage {
 		const deductions = r.deductions || [];
 
 		const emp = this.state.employee;
-		frappe
+		return frappe
 			.xcall(
 				"av_tools.av_tools.page.salary_calculator.salary_calculator.get_salary_slip_preview",
 				{
@@ -501,6 +520,7 @@ class SalaryCalculatorPage {
 				}
 			)
 			.then((html) => {
+				if (revision !== this.calculation_revision) return;
 				this.$(".sc-placeholder").hide();
 				this.$(".sc-preview-content").html(html).show();
 				this.render_preview_actions();
@@ -510,6 +530,7 @@ class SalaryCalculatorPage {
 	show_placeholder() {
 		this.$(".sc-placeholder").show();
 		this.$(".sc-preview-content").hide();
+		this.$(".sc-calculation-status").empty();
 		this.$(".sc-preview-actions").empty();
 	}
 
@@ -517,7 +538,7 @@ class SalaryCalculatorPage {
 
 	render_preview_actions() {
 		const $a = this.$(".sc-preview-actions").empty();
-		if (!this.state.employee || !this.result) return;
+		if (!this.state.employee || !this.result?.target_matched || this.result.estimated) return;
 
 		$('<button class="btn btn-primary btn-sm">Create Assignment</button>')
 			.appendTo($a)
@@ -525,6 +546,7 @@ class SalaryCalculatorPage {
 	}
 
 	show_assign_dialog() {
+		const revision = this.calculation_revision;
 		const d = new frappe.ui.Dialog({
 			title: __("Create Salary Structure Assignment"),
 			fields: [
@@ -549,7 +571,8 @@ class SalaryCalculatorPage {
 					fieldname: "base",
 					label: "Base Amount",
 					default: this.result?.base || 0,
-					precision: 0,
+					precision: this.currency === "TZS" ? 0 : 2,
+					read_only: 1,
 					description: "Calculated base salary",
 				},
 				{
@@ -562,6 +585,12 @@ class SalaryCalculatorPage {
 			],
 			primary_action_label: __("Create & Submit"),
 			primary_action: (v) => {
+				if (revision !== this.calculation_revision) {
+					frappe.msgprint(
+						__("The salary calculation changed. Open a new assignment from the current preview.")
+					);
+					return;
+				}
 				d.hide();
 				frappe
 					.xcall(

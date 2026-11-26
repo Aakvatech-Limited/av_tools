@@ -96,6 +96,14 @@
 
     <div class="slip-footer">
         <div class="net-pay-row">
+            <span class="net-pay-label">Gross Pay</span>
+            <span class="net-pay-value">{{ currency }} {{ format_amount(gross_pay) }}</span>
+        </div>
+        <div class="net-pay-row">
+            <span class="net-pay-label">Net Pay</span>
+            <span class="net-pay-value">{{ currency }} {{ format_amount(net_pay) }}</span>
+        </div>
+        <div class="net-pay-row">
             <span class="net-pay-label">CTC</span>
             <span class="net-pay-value">{{ currency }} {{ format_amount(ctc) }}</span>
         </div>
