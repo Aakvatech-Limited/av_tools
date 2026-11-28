@@ -71,6 +71,7 @@ def create_indirect_expense_item(doc, method=None):
 	new_item = frappe.get_doc(
 		doctype="Item",
 		item_code=doc.account_name,
+		item_name=doc.account_name,
 		item_group=item_group_name,
 		is_stock_item=0,
 		is_sales_item=1 if is_income else 0,
